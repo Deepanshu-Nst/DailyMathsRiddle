@@ -1,26 +1,265 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap');
 
+/* ── Design Tokens ─────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg:           #09090b;
+  --bg-subtle:    #0f0f11;
+  --surface:      #111113;
+  --surface-2:    #18181b;
+  --border:       #27272a;
+  --border-subtle:#1d1d20;
+
+  --text-1:       #fafafa;
+  --text-2:       #a1a1aa;
+  --text-3:       #71717a;
+  --text-4:       #3f3f46;
+
+  --success:      #22c55e;
+  --error:        #ef4444;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ── Reset ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--bg);
+  color: var(--text-1);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+
+  /* Signature: ultra-subtle graph-paper grid */
+  background-image:
+    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: 56px 56px;
 }
+
+/* ── Typography ─────────────────────────────────────────── */
+.font-display {
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+}
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.mono { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── Buttons ────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  white-space: nowrap;
+  transition:
+    transform 140ms var(--ease-out),
+    box-shadow 140ms var(--ease-out),
+    background 140ms var(--ease-out),
+    border-color 140ms var(--ease-out),
+    color 140ms var(--ease-out);
+}
+.btn:disabled { opacity: 0.3; cursor: not-allowed !important; transform: none !important; }
+.btn-primary {
+  background: var(--text-1);
+  color: var(--bg);
+  border-radius: 8px;
+  padding: 13px 24px;
+  letter-spacing: 0.01em;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: 0 2px 20px rgba(250,250,250,0.12);
+}
+.btn-primary:active:not(:disabled) { transform: scale(0.98); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 9px 18px;
+}
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--text-3);
+  color: var(--text-1);
+  background: var(--surface);
+}
+
+.btn-icon {
+  background: var(--text-1);
+  color: var(--bg);
+  border-radius: 50%;
+  width: 44px; height: 44px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.btn-icon:hover:not(:disabled) {
+  transform: scale(1.06);
+  box-shadow: 0 2px 16px rgba(250,250,250,0.14);
+}
+.btn-icon:active:not(:disabled) { transform: scale(0.96); }
+
+/* ── Input ──────────────────────────────────────────────── */
+.input-underline {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--border);
+  color: var(--text-1);
+  font-family: 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+  padding: 10px 0;
+  outline: none;
+  transition: border-color 180ms var(--ease-out), color 180ms var(--ease-out);
+}
+.input-underline:focus { border-color: var(--text-2); }
+.input-underline::placeholder { color: var(--text-4); }
+.input-underline.is-correct { border-color: var(--success); color: var(--success); }
+.input-underline.is-error { border-color: var(--error); }
+
+/* ── Nav back link ──────────────────────────────────────── */
+.nav-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px; font-weight: 500;
+  color: var(--text-3);
+  transition: color 140ms var(--ease-out);
+}
+.nav-back:hover { color: var(--text-1); }
+
+/* ── Difficulty pills ───────────────────────────────────── */
+.diff-group {
+  display: inline-flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 2px;
+}
+.diff-pill {
+  position: relative;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 8px 18px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-3);
+  transition: color 160ms var(--ease-out);
+  z-index: 1;
+}
+.diff-pill:hover:not(:disabled) { color: var(--text-2); }
+.diff-pill.active { color: var(--bg); }
+.diff-pill:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── Progress bar ───────────────────────────────────────── */
+.progress-track {
+  width: 100%; height: 2px;
+  background: var(--surface-2);
+  border-radius: 2px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--text-1);
+  border-radius: 2px;
+  transition: width 900ms var(--ease-out);
+}
+
+/* ── Calendar ───────────────────────────────────────────── */
+.cal-cell {
+  width: 26px; height: 26px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  transition: transform 120ms var(--ease-out);
+  cursor: default;
+}
+.cal-cell:hover { transform: scale(1.15); }
+.cal-cell.solved-easy   { background: #d4d4d8; border-color: transparent; }
+.cal-cell.solved-medium { background: #a1a1aa; border-color: transparent; }
+.cal-cell.solved-hard   { background: #71717a; border-color: transparent; }
+.cal-cell.is-today { outline: 1.5px solid var(--text-3); outline-offset: 2px; }
+
+/* ── Celebration modal ──────────────────────────────────── */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  background: rgba(9,9,11,0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.modal-card {
+  width: 100%; max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* ── Checkmark SVG animation ────────────────────────────── */
+@keyframes drawCheck {
+  from { stroke-dashoffset: 52; opacity: 0; }
+  20%  { opacity: 1; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
+}
+.check-path {
+  stroke-dasharray: 52;
+  stroke-dashoffset: 52;
+  animation: drawCheck 0.7s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+/* ── Keyframe utilities ─────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-fade-up { animation: fadeUp 0.5s var(--ease-out) forwards; }
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+.anim-shake { animation: shake 0.42s var(--ease-in-out); }
+
+/* ── Stat number ────────────────────────────────────────── */
+.stat-num {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--text-1);
+}
+.stat-num.muted { color: var(--text-2); }
