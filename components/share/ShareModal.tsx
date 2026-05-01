@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Riddle } from '@/types';
 import ImagePreview from './ImagePreview';
 import CaptionEditor from './CaptionEditor';
-import PlatformButton from './PlatformButton';
 import {
   PLATFORM_LIMITS,
   generateLinkedInCaption,
@@ -117,7 +116,7 @@ export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
         transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         className="modal-card w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col md:flex-row relative shadow-2xl"
         onClick={e => e.stopPropagation()}
-        style={{ maxWidth: 880 }}
+        style={{ maxWidth: 900, minHeight: 500 }}
       >
         {/* Toast */}
         <AnimatePresence>
@@ -126,7 +125,7 @@ export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
               initial={{ opacity: 0, y: -20, x: '-50%' }}
               animate={{ opacity: 1, y: 0, x: '-50%' }}
               exit={{ opacity: 0, y: -20, x: '-50%' }}
-              className="absolute top-4 left-1/2 bg-zinc-800 text-zinc-100 px-4 py-2 rounded-full text-sm font-medium z-50 border border-zinc-700 shadow-lg"
+              className="absolute top-4 left-1/2 bg-zinc-800 text-zinc-100 px-5 py-2.5 rounded-full text-sm font-medium z-50 border border-zinc-700 shadow-xl"
             >
               {toast}
             </motion.div>
@@ -136,62 +135,89 @@ export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 text-zinc-400 hover:text-white transition-colors bg-zinc-900/50 rounded-full p-2"
+          className="absolute top-5 right-5 z-10 text-zinc-500 hover:text-white transition-colors bg-zinc-900/80 hover:bg-zinc-800 rounded-full p-2 border border-zinc-800 hover:border-zinc-700"
           aria-label="Close"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
           </svg>
         </button>
 
-        {/* LEFT: Preview Details */}
-        <div className="flex-1 p-8 border-b md:border-b-0 md:border-r border-zinc-800/50 bg-zinc-900/20">
-          <h2 className="font-display text-2xl font-bold mb-6 text-zinc-100">Share your ritual</h2>
+        {/* LEFT: Riddle Context */}
+        <div className="w-full md:w-[45%] p-8 md:p-10 border-b md:border-b-0 md:border-r border-zinc-800/60 bg-zinc-900/30 flex flex-col">
+          <h2 className="font-display text-2xl font-bold mb-8 text-zinc-100">Share your ritual</h2>
           
-          <div className="mb-6">
-            <span className="label block mb-2 text-zinc-500">Riddle preview</span>
-            <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-3 flex gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-zinc-800 rounded text-zinc-400 border border-zinc-700">
+          <div className="flex-1 flex flex-col">
+            <span className="text-[11px] font-semibold tracking-widest text-zinc-500 uppercase mb-3 block">
+              Riddle Preview
+            </span>
+            <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-6 flex flex-col gap-4 shadow-inner">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-zinc-800/80 rounded-md text-zinc-300 border border-zinc-700/50">
                   {riddle.category}
                 </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-zinc-800/80 rounded-md text-zinc-400 border border-zinc-700/50">
+                  {riddle.difficulty}
+                </span>
               </div>
-              <p className="text-zinc-300 text-lg leading-relaxed mt-4 font-medium">
+              <p className="text-zinc-200 text-[15px] leading-relaxed font-medium">
                 {riddle.question}
               </p>
             </div>
           </div>
-
-          <div className="flex flex-col gap-3 mb-2">
-            <PlatformButton platform="linkedin" onClick={() => setPlatform('linkedin')} label="LinkedIn" />
-            <PlatformButton platform="whatsapp" onClick={() => setPlatform('whatsapp')} label="WhatsApp" />
-            <PlatformButton platform="instagram" onClick={() => setPlatform('instagram')} label="Instagram" />
-          </div>
         </div>
 
-        {/* RIGHT: Assets & Caption */}
-        <div className="flex-1 p-8 bg-zinc-950 flex flex-col gap-6">
-          <div>
-            <span className="label block mb-2 text-zinc-500">Asset preview</span>
-            <div className="w-48 mx-auto shadow-xl">
-              <ImagePreview 
-                date={date} 
-                difficulty={riddle.difficulty} 
-                onLoaded={setImageDataUrl} 
+        {/* RIGHT: Platform Settings & Action */}
+        <div className="flex-1 p-8 md:p-10 bg-zinc-950 flex flex-col relative">
+          
+          {/* Platform Tabs */}
+          <div className="flex gap-1 p-1.5 bg-zinc-900/80 rounded-xl mb-8 border border-zinc-800/80 w-full max-w-sm mr-auto">
+            {(['linkedin', 'whatsapp', 'instagram'] as Platform[]).map(p => (
+              <button
+                key={p}
+                onClick={() => setPlatform(p)}
+                className={`flex-1 py-2 text-xs font-semibold tracking-wide rounded-lg capitalize transition-all duration-200 ${
+                  platform === p 
+                    ? 'bg-zinc-800 text-white shadow-sm border border-zinc-700' 
+                    : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+
+          {/* Content Layout */}
+          <div className="flex flex-col sm:flex-row gap-6 mb-8 flex-1">
+            {/* Asset Preview */}
+            <div className="w-full sm:w-[140px] flex-shrink-0">
+              <span className="text-[11px] font-semibold tracking-widest text-zinc-500 uppercase mb-3 block">
+                Asset
+              </span>
+              <div className="rounded-xl overflow-hidden shadow-2xl border border-zinc-800 bg-zinc-900 aspect-square">
+                <ImagePreview 
+                  date={date} 
+                  difficulty={riddle.difficulty} 
+                  onLoaded={setImageDataUrl} 
+                />
+              </div>
+            </div>
+
+            {/* Caption Editor */}
+            <div className="flex-1 flex flex-col">
+              <CaptionEditor
+                value={captions[platform]}
+                onChange={(val) => setCaptions({ ...captions, [platform]: val })}
+                platform={platform}
+                maxChars={currentMaxChars}
               />
             </div>
           </div>
 
-          <CaptionEditor
-            value={captions[platform]}
-            onChange={(val) => setCaptions({ ...captions, [platform]: val })}
-            platform={platform}
-            maxChars={currentMaxChars}
-          />
-
+          {/* Action Button */}
           <button
             onClick={() => handleShare(platform)}
-            className="w-full py-4 bg-zinc-100 text-zinc-950 rounded-xl font-semibold text-sm hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-lg shadow-white/10"
+            className="w-full mt-auto py-4 bg-zinc-100 text-zinc-950 rounded-xl font-bold text-[15px] tracking-wide hover:bg-white hover:scale-[1.01] active:scale-[0.99] transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]"
           >
             {platform === 'instagram' ? 'Download Image & Copy Caption' : `Share to ${platform.charAt(0).toUpperCase() + platform.slice(1)}`}
           </button>

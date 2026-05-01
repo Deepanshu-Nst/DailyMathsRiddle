@@ -3,7 +3,7 @@ import React from 'react';
 interface CaptionEditorProps {
   value: string;
   onChange: (val: string) => void;
-  platform: 'linkedin' | 'twitter' | 'whatsapp' | 'instagram';
+  platform: 'linkedin' | 'whatsapp' | 'instagram';
   maxChars: number;
 }
 
