@@ -8,13 +8,10 @@ import CelebrationModal from '@/components/CelebrationModal';
 import ShareModal from '@/components/share/ShareModal';
 import StreakChip from '@/components/StreakChip';
 import CountdownTimer from '@/components/CountdownTimer';
-import { Difficulty, StreakData } from '@/types';
+import GenerateMore from '@/components/riddle/GenerateMore';
+import { Difficulty, StreakData, Riddle } from '@/types';
 import { markSolved, loadStreakData } from '@/lib/streak-engine';
 import { getTodayUTC } from '@/lib/timezone';
-
-interface RiddleData {
-  id: string; question: string; hint1: string; hint2: string; category: string; difficulty: string;
-}
 
 function SolvePage() {
   const router = useRouter();
@@ -23,7 +20,7 @@ function SolvePage() {
   const dateParam = date ?? getTodayUTC();
   const difficulty = (searchParams.get('difficulty') as Difficulty) ?? 'medium';
 
-  const [riddle, setRiddle] = useState<RiddleData | null>(null);
+  const [riddle, setRiddle] = useState<Partial<Riddle> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [answer, setAnswer] = useState('');
@@ -35,6 +32,9 @@ function SolvePage() {
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [isSolved, setIsSolved] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [sessionId, setSessionId] = useState('');
+  const [mode, setMode] = useState<'daily'|'extra'>('daily');
+  const [extraCount, setExtraCount] = useState(0);
 
   const fetchRiddle = useCallback(async () => {
     setLoading(true); setError('');
@@ -50,6 +50,14 @@ function SolvePage() {
   }, [difficulty, dateParam]);
 
   useEffect(() => {
+    // Generate or retrieve session ID for extra riddles limit tracking
+    let sid = localStorage.getItem('advaitai_session_id');
+    if (!sid) {
+      sid = crypto.randomUUID();
+      localStorage.setItem('advaitai_session_id', sid);
+    }
+    setSessionId(sid);
+
     const s = loadStreakData();
     setStreak(s);
     if (s.progressState === 'solved') { setIsSolved(true); setStatus('correct'); }
@@ -80,6 +88,18 @@ function SolvePage() {
     } catch {
       setError('Network error. Please try again.');
     }
+  };
+
+  const handleNewRiddle = (newRiddle: Partial<Riddle>) => {
+    setRiddle(newRiddle);
+    setAnswer('');
+    setStatus('idle');
+    setIsSolved(false);
+    setExplanation('');
+    setCorrectAnswer('');
+    setHintsUsed(0);
+    setMode('extra');
+    setExtraCount(prev => prev + 1);
   };
 
   return (
@@ -119,7 +139,10 @@ function SolvePage() {
         >
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span className="label">Today's ritual</span>
+            <span className="label">
+              {mode === 'daily' ? "Today's ritual" : `Extra Challenge #${extraCount}`}
+              {mode === 'extra' && <span className="block text-zinc-500 text-[10px] lowercase mt-1">(Not part of daily streak. Resets on refresh)</span>}
+            </span>
             {riddle && (
               <span style={{
                 fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
@@ -178,8 +201,8 @@ function SolvePage() {
                     disabled={status === 'correct'}
                   />
                   <HintLadder
-                    hint1={riddle.hint1}
-                    hint2={riddle.hint2}
+                    hint1={riddle.hint1 ?? ''}
+                    hint2={riddle.hint2 ?? ''}
                     disabled={status === 'correct'}
                   />
                 </>
@@ -225,6 +248,15 @@ function SolvePage() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Generate More Riddles */}
+          {riddle && !loading && !error && sessionId && (
+            <GenerateMore 
+              sessionId={sessionId} 
+              difficulty={difficulty} 
+              onNewRiddle={handleNewRiddle} 
+            />
           )}
         </motion.div>
 

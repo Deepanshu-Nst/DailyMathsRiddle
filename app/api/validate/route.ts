@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRiddleByDateAndDifficulty } from '@/lib/riddle-bank';
+import { getActiveRiddle } from '@/lib/riddleService';
 import { validateAnswer } from '@/lib/answer-validator';
 import { getTodayUTC } from '@/lib/timezone';
 import { z } from 'zod';
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const { userAnswer, difficulty, date: rawDate } = schema.parse(body);
     const date = rawDate ?? getTodayUTC();
 
-    const riddle = getRiddleByDateAndDifficulty(date, difficulty);
+    const riddle = await getActiveRiddle(date, difficulty);
     const isCorrect = validateAnswer(userAnswer, riddle.answer, riddle.answerVariants);
 
     return NextResponse.json({

@@ -17,7 +17,7 @@ import {
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://daily-maths-riddle.vercel.app";
 
 interface ShareModalProps {
-  riddle: Riddle;
+  riddle: Partial<Riddle>;
   date: string;
   onClose: () => void;
 }
@@ -34,7 +34,7 @@ export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  const shareUrl = `${BASE_URL}/riddle/${date}?difficulty=${riddle.difficulty}`;
+  const shareUrl = `${BASE_URL}/riddle/${date}?difficulty=${riddle.difficulty ?? 'medium'}`;
 
   useEffect(() => {
     if (shareUrl) {
@@ -197,7 +197,7 @@ export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
               <div className="rounded-xl overflow-hidden shadow-2xl border border-zinc-800 bg-zinc-900 aspect-square">
                 <ImagePreview 
                   date={date} 
-                  difficulty={riddle.difficulty} 
+                  difficulty={riddle.difficulty ?? 'medium'} 
                   onLoaded={setImageDataUrl} 
                 />
               </div>

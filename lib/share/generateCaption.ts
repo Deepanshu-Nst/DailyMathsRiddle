@@ -6,7 +6,7 @@ export const PLATFORM_LIMITS = {
 };
 
 interface CaptionInput {
-  riddle: Riddle;
+  riddle: Partial<Riddle>;
   date: string;
   url: string;
 }

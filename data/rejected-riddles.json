@@ -1,0 +1,134 @@
+[
+  {
+    "date": "2026-05-01",
+    "reason": "Rule Engine: The explanation does not explicitly state the answer.",
+    "timestamp": "2026-05-01T16:51:57.315Z",
+    "scoredRiddle": {
+      "riddle": {
+        "question": "There are 3 switches, but they are not labelled. Each switch corresponds to one of three light bulbs in a room. Each light bulb is either on or off. You can turn the lights on and off as many times as you want, but you can only enter the room one time to observe the bulbs. How can you figure out which switch corresponds to which light bulb?",
+        "answer": "Turn switch 1 to ON for 5 minutes, then turn it OFF. Turn switch 2 to ON. Immediately enter the room.",
+        "answerVariants": [
+          "Similar variations involving different timing but same principle"
+        ],
+        "hint1": "Use the switches to create a temporal difference in the bulbs' states.",
+        "hint2": "Observe both the on/off state and the temperature of the bulbs.",
+        "explanation": "The bulb corresponding to switch 1 will be off but warm. The bulb corresponding to switch 2 will be on. The bulb corresponding to switch 3 will be off and cold. This method works because turning a switch on for a period allows the corresponding bulb to heat up, providing a way to differentiate it from the others when observing the room.",
+        "difficulty": "medium",
+        "category": "Logic",
+        "version": "v1",
+        "generator_model": "llama-3.3-70b-versatile"
+      },
+      "validation": {
+        "is_valid": true,
+        "difficulty_match": true,
+        "correctness_confidence": 1,
+        "reasoning_depth_score": 8,
+        "clarity_score": 9,
+        "originality_score": 6,
+        "issues": [],
+        "final_score": 8.2
+      },
+      "overall_score": 0
+    }
+  },
+  {
+    "date": "2026-05-01",
+    "reason": "AI Validator Rejected",
+    "timestamp": "2026-05-01T16:51:57.316Z",
+    "scoredRiddle": {
+      "riddle": {
+        "question": "You have 8 balls, and one of them will be slightly heavier or lighter than the others. How can you find the heavier or lighter ball in only 2 weighings on a balance scale?",
+        "answer": "Weigh 3 vs 3, then weigh 2 of the remaining 2 against each other or one of the already weighed balls.",
+        "answerVariants": [
+          "Different combinations but same principle of dividing and comparing"
+        ],
+        "hint1": "Divide the balls into groups to eliminate possibilities efficiently.",
+        "hint2": "The first weighing should give you a clear direction for the second weighing.",
+        "explanation": "First, weigh 3 balls against 3 balls. If one side is heavier, then the heavier ball is one of those 3. If they are balanced, then the heavier or lighter ball is one of the 2 not weighed. For the second weighing, if you know which group of 3 has the heavier ball, weigh 2 of those balls against each other. If one is heavier, it's the heavier ball. If they balance, the remaining ball is heavier. If the first weighing balanced, weigh 2 of the unweighed balls against each other. If one is heavier, it's the heavier ball. If they balance, the last unweighed ball is heavier or lighter depending on the initial condition.",
+        "difficulty": "medium",
+        "category": "Combinatorics",
+        "version": "v1",
+        "generator_model": "llama-3.3-70b-versatile"
+      },
+      "validation": {
+        "is_valid": false,
+        "difficulty_match": true,
+        "correctness_confidence": 0.8,
+        "reasoning_depth_score": 6,
+        "clarity_score": 8,
+        "originality_score": 4,
+        "issues": [
+          "The riddle does not explicitly state how to determine if the ball is heavier or lighter, only how to find the ball that is different.",
+          "The explanation assumes that if the first weighing balances, the remaining two balls must contain the heavier or lighter ball, but it does not account for the possibility that the ball could be lighter, not just heavier.",
+          "The solution does not provide a clear method for determining whether the identified ball is heavier or lighter, which is a crucial part of the problem."
+        ],
+        "final_score": 5
+      },
+      "overall_score": 0
+    }
+  },
+  {
+    "date": "2026-05-01",
+    "reason": "Rule Engine: The explanation does not explicitly state the answer.",
+    "timestamp": "2026-05-01T16:52:14.406Z",
+    "scoredRiddle": {
+      "riddle": {
+        "question": "You have 8 balls, and one will be slightly heavier or lighter than the others. How can you find the heavier or lighter ball in only 2 weighings on a balance scale?",
+        "answer": "Weigh 3 vs 3, then weigh 2 of the remaining 2",
+        "answerVariants": [
+          "2 weighings"
+        ],
+        "hint1": "Divide the balls into groups to eliminate possibilities",
+        "hint2": "Use the process of elimination for the second weighing",
+        "explanation": "First, weigh 3 balls against 3 balls. If one side is heavier, then the heavier ball is one of those 3. If they are balanced, then the heavier ball is one of the 2 remaining balls. For the second weighing, take 2 of the 3 balls from the heavier side (or the 2 remaining balls if they were balanced) and weigh them against each other. If one is heavier, it's the heavier ball. If they are balanced, then the remaining ball is the heavier one.",
+        "difficulty": "easy",
+        "category": "Combinatorics",
+        "version": "v1",
+        "generator_model": "llama-3.3-70b-versatile"
+      },
+      "validation": {
+        "is_valid": true,
+        "difficulty_match": true,
+        "correctness_confidence": 1,
+        "reasoning_depth_score": 6,
+        "clarity_score": 9,
+        "originality_score": 4,
+        "issues": [],
+        "final_score": 8
+      },
+      "overall_score": 0
+    }
+  },
+  {
+    "date": "2026-05-01",
+    "reason": "Rule Engine: The explanation does not explicitly state the answer.",
+    "timestamp": "2026-05-01T16:52:34.096Z",
+    "scoredRiddle": {
+      "riddle": {
+        "question": "There are three switches, but they are not labelled. Each switch corresponds to one of three light bulbs in a room. Each light bulb is either on or off. You can turn the lights on and off as many times as you want, but you can only enter the room one time to observe the bulbs. How can you figure out which switch corresponds to which light bulb?",
+        "answer": "Turn two switches on for 5 minutes, then turn one off. Enter the room and feel the bulbs. The hot but off bulb corresponds to the switch you turned off, the on bulb to the switch you left on, and the cold off bulb to the switch you never turned on.",
+        "answerVariants": [
+          "Turn switch 1 to on for 5 min, then off. Turn switch 2 to on. Enter room and observe."
+        ],
+        "hint1": "Use the switches to create a timeline of events that you can then decode by feeling the bulbs.",
+        "hint2": "One switch should be turned on for a longer time to differentiate between two possible states (on and off) of the bulbs.",
+        "explanation": "By turning two switches on for 5 minutes and then turning one off, you create a situation where one bulb is on, one is off but still warm, and one is off and cold. When you enter the room, you can feel the bulbs to determine which is which. The bulb that is on clearly corresponds to the switch that was left on. The bulb that is off but warm corresponds to the switch that was turned off, because it was recently on. The bulb that is off and cold corresponds to the switch that was never turned on.",
+        "difficulty": "easy",
+        "category": "Logic",
+        "version": "v1",
+        "generator_model": "llama-3.3-70b-versatile"
+      },
+      "validation": {
+        "is_valid": true,
+        "difficulty_match": true,
+        "correctness_confidence": 1,
+        "reasoning_depth_score": 8,
+        "clarity_score": 9,
+        "originality_score": 6,
+        "issues": [],
+        "final_score": 8.2
+      },
+      "overall_score": 0
+    }
+  }
+]

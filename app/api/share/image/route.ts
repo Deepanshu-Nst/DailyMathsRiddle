@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRiddleByDateAndDifficulty } from '@/lib/riddle-bank';
+import { getActiveRiddle } from '@/lib/riddleService';
 import { generateRiddleImage } from '@/lib/share/imageGenerator';
 
 export async function GET(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const riddle = getRiddleByDateAndDifficulty(date, difficulty);
+    const riddle = await getActiveRiddle(date, difficulty);
 
     const imageDataUrl = generateRiddleImage({
       question: riddle.question,
