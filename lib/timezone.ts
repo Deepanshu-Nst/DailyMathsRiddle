@@ -2,12 +2,21 @@ export function getTodayUTC(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function getSecondsUntilMidnightUTC(): number {
+export function getSecondsUntilMidnightLocal(): number {
   const now = new Date();
-  const midnight = new Date();
-  midnight.setUTCDate(midnight.getUTCDate() + 1);
-  midnight.setUTCHours(0, 0, 0, 0);
-  return Math.floor((midnight.getTime() - now.getTime()) / 1000);
+  // Midnight in the user's LOCAL timezone
+  const midnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1, // next day
+    0, 0, 0, 0         // 00:00:00.000 local time
+  );
+  return Math.max(0, Math.floor((midnight.getTime() - now.getTime()) / 1000));
+}
+
+/** @deprecated Use getSecondsUntilMidnightLocal instead */
+export function getSecondsUntilMidnightUTC(): number {
+  return getSecondsUntilMidnightLocal();
 }
 
 export function formatCountdown(seconds: number): string {

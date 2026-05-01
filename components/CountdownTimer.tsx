@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { getSecondsUntilMidnightUTC, formatCountdown } from '@/lib/timezone';
+import { getSecondsUntilMidnightLocal, formatCountdown } from '@/lib/timezone';
 
 export default function CountdownTimer() {
-  const [secs, setSecs] = useState(getSecondsUntilMidnightUTC());
+  const [secs, setSecs] = useState(getSecondsUntilMidnightLocal());
   useEffect(() => {
-    const id = setInterval(() => setSecs(getSecondsUntilMidnightUTC()), 1000);
+    const id = setInterval(() => setSecs(getSecondsUntilMidnightLocal()), 1000);
     return () => clearInterval(id);
   }, []);
 
