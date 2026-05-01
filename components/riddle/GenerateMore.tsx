@@ -6,7 +6,7 @@ import { Riddle } from '@/types';
 interface GenerateMoreProps {
   sessionId: string;
   difficulty: string;
-  onNewRiddle: (riddle: Partial<Riddle>) => void;
+  onNewRiddle: (riddle?: Partial<Riddle>) => void;
 }
 
 export default function GenerateMore({ sessionId, difficulty, onNewRiddle }: GenerateMoreProps) {

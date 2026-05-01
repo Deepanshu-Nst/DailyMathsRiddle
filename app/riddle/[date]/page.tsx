@@ -90,7 +90,8 @@ function SolvePage() {
     }
   };
 
-  const handleNewRiddle = (newRiddle: Partial<Riddle>) => {
+  const handleNewRiddle = (newRiddle?: Partial<Riddle>) => {
+    if (!newRiddle) return;
     setRiddle(newRiddle);
     setAnswer('');
     setStatus('idle');

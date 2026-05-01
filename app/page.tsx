@@ -8,6 +8,7 @@ import ProgressCalendar from '@/components/ProgressCalendar';
 import { Difficulty, StreakData } from '@/types';
 import { loadStreakData } from '@/lib/streak-engine';
 import { getTodayUTC } from '@/lib/timezone';
+import GenerateMore from '@/components/riddle/GenerateMore';
 import { motion } from 'framer-motion';
 
 const APPEAR = {
@@ -20,6 +21,7 @@ export default function HomePage() {
   const router = useRouter();
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [streak, setStreak] = useState<StreakData | null>(null);
+  const [sessionId, setSessionId] = useState('');
 
   const today = getTodayUTC();
   const formattedDate = new Date(today + 'T00:00:00Z').toLocaleDateString('en-US', {
@@ -27,6 +29,14 @@ export default function HomePage() {
   });
 
   useEffect(() => {
+    // Persist session ID for extra-riddle usage tracking
+    let sid = localStorage.getItem('advaitai_session_id');
+    if (!sid) {
+      sid = crypto.randomUUID();
+      localStorage.setItem('advaitai_session_id', sid);
+    }
+    setSessionId(sid);
+
     const data = loadStreakData();
     setStreak(data);
     if (data.solvedDifficulty) setDifficulty(data.solvedDifficulty);
@@ -138,6 +148,17 @@ export default function HomePage() {
               <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 20 }}>
                 <CountdownTimer />
               </div>
+
+              {/* Generate more — visible once today is solved */}
+              {sessionId && (
+                <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 20, marginTop: 4 }}>
+                  <GenerateMore
+                    sessionId={sessionId}
+                    difficulty={difficulty}
+                    onNewRiddle={() => router.push(`/riddle/${today}?difficulty=${difficulty}`)}
+                  />
+                </div>
+              )}
             </div>
           ) : (
             <div>

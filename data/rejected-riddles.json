@@ -130,5 +130,70 @@
       },
       "overall_score": 0
     }
+  },
+  {
+    "date": "2026-05-01",
+    "reason": "Rule Engine: The explanation does not explicitly state the answer.",
+    "timestamp": "2026-05-01T17:03:30.910Z",
+    "scoredRiddle": {
+      "riddle": {
+        "question": "There are three switches, but they are not labelled. Each switch corresponds to one of three light bulbs in a room. Each light bulb is either on or off. You can turn the switches on and off as many times as you want, but you can only enter the room one time to observe the light bulbs. How can you figure out which switch corresponds to which light bulb?",
+        "answer": "Turn two switches on for 5 min, then turn one off. Enter the room and observe.",
+        "answerVariants": [
+          "Turn two switches on for a while, then turn one off. Enter the room and observe.",
+          "Leave one switch on for 5 min, then turn it off and turn another on. Enter the room."
+        ],
+        "hint1": "Use the process of elimination and the concept of 'warm' bulbs",
+        "hint2": "Consider the physical properties of light bulbs and how they change when turned on or off",
+        "explanation": "Turn two switches on for 5 min, then turn one off. Enter the room: the bulb that is still on corresponds to one of the switches you left on. The bulb that is off but warm corresponds to the switch you turned off. The remaining bulb corresponds to the switch you never turned on.",
+        "difficulty": "easy",
+        "category": "Logic",
+        "version": "v1",
+        "generator_model": "llama-3.3-70b-versatile"
+      },
+      "validation": {
+        "is_valid": true,
+        "difficulty_match": true,
+        "correctness_confidence": 1,
+        "reasoning_depth_score": 8,
+        "clarity_score": 9,
+        "originality_score": 6,
+        "issues": [],
+        "final_score": 8.2
+      },
+      "overall_score": 0
+    }
+  },
+  {
+    "date": "2026-05-01",
+    "reason": "Rule Engine: The explanation does not explicitly state the answer.",
+    "timestamp": "2026-05-01T17:03:47.320Z",
+    "scoredRiddle": {
+      "riddle": {
+        "question": "You have 8 balls, and one will be slightly heavier or lighter than the others. How can you find the heavier or lighter ball in only 2 weighings on a balance scale?",
+        "answer": "Weigh 3 vs 3, then weigh 2 of the remaining 2",
+        "answerVariants": [
+          "Weigh 3 vs 3, then weigh 2 of the remaining"
+        ],
+        "hint1": "First weighing should try to divide the balls into equal groups to maximize information",
+        "hint2": "The second weighing should use the information from the first to pinpoint the odd ball",
+        "explanation": "First, weigh 3 balls against 3 balls. If one side is heavier, then the odd ball is one of those 3. If they're balanced, the odd ball is one of the 2 not weighed. For the second weighing, take 2 of the 3 balls from the heavier side (or 2 of the 2 not weighed if the first weighing was balanced) and weigh them against each other. If one is heavier, it's the odd ball. If they're balanced, the remaining ball from the heavier side (or the one not weighed in the second round) is the odd ball.",
+        "difficulty": "easy",
+        "category": "Combinatorics",
+        "version": "v1",
+        "generator_model": "llama-3.3-70b-versatile"
+      },
+      "validation": {
+        "is_valid": true,
+        "difficulty_match": true,
+        "correctness_confidence": 1,
+        "reasoning_depth_score": 6,
+        "clarity_score": 8,
+        "originality_score": 4,
+        "issues": [],
+        "final_score": 7.6
+      },
+      "overall_score": 0
+    }
   }
 ]
