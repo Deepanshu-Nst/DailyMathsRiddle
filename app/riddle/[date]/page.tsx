@@ -1,10 +1,11 @@
 'use client';
 import { useEffect, useState, useCallback, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import AnswerInput from '@/components/AnswerInput';
 import HintLadder from '@/components/HintLadder';
 import CelebrationModal from '@/components/CelebrationModal';
+import ShareModal from '@/components/share/ShareModal';
 import StreakChip from '@/components/StreakChip';
 import CountdownTimer from '@/components/CountdownTimer';
 import { Difficulty, StreakData } from '@/types';
@@ -17,9 +18,10 @@ interface RiddleData {
 
 function SolvePage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const dateParam = params.get('date') ?? getTodayUTC();
-  const difficulty = (params.get('difficulty') as Difficulty) ?? 'medium';
+  const searchParams = useSearchParams();
+  const { date } = useParams<{ date: string }>();
+  const dateParam = date ?? getTodayUTC();
+  const difficulty = (searchParams.get('difficulty') as Difficulty) ?? 'medium';
 
   const [riddle, setRiddle] = useState<RiddleData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,6 +34,7 @@ function SolvePage() {
   const [explanation, setExplanation] = useState('');
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [isSolved, setIsSolved] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const fetchRiddle = useCallback(async () => {
     setLoading(true); setError('');
@@ -202,10 +205,24 @@ function SolvePage() {
                   {explanation && (
                     <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.7 }}>{explanation}</p>
                   )}
-                  <button className="btn btn-ghost" onClick={() => setShowModal(true)} style={{ alignSelf: 'flex-start', marginTop: 4 }}>
-                    View solution details
-                  </button>
+                  <div className="flex items-center gap-4 mt-2">
+                    <button className="btn btn-ghost" onClick={() => setShowModal(true)}>
+                      View solution details
+                    </button>
+                    <button className="btn btn-primary" onClick={() => setShowShareModal(true)}>
+                      Share ↗
+                    </button>
+                  </div>
                 </motion.div>
+              )}
+              
+              {/* Share (Always visible) */}
+              {!isSolved && (
+                <div style={{ display: 'flex', marginTop: 12 }}>
+                  <button className="btn btn-ghost" onClick={() => setShowShareModal(true)} style={{ flex: 1, justifyContent: 'center' }}>
+                    Share ↗
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -255,6 +272,13 @@ function SolvePage() {
             answer={correctAnswer}
             streak={streak?.currentStreak ?? 0}
             onClose={() => setShowModal(false)}
+          />
+        )}
+        {showShareModal && riddle && (
+          <ShareModal
+            riddle={riddle}
+            date={dateParam}
+            onClose={() => setShowShareModal(false)}
           />
         )}
       </AnimatePresence>

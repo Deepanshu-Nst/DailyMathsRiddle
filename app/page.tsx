@@ -150,7 +150,7 @@ export default function HomePage() {
               {/* CTA */}
               <button
                 className="btn btn-primary"
-                onClick={() => router.push(`/solve?difficulty=${difficulty}&date=${today}`)}
+                onClick={() => router.push(`/riddle/${today}?difficulty=${difficulty}`)}
                 style={{ fontSize: 15, padding: '14px 28px' }}
               >
                 Begin ritual
