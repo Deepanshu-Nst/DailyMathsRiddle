@@ -227,5 +227,134 @@
       },
       "overall_score": 0
     }
+  },
+  {
+    "date": "2026-05-08",
+    "reason": "Rule Engine: The explanation does not explicitly state the answer.",
+    "timestamp": "2026-05-08T06:59:14.340Z",
+    "scoredRiddle": {
+      "riddle": {
+        "question": "There are three switches, but they are not labelled. Each switch corresponds to one of three light bulbs in a room. Each bulb is off to start with. You can turn the lights on and off as many times as you want, but you can only enter the room one time to observe the bulbs. How can you figure out which switch corresponds to which light bulb?",
+        "answer": "10 min",
+        "answerVariants": [
+          "a few minutes"
+        ],
+        "hint1": "Use the process of elimination to reduce possibilities",
+        "hint2": "Turn two switches on for 5 minutes, then turn one off before entering the room",
+        "explanation": "Turn two switches on for 5 minutes, then turn one off. Enter the room and observe. The hot bulb corresponds to the switch left on. The bulb that is off but warm corresponds to the switch that was just turned off. The remaining bulb corresponds to the switch that was never turned on.",
+        "difficulty": "easy",
+        "category": "Logic",
+        "version": "v1",
+        "generator_model": "llama-3.3-70b-versatile"
+      },
+      "validation": {
+        "is_valid": true,
+        "difficulty_match": true,
+        "correctness_confidence": 1,
+        "reasoning_depth_score": 8,
+        "clarity_score": 9,
+        "originality_score": 6,
+        "issues": [],
+        "final_score": 9
+      },
+      "overall_score": 0
+    }
+  },
+  {
+    "date": "2026-05-08",
+    "reason": "Rule Engine: The explanation does not explicitly state the answer.",
+    "timestamp": "2026-05-08T06:59:14.345Z",
+    "scoredRiddle": {
+      "riddle": {
+        "question": "A bat and a ball together cost $1.10. The bat costs $1.00 more than the ball. How much does the ball cost?",
+        "answer": "5 cents",
+        "answerVariants": [
+          "$0.05"
+        ],
+        "hint1": "Let's denote the cost of the ball as x",
+        "hint2": "The cost of the bat can be represented as x + $1.00",
+        "explanation": "If the ball costs x cents, then the bat costs x + $1.00. The sum of the costs is $1.10. So, x + (x + $1.00) = $1.10. Simplifying, 2x + $1.00 = $1.10. Subtract $1.00 from both sides: 2x = $0.10. Divide both sides by 2: x = $0.05.",
+        "difficulty": "easy",
+        "category": "Logic",
+        "version": "v1",
+        "generator_model": "llama-3.3-70b-versatile"
+      },
+      "validation": {
+        "is_valid": true,
+        "difficulty_match": true,
+        "correctness_confidence": 1,
+        "reasoning_depth_score": 2,
+        "clarity_score": 9,
+        "originality_score": 6,
+        "issues": [],
+        "final_score": 8
+      },
+      "overall_score": 0
+    }
+  },
+  {
+    "date": "2026-05-08",
+    "reason": "Rule Engine: The explanation does not explicitly state the answer.",
+    "timestamp": "2026-05-08T06:59:16.060Z",
+    "scoredRiddle": {
+      "riddle": {
+        "question": "There are three switches, but they are not labelled. Each switch corresponds to one of three light bulbs in a room. Each light bulb is either on or off. You can turn the switches on and off as many times as you want, but you can only enter the room one time to observe the bulbs. How can you figure out which switch corresponds to which light bulb?",
+        "answer": "Turn two switches on for 5 minutes, then turn one off. Enter the room and observe.",
+        "answerVariants": [
+          "Turn switch 1 on for 5 minutes, then turn it off. Turn switch 2 on and enter the room.",
+          "Use process of elimination to find the correct switches"
+        ],
+        "hint1": "Use the process of elimination to narrow down the possibilities.",
+        "hint2": "Think about how you can use the switches to create a unique situation for each bulb.",
+        "explanation": "Turn two switches on for 5 minutes to heat up the corresponding bulbs. Then, turn one switch off. Enter the room and observe the bulbs. The hot but off bulb corresponds to the switch that was turned off. The hot and on bulb corresponds to one of the switches that was left on. The cold and off bulb corresponds to the switch that was never turned on. By doing this, you can figure out which switch corresponds to which light bulb.",
+        "difficulty": "easy",
+        "category": "Logic",
+        "version": "v1",
+        "generator_model": "llama-3.3-70b-versatile"
+      },
+      "validation": {
+        "is_valid": true,
+        "difficulty_match": true,
+        "correctness_confidence": 1,
+        "reasoning_depth_score": 8,
+        "clarity_score": 9,
+        "originality_score": 6,
+        "issues": [],
+        "final_score": 8
+      },
+      "overall_score": 0
+    }
+  },
+  {
+    "date": "2026-05-08",
+    "reason": "Rule Engine: The explanation does not explicitly state the answer.",
+    "timestamp": "2026-05-08T06:59:23.868Z",
+    "scoredRiddle": {
+      "riddle": {
+        "question": "You have 3 switches, but they are not labelled. Each switch corresponds to one of three light bulbs in a room. Each light bulb is off to start with. You can turn the lights on and off as many times as you want, but you can only enter the room one time to observe the bulbs. How can you figure out which switch corresponds to which light bulb?",
+        "answer": "Turn switch 1 to on for 5 minutes, then turn it off. Turn switch 2 to on and immediately enter the room.",
+        "answerVariants": [
+          "Turn switch 1 on for a while, then turn it off. Turn switch 2 on and enter the room"
+        ],
+        "hint1": "You need to use the switches to create a distinguishable state for each bulb before entering the room.",
+        "hint2": "One approach is to use the switches to create a situation where one bulb is on, one is off but warm, and one is off and cold.",
+        "explanation": "Turn switch 1 to the 'on' position for 5 minutes. Then, turn it off. Now, turn switch 2 to the 'on' position and immediately enter the room. The bulb that is on is controlled by switch 2. The bulb that is off but warm is controlled by switch 1. The bulb that is off and cold is controlled by switch 3.",
+        "difficulty": "easy",
+        "category": "Logic",
+        "version": "v1",
+        "generator_model": "llama-3.3-70b-versatile"
+      },
+      "validation": {
+        "is_valid": true,
+        "difficulty_match": true,
+        "correctness_confidence": 1,
+        "reasoning_depth_score": 8,
+        "clarity_score": 9,
+        "originality_score": 6,
+        "issues": [],
+        "final_score": 8
+      },
+      "overall_score": 0
+    }
   }
 ]

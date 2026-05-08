@@ -1,11 +1,8 @@
 /**
- * Supabase Database type definitions.
+ * Supabase Database type definitions — Phase 1 + Phase 2.
  *
- * This is a minimal typed stub for the current schema.
- * Generate the full version with:
- *   npx supabase gen types typescript --project-id <your-project-id> > types/supabase.ts
- *
- * Docs: https://supabase.com/docs/guides/api/rest/generating-types
+ * Generate fresh types any time with:
+ *   npx supabase gen types typescript --project-id <project-id> > types/supabase.ts
  */
 export type Json =
   | string
@@ -18,6 +15,7 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      // ── Phase 1 ──────────────────────────────────────────────
       profiles: {
         Row: {
           id: string;
@@ -47,14 +45,142 @@ export type Database = {
           updated_at?: string;
         };
       };
+
+      // ── Phase 2 ──────────────────────────────────────────────
+      riddles: {
+        Row: {
+          id: string;
+          slug: string;
+          question: string;
+          answer: string;
+          answer_variants: string[];
+          hint1: string;
+          hint2: string;
+          explanation: string;
+          difficulty: 'easy' | 'medium' | 'hard';
+          category: string;
+          source_type: 'ai' | 'admin';
+          is_daily: boolean;
+          daily_date: string | null;
+          status: 'draft' | 'published';
+          created_by: string | null;
+          validation_score: number | null;
+          generator_model: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          question: string;
+          answer: string;
+          answer_variants?: string[];
+          hint1?: string;
+          hint2?: string;
+          explanation: string;
+          difficulty: 'easy' | 'medium' | 'hard';
+          category?: string;
+          source_type?: 'ai' | 'admin';
+          is_daily?: boolean;
+          daily_date?: string | null;
+          status?: 'draft' | 'published';
+          created_by?: string | null;
+          validation_score?: number | null;
+          generator_model?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          question?: string;
+          answer?: string;
+          answer_variants?: string[];
+          hint1?: string;
+          hint2?: string;
+          explanation?: string;
+          difficulty?: 'easy' | 'medium' | 'hard';
+          category?: string;
+          source_type?: 'ai' | 'admin';
+          is_daily?: boolean;
+          daily_date?: string | null;
+          status?: 'draft' | 'published';
+          created_by?: string | null;
+          validation_score?: number | null;
+          generator_model?: string | null;
+          created_at?: string;
+        };
+      };
+
+      user_attempts: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          riddle_id: string;
+          submitted_answer: string;
+          is_correct: boolean;
+          attempted_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          riddle_id: string;
+          submitted_answer: string;
+          is_correct: boolean;
+          attempted_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          riddle_id?: string;
+          submitted_answer?: string;
+          is_correct?: boolean;
+          attempted_at?: string;
+        };
+      };
+
+      generation_logs: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          session_id: string | null;
+          generated_riddle_id: string | null;
+          difficulty: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          session_id?: string | null;
+          generated_riddle_id?: string | null;
+          difficulty: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          session_id?: string | null;
+          generated_riddle_id?: string | null;
+          difficulty?: string;
+          created_at?: string;
+        };
+      };
     };
+
     Views: Record<string, never>;
+
     Functions: {
       is_admin: {
         Args: Record<string, never>;
         Returns: boolean;
       };
     };
+
     Enums: Record<string, never>;
   };
 };
+
+// ── Convenience row types ─────────────────────────────────────────
+export type DbRiddle = Database['public']['Tables']['riddles']['Row'];
+export type DbRiddleInsert = Database['public']['Tables']['riddles']['Insert'];
+export type DbUserAttempt = Database['public']['Tables']['user_attempts']['Row'];
+export type DbGenerationLog = Database['public']['Tables']['generation_logs']['Row'];
+export type DbProfile = Database['public']['Tables']['profiles']['Row'];
