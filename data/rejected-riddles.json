@@ -195,5 +195,37 @@
       },
       "overall_score": 0
     }
+  },
+  {
+    "date": "2026-05-08",
+    "reason": "Rule Engine: The explanation does not explicitly state the answer.",
+    "timestamp": "2026-05-08T06:46:13.518Z",
+    "scoredRiddle": {
+      "riddle": {
+        "question": "There are three switches, but they are not labelled. Each switch corresponds to one of three light bulbs in a room. Each light bulb is off to start with. You can turn the lights on and off as many times as you want, but you can only enter the room one time. How can you figure out which switch controls which light bulb?",
+        "answer": "Turn two switches on for 5 minutes, then turn one off. Enter the room and feel the bulbs. The hot but off bulb corresponds to the switch you turned off, the on bulb to the switch you left on, and the cold off bulb to the switch you never turned on.",
+        "answerVariants": [
+          "Turn two on for a while, then one off, and feel"
+        ],
+        "hint1": "Use the switches to create a difference in the light bulbs that you can detect even after turning them off.",
+        "hint2": "One of the switches should be turned on for a longer period than the others to create a noticeable difference.",
+        "explanation": "By turning two switches on for 5 minutes, the corresponding bulbs will heat up. Then by turning one off, we create a situation where one bulb is hot but off, one is on, and one is cold and off. When entering the room, feeling the bulbs allows us to identify which is which because the bulb that was recently turned off will still be warm, the one that's on is clearly associated with the switch left on, and the cold one is associated with the switch never turned on.",
+        "difficulty": "easy",
+        "category": "Logic",
+        "version": "v1",
+        "generator_model": "llama-3.3-70b-versatile"
+      },
+      "validation": {
+        "is_valid": true,
+        "difficulty_match": true,
+        "correctness_confidence": 1,
+        "reasoning_depth_score": 8,
+        "clarity_score": 9,
+        "originality_score": 6,
+        "issues": [],
+        "final_score": 8.2
+      },
+      "overall_score": 0
+    }
   }
 ]
