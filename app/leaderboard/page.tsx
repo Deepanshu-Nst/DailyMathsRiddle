@@ -63,16 +63,20 @@ export default function LeaderboardsPage() {
   const podiumTop3 = top3.length === 3 ? [top3[1], top3[0], top3[2]] : top3;
 
   return (
-    <Container className="py-12">
-      <motion.header variants={staggerContainer} initial="hidden" animate="visible" className="mb-10">
-        <motion.h1 variants={fadeUp} className="text-[28px] font-display text-text-1 tracking-tight mb-2">Global Rankings</motion.h1>
-        <motion.p variants={fadeUp} className="text-text-3 text-[14px] max-w-xl leading-relaxed">
-          Track the most dedicated problem solvers in the AdvaitAI community. 
-          Solve riddles daily to climb the ranks and earn your place in the Hall of Fame.
+    <Container wide className="py-12 lg:py-16">
+      <motion.header variants={staggerContainer} initial="hidden" animate="visible" className="mb-12">
+        <motion.p variants={fadeUp} className="font-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-text-4">
+          Prestige ladder
+        </motion.p>
+        <motion.h1 variants={fadeUp} className="font-display mt-3 text-balance text-[clamp(2rem,4vw,3rem)] leading-[1.05] text-text-1">
+          Global rankings
+        </motion.h1>
+        <motion.p variants={fadeUp} className="mt-4 max-w-xl text-[15px] leading-relaxed text-text-2">
+          The most disciplined minds on AdvaitAI — ranked by XP, weekly cadence, monthly surges, and streak heat.
         </motion.p>
       </motion.header>
 
-      <div className="flex items-center justify-between mb-8 border-b border-border">
+      <div className="mb-10 flex items-center justify-between border-b border-white/[0.08]">
         <Tabs 
           tabs={tabs} 
           activeTab={activeTab} 
@@ -100,12 +104,16 @@ export default function LeaderboardsPage() {
         >
           {/* Spotlight Top 3 (Podium) */}
           {podiumTop3.length > 0 && (
-            <div className="grid md:grid-cols-3 gap-6 items-end">
+            <div className="grid items-end gap-5 md:grid-cols-3 md:gap-6">
               {podiumTop3.map((entry, i) => {
-                // Because we reordered: index 0 -> rank 2, index 1 -> rank 1, index 2 -> rank 3
-                const rank = top3.length === 3 ? (i === 0 ? 2 : i === 1 ? 1 : 3) : (i + 1);
+                const rank = top3.length === 3 ? (i === 0 ? 2 : i === 1 ? 1 : 3) : i + 1;
                 return (
-                  <motion.div key={entry.id} variants={fadeUp}>
+                  <motion.div
+                    key={entry.id}
+                    variants={fadeUp}
+                    whileHover={{ y: -4 }}
+                    transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                  >
                     <SpotlightCard 
                       entry={entry} 
                       rank={rank} 
@@ -166,11 +174,11 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
   const isFirst = rank === 1;
   const isSecond = rank === 2;
 
-  const cardClasses = isFirst 
-    ? 'border-[#d4a017]/30 bg-white shadow-[0_0_40px_rgba(212,160,23,0.08)] z-10 scale-[1.08] -translate-y-4' 
+  const cardClasses = isFirst
+    ? 'z-10 scale-[1.06] -translate-y-3 border-primary/35 bg-gradient-to-b from-white/[0.08] to-black/40 shadow-[0_0_60px_rgba(244,162,58,0.18),inset_0_1px_0_rgba(255,255,255,0.08)]'
     : isSecond
-      ? 'border-border-subtle bg-bg-subtle shadow-sm scale-[0.98]'
-      : 'border-border-subtle bg-bg-subtle shadow-sm scale-[0.95] translate-y-2';
+      ? 'scale-[0.98] border-white/[0.1] bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.35)]'
+      : 'translate-y-2 scale-[0.95] border-white/[0.08] bg-white/[0.03] shadow-[0_12px_40px_rgba(0,0,0,0.3)]';
 
   const avatarSize = isFirst ? 'w-24 h-24' : isSecond ? 'w-16 h-16' : 'w-14 h-14';
   
@@ -182,7 +190,7 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
       >
         <div className="flex flex-col items-center text-center gap-4 w-full">
           <div className="relative mb-2">
-            <div className={`${avatarSize} rounded-full border-4 border-white shadow-sm overflow-hidden bg-white`}>
+            <div className={`${avatarSize} overflow-hidden rounded-full border-2 border-white/15 bg-black/40 shadow-[0_0_24px_rgba(0,0,0,0.4)]`}>
               {entry.avatar_url ? (
                 <img src={entry.avatar_url} alt={entry.username} className="w-full h-full object-cover" />
               ) : (
@@ -191,20 +199,27 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
                 </div>
               )}
             </div>
-            <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full shadow-sm flex items-center justify-center font-bold text-[13px] text-white ${
-              isFirst ? 'bg-gold border-2 border-white' : 
-              isSecond ? 'bg-silver border-2 border-white text-gray-800' : 
-              'bg-bronze border-2 border-white'
-            }`}>
+            <div
+              className={`absolute -bottom-3 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full text-[13px] font-bold text-white shadow-lg ${
+                isFirst
+                  ? 'border-2 border-amber-200/40 bg-gradient-to-br from-amber-300 to-amber-600 text-black'
+                  : isSecond
+                    ? 'border border-white/20 bg-gradient-to-br from-zinc-300 to-zinc-500 text-zinc-950'
+                    : 'border border-orange-200/20 bg-gradient-to-br from-amber-800 to-amber-950'
+              }`}
+            >
               {rank}
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5 items-center">
             {isAnonymous ? (
-              <h3 className={`font-semibold ${isFirst ? 'text-[18px] text-gray-900' : 'text-[15px] text-text-1'}`}>{entry.username}</h3>
+              <h3 className={`font-semibold ${isFirst ? 'text-[18px] text-text-1' : 'text-[15px] text-text-1'}`}>{entry.username}</h3>
             ) : (
-              <Link href={`/u/${entry.username}`} className={`font-semibold hover:text-primary transition-colors ${isFirst ? 'text-[18px] text-gray-900' : 'text-[15px] text-text-1'}`}>
+              <Link
+                href={`/u/${entry.username}`}
+                className={`font-semibold transition-colors hover:text-primary ${isFirst ? 'text-[18px] text-text-1' : 'text-[15px] text-text-1'}`}
+              >
                 {entry.username}
               </Link>
             )}

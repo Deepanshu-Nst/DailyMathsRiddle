@@ -1,19 +1,27 @@
 'use client';
-import { DailySolvedEntry } from '@/types';
 
-interface Props { solvedDates: DailySolvedEntry[]; }
+import { DailySolvedEntry } from '@/types';
+import { addOfficialCalendarDays, getOfficialDailyDate } from '@/lib/timezone';
+
+interface Props {
+  solvedDates: DailySolvedEntry[];
+}
 
 export default function ProgressCalendar({ solvedDates }: Props) {
-  const today = new Date().toISOString().slice(0, 10);
-  const days: { dateStr: string; entry?: DailySolvedEntry }[] = [];
+  const today = getOfficialDailyDate();
+  const byDate = new Map(solvedDates.map((e) => [e.date, e]));
 
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date();
-    d.setUTCDate(d.getUTCDate() - i);
-    const dateStr = d.toISOString().slice(0, 10);
-    const entry = solvedDates.find(e => e.date === dateStr);
-    days.push({ dateStr, entry });
+  const rows: { dateStr: string; entry?: DailySolvedEntry }[][] = [];
+  let row: { dateStr: string; entry?: DailySolvedEntry }[] = [];
+  for (let i = 0; i < 30; i++) {
+    const dateStr = addOfficialCalendarDays(today, -(29 - i));
+    row.push({ dateStr, entry: byDate.get(dateStr) });
+    if (row.length === 7) {
+      rows.push(row);
+      row = [];
+    }
   }
+  if (row.length) rows.push(row);
 
   const cellClass = (d: { dateStr: string; entry?: DailySolvedEntry }) => {
     const classes = ['cal-cell'];
@@ -23,22 +31,30 @@ export default function ProgressCalendar({ solvedDates }: Props) {
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
-        {days.map(d => (
-          <div key={d.dateStr} className={cellClass(d)} title={d.dateStr} />
-        ))}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-        {(['easy', 'medium', 'hard'] as const).map(diff => (
-          <div key={diff} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <div className={`cal-cell solved-${diff}`} style={{ width: 10, height: 10, borderRadius: 2 }} />
-            <span style={{ fontSize: 12, color: 'var(--text-3)', textTransform: 'capitalize' }}>{diff}</span>
+    <div className="space-y-4">
+      <div className="flex flex-col gap-1.5">
+        {rows.map((week, wi) => (
+          <div key={wi} className="flex gap-1.5">
+            {week.map((d) => (
+              <div
+                key={d.dateStr}
+                className={cellClass(d)}
+                title={`${d.dateStr}${d.entry ? ` · ${d.entry.difficulty}` : ''}`}
+              />
+            ))}
           </div>
         ))}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+      </div>
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/[0.06] pt-4">
+        {(['easy', 'medium', 'hard'] as const).map((diff) => (
+          <div key={diff} className="flex items-center gap-2">
+            <div className={`cal-cell solved-${diff}`} style={{ width: 10, height: 10, borderRadius: 2 }} />
+            <span className="text-[11px] capitalize text-text-3">{diff}</span>
+          </div>
+        ))}
+        <div className="flex items-center gap-2">
           <div className="cal-cell" style={{ width: 10, height: 10, borderRadius: 2 }} />
-          <span style={{ fontSize: 12, color: 'var(--text-4)' }}>Missed</span>
+          <span className="text-[11px] text-text-4">Rest</span>
         </div>
       </div>
     </div>

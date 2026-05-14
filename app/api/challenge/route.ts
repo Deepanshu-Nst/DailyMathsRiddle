@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTodayUTC } from '@/lib/timezone';
+import { getOfficialDailyDate } from '@/lib/timezone';
 import { getActiveRiddleForServer } from '@/lib/riddles/daily';
 import { getRiddleShareUrl } from '@/lib/share/getCanonicalUrl';
 import { createClient } from '@/utils/supabase/server';
@@ -16,7 +16,7 @@ export const maxDuration = 300;
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const difficulty = searchParams.get('difficulty') ?? 'medium';
-  const date = searchParams.get('date') ?? getTodayUTC();
+  const date = searchParams.get('date') ?? getOfficialDailyDate();
 
   try {
     const riddle = await getActiveRiddleForServer(date, difficulty);
@@ -28,15 +28,16 @@ export async function GET(req: NextRequest) {
     let explanation: string | null = null;
 
     if (user && riddle.riddleId) {
-      const { data: attempts } = await supabase
-        .from('attempt_statuses')
-        .select('status, submitted_answer')
+      const { data: priorSolve } = await supabase
+        .from('user_attempts')
+        .select('id')
         .eq('user_id', user.id)
         .eq('riddle_id', riddle.riddleId)
         .eq('status', 'solved')
-        .single();
-      
-      if (attempts) {
+        .limit(1)
+        .maybeSingle();
+
+      if (priorSolve) {
         isSolved = true;
         solvedAnswer = riddle.answer;
         explanation = riddle.explanation;

@@ -55,20 +55,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           ))}
         </nav>
 
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 px-4 py-2 text-xs font-bold text-success uppercase tracking-widest">
-            <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-            Operational
-          </div>
+        <div className="border-t border-border p-4">
+          <p className="px-4 py-2 text-xs font-medium text-text-3">Admin</p>
         </div>
       </Sidebar>
 
       <div className="flex-1 flex flex-col">
         <Topbar className="px-8 border-b border-border">
           <div className="flex items-center justify-between w-full">
-            <h1 className="text-sm font-bold text-text-3 uppercase tracking-widest">
-              Operations Center
-            </h1>
+            <h1 className="text-sm font-semibold text-text-2">Admin</h1>
             <div className="flex items-center gap-6">
               <button className="text-text-3 hover:text-text-1 transition-colors">
                 <Bell size={20} />

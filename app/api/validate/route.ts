@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getTodayUTC } from '@/lib/timezone';
+import { getOfficialDailyDate } from '@/lib/timezone';
 import { getActiveRiddleForServer } from '@/lib/riddles/daily';
 import { validateAnswer } from '@/lib/answer-validator';
 import { createClient } from '@/utils/supabase/server';
-import { insertAttempt } from '@/lib/riddles/queries';
+import { insertAttempt, hasUserSolvedRiddle } from '@/lib/riddles/queries';
 import { processSolve } from '@/lib/gamification';
 import type { Difficulty } from '@/types';
 
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       userAnswer, difficulty, riddleId,
       solveStartedAt, attemptCount, hintsUsed,
     } = parsed;
-    const date = parsed.date ?? getTodayUTC();
+    const date = parsed.date ?? getOfficialDailyDate();
 
     // Fetch riddle with answer server-side
     const riddle = await getActiveRiddleForServer(date, difficulty);
@@ -47,8 +47,13 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     const resolvedRiddleId = riddleId ?? riddle.riddleId ?? null;
 
-    // Record attempt in DB
-    if (resolvedRiddleId) {
+    let alreadyCompleted = false;
+    if (isCorrect && user && resolvedRiddleId) {
+      alreadyCompleted = await hasUserSolvedRiddle(user.id, resolvedRiddleId);
+    }
+
+    // Record attempt in DB (skip a duplicate "solved" row for the same riddle)
+    if (resolvedRiddleId && !(isCorrect && alreadyCompleted)) {
       await insertAttempt({
         userId: user?.id ?? null,
         riddleId: resolvedRiddleId,
@@ -58,9 +63,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Gamification — only for authenticated users on correct solves
+    // Gamification — only for authenticated users on first correct solve of this riddle
     let solveResult = null;
-    if (isCorrect && user) {
+    if (isCorrect && user && !alreadyCompleted) {
       solveResult = await processSolve({
         userId: user.id,
         difficulty: difficulty as Difficulty,
@@ -72,19 +77,30 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    let snapshotStreak: number | null = null;
+    if (isCorrect && user && alreadyCompleted) {
+      const { data: stats } = await supabase
+        .from('user_stats')
+        .select('current_streak')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      snapshotStreak = (stats as { current_streak: number } | null)?.current_streak ?? null;
+    }
+
     return NextResponse.json({
       isCorrect,
+      alreadyCompleted,
       message: isCorrect
         ? '🎉 Correct! Well done.'
         : '❌ Not quite. Try again or use a hint.',
       explanation: isCorrect ? riddle.explanation : null,
       answer: isCorrect ? riddle.answer : null,
-      // Gamification payload — null for anon or incorrect
-      xpAwarded: solveResult?.xpAwarded ?? null,
-      newStreak: solveResult?.newStreak ?? null,
+      // Gamification payload — null for anon, incorrect, or repeat solve
+      xpAwarded: alreadyCompleted ? 0 : (solveResult?.xpAwarded ?? null),
+      newStreak: alreadyCompleted ? snapshotStreak : (solveResult?.newStreak ?? null),
       wasStreakReset: solveResult?.wasStreakReset ?? null,
       isStreakMilestone: solveResult?.isStreakMilestone ?? null,
-      bonuses: solveResult?.bonuses ?? null,
+      bonuses: alreadyCompleted ? [] : (solveResult?.bonuses ?? null),
     });
   } catch (e: unknown) {
     return NextResponse.json({ error: 'Invalid request', detail: String(e) }, { status: 400 });

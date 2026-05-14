@@ -4,85 +4,107 @@ import { createClient } from '@/utils/supabase/server';
 import ProfileContent from '@/components/profile/ProfileContent';
 import { traceSocialAction } from '@/lib/analytics/pipelineEvents';
 import type { DbProfile } from '@/types/supabase';
+import { toOfficialDateFromInstant } from '@/lib/timezone';
+import type { DailySolvedEntry } from '@/types';
 
 interface Props {
-  params: { username: string };
+  params: Promise<{ username: string }>;
 }
 
-/**
- * Public Profile Page: /u/[username]
- * Fetches all necessary data server-side for SEO and performance.
- */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { username } = await params;
   const supabase = await createClient();
-  const { data: profile } = await supabase
+  const { data: profile } = (await supabase
     .from('profiles')
     .select('username, full_name')
-    .eq('username', params.username)
-    .single() as { data: Pick<DbProfile, 'username' | 'full_name'> | null };
+    .eq('username', username)
+    .single()) as { data: Pick<DbProfile, 'username' | 'full_name'> | null };
 
   if (!profile) return { title: 'User Not Found | AdvaitAI' };
 
   const name = profile.full_name || profile.username;
   return {
-    title: `${name} (@${profile.username}) | AdvaitAI Math Riddle`,
-    description: `Check out ${name}'s progress, streak, and solved riddles on AdvaitAI.`,
+    title: `${name} (@${profile.username}) | AdvaitAI`,
+    description: `${name}'s public AdvaitAI stats — streak, XP, and recent activity.`,
     openGraph: {
-      title: `${name}'s Intelligence Ritual`,
-      description: `Solving daily math challenges and building a mind for mastery.`,
+      title: `${name} (@${profile.username})`,
+      description: 'Public profile · AdvaitAI',
       type: 'profile',
-      username: profile.username || undefined,
     },
   };
 }
 
 export default async function UserProfilePage({ params }: Props) {
+  const { username } = await params;
   const supabase = await createClient();
 
-  // 1. Fetch Profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('username', params.username)
-    .single() as { data: DbProfile | null };
+  const { data: profile } = (await supabase.from('profiles').select('*').eq('username', username).single()) as {
+    data: DbProfile | null;
+  };
 
   if (!profile) notFound();
 
-  traceSocialAction('profile_view', { username: params.username, userId: profile.id });
+  traceSocialAction('profile_view', { username, userId: profile.id });
 
-  // 2. Fetch User Stats
-  const { data: stats } = await supabase
+  const { data: stats } = await supabase.from('user_stats').select('*').eq('user_id', profile.id).single();
+
+  const myXp = (stats as { total_xp?: number } | null)?.total_xp ?? 0;
+  const { count: higherXp } = await supabase
     .from('user_stats')
-    .select('*')
-    .eq('user_id', profile.id)
-    .single();
+    .select('*', { head: true, count: 'exact' })
+    .gt('total_xp', myXp);
+  const xpRank = (higherXp ?? 0) + 1;
 
-  // 3. Fetch Solved Dates (for heatmap)
-  const { data: events } = await supabase
-    .from('streak_events')
-    .select('solved_date')
-    .eq('user_id', profile.id)
-    .order('solved_date', { ascending: false })
-    .limit(100) as { data: Array<{ solved_date: string }> | null };
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 30);
 
-  // 4. Fetch Achievements
+  const { data: attempts } = await supabase
+    .from('user_attempts')
+    .select(
+      `
+      attempted_at,
+      riddles ( difficulty )
+    `,
+    )
+    .eq('user_id', profile.id)
+    .eq('status', 'solved')
+    .gte('attempted_at', thirtyDaysAgo.toISOString())
+    .order('attempted_at', { ascending: false });
+
+  const activityMap = new Map<string, DailySolvedEntry>();
+  if (attempts?.length) {
+    attempts.forEach((attempt: { attempted_at: string; riddles: { difficulty: string } | null }) => {
+      const dateStr = toOfficialDateFromInstant(attempt.attempted_at);
+      if (!activityMap.has(dateStr)) {
+        activityMap.set(dateStr, {
+          date: dateStr,
+          difficulty: (attempt.riddles?.difficulty as DailySolvedEntry['difficulty']) || 'medium',
+          hintsUsed: 0,
+        });
+      }
+    });
+  }
+
   const { data: userAchievements } = await supabase
     .from('user_achievements')
-    .select(`
+    .select(
+      `
       unlocked_at,
       achievements (*)
-    `)
+    `,
+    )
     .eq('user_id', profile.id);
 
   return (
     <ProfileContent
-      profile={profile as any}
+      profile={profile as DbProfile}
       stats={stats as any}
-      solvedDates={(events || []).map(e => e.solved_date)}
+      activity={Array.from(activityMap.values())}
       achievements={(userAchievements || []).map((ua: any) => ({
         ...ua.achievements,
         unlocked_at: ua.unlocked_at,
       }))}
+      xpRank={stats ? xpRank : null}
     />
   );
 }

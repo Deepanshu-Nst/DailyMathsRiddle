@@ -12,9 +12,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = 'btn';
 
     const variantStyles = {
-      primary: 'bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-[0_1px_2px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.12)]',
-      secondary: 'bg-bg-subtle text-text-1 border-border hover:bg-surface-hover active:bg-bg-muted',
-      ghost: 'bg-transparent text-text-2 hover:text-text-1 hover:bg-bg-subtle',
+      primary: 'bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-[0_1px_0_rgba(255,255,255,0.12)_inset,0_12px_40px_rgba(244,162,58,0.18)]',
+      secondary: 'bg-white/[0.05] text-text-1 border border-white/[0.1] hover:bg-white/[0.08] active:bg-white/[0.06]',
+      ghost: 'bg-transparent text-text-2 hover:text-text-1 hover:bg-white/[0.04]',
       danger: 'bg-error text-white hover:bg-red-600 shadow-[0_1px_2px_rgba(0,0,0,0.06)]',
       success: 'bg-success text-white hover:bg-green-600 shadow-[0_1px_2px_rgba(0,0,0,0.06)]',
     };

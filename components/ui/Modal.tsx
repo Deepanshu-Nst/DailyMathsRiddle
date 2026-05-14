@@ -39,7 +39,7 @@ export const Modal: React.FC<ModalProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/30 backdrop-blur-[6px]"
+            className="absolute inset-0 bg-black/60 backdrop-blur-md"
           />
 
           {/* Panel */}
@@ -53,22 +53,22 @@ export const Modal: React.FC<ModalProps> = ({
               stiffness: 280,
             }}
             className={[
-              'relative w-full bg-white rounded-xl overflow-hidden',
-              'border border-border',
-              'shadow-[0_24px_48px_-12px_rgba(0,0,0,0.12),0_8px_16px_-6px_rgba(0,0,0,0.06)]',
+              'relative w-full overflow-hidden rounded-xl border border-white/[0.1]',
+              'bg-[linear-gradient(180deg,rgba(22,22,28,0.98)_0%,rgba(10,10,14,0.98)_100%)]',
+              'shadow-[0_24px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)]',
               sizeMap[size],
               className,
             ].filter(Boolean).join(' ')}
           >
             {/* Header */}
             {title && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <h3 className="text-[15px] font-semibold text-text-1 tracking-tight">
+              <div className="flex items-center justify-between border-b border-white/[0.08] px-6 py-4">
+                <h3 className="text-[15px] font-semibold tracking-tight text-text-1">
                   {title}
                 </h3>
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-lg text-text-3 hover:text-text-1 hover:bg-bg-subtle transition-colors"
+                  className="rounded-lg p-1.5 text-text-3 transition-colors hover:bg-white/[0.06] hover:text-text-1"
                 >
                   <X size={18} />
                 </button>

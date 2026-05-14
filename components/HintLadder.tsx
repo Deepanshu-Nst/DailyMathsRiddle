@@ -10,10 +10,17 @@ interface Props {
   hint1: string;
   hint2: string;
   disabled?: boolean;
+  /** Number of hints currently revealed (0–2). Used for server-side scoring. */
+  onLevelChange?: (level: number) => void;
 }
 
-export default function HintLadder({ hint1, hint2, disabled }: Props) {
+export default function HintLadder({ hint1, hint2, disabled, onLevelChange }: Props) {
   const [level, setLevel] = useState(0);
+
+  const setLevelTracked = (next: number) => {
+    setLevel(next);
+    onLevelChange?.(next);
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -22,7 +29,7 @@ export default function HintLadder({ hint1, hint2, disabled }: Props) {
         <Button
           variant={level === 1 ? 'secondary' : 'ghost'}
           size="sm"
-          onClick={() => setLevel(level === 1 ? 0 : 1)}
+          onClick={() => setLevelTracked(level === 1 ? 0 : 1)}
           disabled={disabled}
           className="gap-2"
         >
@@ -35,7 +42,7 @@ export default function HintLadder({ hint1, hint2, disabled }: Props) {
           <Button
             variant={level === 2 ? 'secondary' : 'ghost'}
             size="sm"
-            onClick={() => setLevel(level === 2 ? 0 : 2)}
+            onClick={() => setLevelTracked(level === 2 ? 0 : 2)}
             disabled={disabled || level < 1}
             className="gap-2"
           >
@@ -55,7 +62,7 @@ export default function HintLadder({ hint1, hint2, disabled }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.2 }}
-            className="p-4 bg-bg-subtle border border-border rounded-xl flex flex-col gap-3 shadow-sm shadow-black/5"
+            className="flex flex-col gap-3 border border-white/[0.08] bg-black/30 p-4 shadow-inner shadow-black/40"
           >
             <div className="flex items-center gap-2">
               <Badge variant="warning" size="sm">Level {level} Hint</Badge>

@@ -1,7 +1,7 @@
 import React from 'react';
 
-export const Container: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
-  <div className={['max-w-[1120px] mx-auto px-5 sm:px-6 lg:px-8', className].filter(Boolean).join(' ')}>
+export const Container: React.FC<{ children: React.ReactNode; className?: string; wide?: boolean }> = ({ children, className, wide }) => (
+  <div className={[(wide ? 'max-w-[min(1400px,100%)]' : 'max-w-[min(1180px,100%)]'), 'mx-auto px-5 sm:px-6 lg:px-8', className].filter(Boolean).join(' ')}>
     {children}
   </div>
 );
@@ -17,7 +17,7 @@ export const Sidebar: React.FC<{ children: React.ReactNode; className?: string }
 
 export const Topbar: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
   <header className={[
-    'h-14 border-b border-border bg-white/80 backdrop-blur-md flex items-center sticky top-0 z-40',
+    'h-14 border-b border-white/[0.06] bg-[rgba(8,8,10,0.72)] backdrop-blur-xl flex items-center sticky top-0 z-40',
     className,
   ].filter(Boolean).join(' ')}>
     {children}

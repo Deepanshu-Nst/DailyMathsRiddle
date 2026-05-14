@@ -92,12 +92,18 @@ export function generateRiddleImage(input: ImageInput): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#050505;stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:#141416;stop-opacity:1"/>
+      <stop offset="0%" style="stop-color:#030303;stop-opacity:1"/>
+      <stop offset="55%" style="stop-color:#0c0c10;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#111116;stop-opacity:1"/>
     </linearGradient>
+    <radialGradient id="heroGlow" cx="50%" cy="42%" r="55%">
+      <stop offset="0%" style="stop-color:rgba(244,162,58,0.14);stop-opacity:1"/>
+      <stop offset="45%" style="stop-color:rgba(96,165,250,0.06);stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:rgba(0,0,0,0);stop-opacity:1"/>
+    </radialGradient>
     <linearGradient id="frameGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:rgba(255,255,255,0.02);stop-opacity:1"/>
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.14);stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.03);stop-opacity:1"/>
     </linearGradient>
     <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur stdDeviation="30" result="blur" />
@@ -107,9 +113,10 @@ export function generateRiddleImage(input: ImageInput): string {
 
   <!-- Background -->
   <rect width="1080" height="1080" fill="url(#bg)"/>
+  <rect width="1080" height="1080" fill="url(#heroGlow)"/>
 
   <!-- Subtle radial glow behind text -->
-  <circle cx="540" cy="520" r="300" fill="rgba(255,255,255,0.02)" filter="url(#glow)"/>
+  <circle cx="540" cy="520" r="300" fill="rgba(255,255,255,0.025)" filter="url(#glow)"/>
 
   <!-- Grid dots -->
   ${dots.join('\n  ')}

@@ -1,25 +1,36 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { getSecondsUntilMidnightLocal, formatCountdown } from '@/lib/timezone';
-import { Timer } from 'lucide-react';
 
-export default function CountdownTimer() {
+import { useEffect, useState } from 'react';
+import { formatCountdown, getOfficialTimezoneShort, getSecondsUntilOfficialMidnight } from '@/lib/timezone';
+
+export default function CountdownTimer({ minimal }: { minimal?: boolean }) {
   const [mounted, setMounted] = useState(false);
   const [secs, setSecs] = useState(0);
+  const tz = getOfficialTimezoneShort();
 
   useEffect(() => {
-    setSecs(getSecondsUntilMidnightLocal());
+    setSecs(getSecondsUntilOfficialMidnight());
     setMounted(true);
-    const id = setInterval(() => setSecs(getSecondsUntilMidnightLocal()), 1000);
+    const id = setInterval(() => setSecs(getSecondsUntilOfficialMidnight()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  return (
-    <div className="flex items-center gap-2.5">
-      <Timer size={14} className="text-text-4" />
-      <span className="label text-[10px]">Next Riddle</span>
+  if (minimal) {
+    return (
       <span
-        className="font-mono text-sm font-bold text-text-1 tracking-wider"
+        className="font-mono text-sm font-semibold tracking-[0.08em] text-text-1"
+        suppressHydrationWarning
+      >
+        {mounted ? formatCountdown(secs) : '--:--:--'}
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2.5">
+      <span className="label text-[10px] text-text-4">Next reset · {tz}</span>
+      <span
+        className="font-mono text-sm font-semibold tracking-[0.08em] text-text-1"
         suppressHydrationWarning
       >
         {mounted ? formatCountdown(secs) : '--:--:--'}

@@ -215,6 +215,28 @@ export async function countTodayGenerations(
 }
 
 /**
+ * True if this user already has a successful solve recorded for the riddle.
+ * Used server-side to prevent duplicate XP / stats increments.
+ */
+export async function hasUserSolvedRiddle(userId: string, riddleId: string): Promise<boolean> {
+  try {
+    const { createServiceClient } = await import('@/utils/supabase/server');
+    const supabase = (await createServiceClient()) as any;
+    const { data } = await supabase
+      .from('user_attempts')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('riddle_id', riddleId)
+      .eq('status', 'solved')
+      .limit(1)
+      .maybeSingle();
+    return !!data;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Records an answer attempt.
  * Non-authenticated users can submit with user_id = null.
  */

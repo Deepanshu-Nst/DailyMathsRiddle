@@ -25,7 +25,6 @@ export default function Header({ user, profile }: HeaderProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [showUsernameModal, setShowUsernameModal] = useState(!!user && !profile?.username);
 
-  // Fallback to profile prop if session is not yet loaded
   const displayStreak = session?.streak?.currentStreak ?? profile?.streak_count ?? 0;
 
   async function handleSignIn() {

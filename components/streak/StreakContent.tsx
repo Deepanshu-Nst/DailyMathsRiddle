@@ -6,7 +6,7 @@ import ProgressCalendar from '@/components/ProgressCalendar';
 import CountdownTimer from '@/components/CountdownTimer';
 import StreakChip from '@/components/StreakChip';
 import type { UserStats } from '@/types/gamification';
-import { getTodayUTC } from '@/lib/timezone';
+import { getOfficialDailyDate } from '@/lib/timezone';
 
 export default function StreakContent({
   userStats,
@@ -16,12 +16,12 @@ export default function StreakContent({
   solvedDates: string[];
 }) {
   const router = useRouter();
-  const today = getTodayUTC();
+  const today = getOfficialDailyDate();
 
   const currentStreak = userStats?.current_streak ?? 0;
   const bestStreak = userStats?.best_streak ?? 0;
   const totalSolved = userStats?.riddles_solved ?? 0;
-  const isSolved = userStats?.last_solved_date === today;
+  const isSolved = String(userStats?.last_solved_date ?? '').slice(0, 10) === today;
   const pct = bestStreak > 0
     ? Math.min(100, Math.round((currentStreak / bestStreak) * 100))
     : 0;

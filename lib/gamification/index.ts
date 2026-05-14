@@ -9,6 +9,7 @@
 
 import type { Difficulty } from '@/types';
 import type { SolveResult } from '@/types/gamification';
+import { getOfficialDailyDate } from '@/lib/timezone';
 import { processStreak } from './streak';
 import { calculateXP } from './xp';
 
@@ -21,13 +22,13 @@ export interface ProcessSolveOpts {
   /** Total number of answer submissions (including this final correct one). */
   attemptCount: number;
   hintsUsed: number;
-  /** UTC date string e.g. "2025-05-14". Defaults to today. */
+  /** Official calendar date (NEXT_PUBLIC_DAILY_TIMEZONE, default IST). */
   solvedDate?: string;
 }
 
 export async function processSolve(opts: ProcessSolveOpts): Promise<SolveResult> {
   const { userId, difficulty, riddleId, solveStartedAt, attemptCount, hintsUsed } = opts;
-  const solvedDate = opts.solvedDate ?? new Date().toISOString().slice(0, 10);
+  const solvedDate = opts.solvedDate ?? getOfficialDailyDate();
 
   // Calculate solve duration
   let solveTimeSeconds: number | null = null;

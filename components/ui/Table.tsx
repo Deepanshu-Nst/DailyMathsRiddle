@@ -15,19 +15,19 @@ export const Table: React.FC<TableProps> = ({ children, className, ...props }) =
 };
 
 export const TableHeader: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({ children, className, ...props }) => (
-  <thead className={['border-b border-border bg-bg-subtle/70', className].filter(Boolean).join(' ')} {...props}>
+  <thead className={['border-b border-white/[0.08] bg-white/[0.03]', className].filter(Boolean).join(' ')} {...props}>
     {children}
   </thead>
 );
 
 export const TableBody: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({ children, className, ...props }) => (
-  <tbody className={['divide-y divide-border-subtle', className].filter(Boolean).join(' ')} {...props}>{children}</tbody>
+  <tbody className={['divide-y divide-white/[0.06]', className].filter(Boolean).join(' ')} {...props}>{children}</tbody>
 );
 
 export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement> & { hover?: boolean }> = ({ children, className, hover = true, ...props }) => (
   <tr className={[
     'transition-colors',
-    hover ? 'hover:bg-bg-subtle/60' : '',
+    hover ? 'hover:bg-white/[0.04]' : '',
     className,
   ].filter(Boolean).join(' ')} {...props}>
     {children}

@@ -56,7 +56,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className
             {isActive && (
               <motion.div
                 layoutId="tab-pill"
-                className="absolute inset-0 bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] border border-border-subtle"
+                className="absolute inset-0 rounded-lg border border-white/[0.12] bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
                 transition={{ type: 'spring', damping: 30, stiffness: 400 }}
               />
             )}

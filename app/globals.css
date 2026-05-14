@@ -1,97 +1,84 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
-/* ══════════════════════════════════════════════════════════════
-   AdvaitAI — Premium Design System (Tailwind v4)
-
-   Inspired by: Linear, Stripe, Arc, Raycast
-   Aesthetic: calm density, intelligent restraint, physical light
-   ══════════════════════════════════════════════════════════════ */
+/* AdvaitAI — production UI tokens (Tailwind v4). Restrained, dark, high legibility. */
 
 @theme {
-  /* ── Brand / Accent ──────────────────────────────────────── */
-  --color-primary: #ffa116;
-  --color-primary-hover: #f59b0e;
-  --color-primary-active: #e08c00;
-  --color-primary-subtle: #fff8ed;
+  /* Accent — warm signal in a cool void */
+  --color-primary: #f4a23a;
+  --color-primary-hover: #ffb24d;
+  --color-primary-active: #d88922;
+  --color-primary-glow: rgba(244, 162, 58, 0.35);
 
-  /* ── Backgrounds ─────────────────────────────────────────── */
-  --color-bg: #ffffff;
-  --color-bg-subtle: #f8f9fb;
-  --color-bg-muted: #f1f3f5;
-  --color-surface: #ffffff;
-  --color-surface-hover: #f5f6f8;
-  --color-surface-raised: #ffffff;
+  /* Canvas */
+  --color-bg: #050506;
+  --color-bg-subtle: #0a0a0d;
+  --color-bg-muted: #101014;
+  --color-surface: rgba(255, 255, 255, 0.035);
+  --color-surface-hover: rgba(255, 255, 255, 0.055);
+  --color-surface-raised: rgba(18, 18, 22, 0.92);
 
-  /* ── Borders ─────────────────────────────────────────────── */
-  --color-border: #e8e8ec;
-  --color-border-dark: #d4d4d8;
-  --color-border-subtle: #f0f0f3;
+  /* Borders & glass */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-dark: rgba(255, 255, 255, 0.14);
+  --color-border-subtle: rgba(255, 255, 255, 0.04);
 
-  /* ── Text Hierarchy ──────────────────────────────────────── */
-  --color-text-1: #1a1a1a;
-  --color-text-2: #52525b;
-  --color-text-3: #94949e;
-  --color-text-4: #c4c4cc;
+  /* Text */
+  --color-text-1: #f4f4f5;
+  --color-text-2: #a1a1aa;
+  --color-text-3: #71717a;
+  --color-text-4: #52525b;
 
-  /* ── Semantic: Success ───────────────────────────────────── */
-  --color-success: #22c55e;
-  --color-success-bg: #ecfdf5;
+  --color-success: #34d399;
+  --color-success-bg: rgba(52, 211, 153, 0.08);
 
-  /* ── Semantic: Error ─────────────────────────────────────── */
-  --color-error: #ef4444;
-  --color-error-bg: #fef2f2;
+  --color-error: #f87171;
+  --color-error-bg: rgba(248, 113, 113, 0.08);
 
-  /* ── Semantic: Info ──────────────────────────────────────── */
-  --color-info: #3b82f6;
-  --color-info-bg: #eff6ff;
+  --color-info: #60a5fa;
+  --color-info-bg: rgba(96, 165, 250, 0.08);
 
-  /* ── Semantic: Warning ───────────────────────────────────── */
-  --color-warning: #f59e0b;
-  --color-warning-bg: #fffbeb;
+  --color-warning: #fbbf24;
+  --color-warning-bg: rgba(251, 191, 36, 0.08);
 
-  /* ── Gold (Rank 1 / Achievement) ─────────────────────────── */
-  --color-gold: #d4a017;
-  --color-gold-bg: #fdf8e8;
-  --color-silver: #9ca3af;
-  --color-bronze: #c2855a;
+  --color-gold: #e8c547;
+  --color-gold-bg: rgba(232, 197, 71, 0.1);
+  --color-silver: #c4c4cc;
+  --color-bronze: #c97a4a;
 
-  /* ── Font Family ─────────────────────────────────────────── */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
-  --font-display: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
 }
 
-
-/* ══════════════════════════════════════════════════════════════
-   Base Layer
-   ══════════════════════════════════════════════════════════════ */
 
 @layer base {
   html {
     scroll-behavior: smooth;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    color-scheme: dark;
   }
 
   body {
     font-family: var(--font-sans);
-    background-color: var(--color-bg-subtle);
+    background-color: var(--color-bg);
+    background-image: radial-gradient(900px 500px at 50% -20%, rgba(255, 255, 255, 0.04), transparent 60%);
     color: var(--color-text-1);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    line-height: 1.6;
-    letter-spacing: -0.011em;
+    line-height: 1.55;
+    letter-spacing: -0.013em;
   }
 
   ::selection {
-    background: rgba(255, 161, 22, 0.15);
+    background: rgba(244, 162, 58, 0.22);
     color: var(--color-text-1);
   }
 
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
   }
 
   ::-webkit-scrollbar-track {
@@ -99,58 +86,59 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--color-border-dark);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 10px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-text-4);
+    background: rgba(255, 255, 255, 0.2);
   }
 }
 
 
-/* ══════════════════════════════════════════════════════════════
-   Components Layer — Premium base styles
-   
-   Inside @layer so Tailwind utilities always win.
-   ══════════════════════════════════════════════════════════════ */
-
 @layer components {
 
-  /* ── Card ────────────────────────────────────────────────── */
   .card {
-    background-color: var(--color-surface);
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
     border: 1px solid var(--color-border);
-    border-radius: 10px;
+    border-radius: 14px;
     box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.04),
-      0 1px 3px rgba(0, 0, 0, 0.02);
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 24px 80px rgba(0, 0, 0, 0.45);
     transition:
-      box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-      border-color 0.2s ease,
-      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.25s ease,
+      transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .card-hoverable:hover {
     box-shadow:
-      0 4px 12px rgba(0, 0, 0, 0.06),
-      0 1px 3px rgba(0, 0, 0, 0.04);
+      0 1px 0 rgba(255, 255, 255, 0.08) inset,
+      0 32px 100px rgba(0, 0, 0, 0.55),
+      0 0 0 1px rgba(244, 162, 58, 0.12);
     border-color: var(--color-border-dark);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
   }
 
   .card-elevated {
     box-shadow:
-      0 2px 8px rgba(0, 0, 0, 0.05),
-      0 1px 3px rgba(0, 0, 0, 0.03);
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 20px 60px rgba(0, 0, 0, 0.5);
   }
 
   .card-sunken {
-    background-color: var(--color-bg-subtle);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    background-color: rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
   }
 
-  /* ── Button ──────────────────────────────────────────────── */
+  .glass-panel {
+    background: linear-gradient(180deg, rgba(20, 20, 26, 0.85) 0%, rgba(12, 12, 16, 0.72) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+  }
+
   .btn {
     display: inline-flex;
     align-items: center;
@@ -158,19 +146,19 @@
     gap: 6px;
     font-weight: 550;
     font-family: var(--font-sans);
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid transparent;
     cursor: pointer;
     transition:
-      background-color 0.15s ease,
-      border-color 0.15s ease,
-      color 0.15s ease,
-      box-shadow 0.15s ease,
-      transform 0.1s ease;
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease,
+      box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.15s ease;
     white-space: nowrap;
     outline: none;
     line-height: 1.4;
-    letter-spacing: -0.006em;
+    letter-spacing: -0.01em;
   }
 
   .btn:focus-visible {
@@ -188,20 +176,19 @@
     pointer-events: none;
   }
 
-  /* ── Input / Textarea ────────────────────────────────────── */
   .input {
     width: 100%;
     font-family: var(--font-sans);
     font-size: 14px;
-    padding: 9px 13px;
-    background-color: var(--color-bg);
+    padding: 10px 14px;
+    background-color: rgba(0, 0, 0, 0.35);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: 10px;
     color: var(--color-text-1);
     transition:
-      border-color 0.15s ease,
-      box-shadow 0.15s ease,
-      background-color 0.15s ease;
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
     outline: none;
     line-height: 1.5;
   }
@@ -215,32 +202,30 @@
   }
 
   .input:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(255, 161, 22, 0.08);
-    background-color: var(--color-bg);
+    border-color: rgba(244, 162, 58, 0.55);
+    box-shadow: 0 0 0 3px rgba(244, 162, 58, 0.12);
+    background-color: rgba(0, 0, 0, 0.45);
   }
 
-  /* ── Typography Helpers ──────────────────────────────────── */
   .font-display {
     font-family: var(--font-display);
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    font-weight: 400;
+    letter-spacing: -0.02em;
   }
 
   .label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     color: var(--color-text-3);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.14em;
   }
 
-  /* ── Skeleton Shimmer ────────────────────────────────────── */
   .skeleton-shimmer {
     position: relative;
     overflow: hidden;
-    background-color: var(--color-bg-muted);
-    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
   }
 
   .skeleton-shimmer::after {
@@ -248,50 +233,51 @@
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.5),
-      transparent
-    );
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.08),
+        transparent);
     animation: shimmer 1.8s infinite;
   }
 
-  /* ── Activity Graph (Progress Calendar) ──────────────────── */
   .cal-cell {
     width: 14px;
     height: 14px;
     border-radius: 3px;
-    background-color: var(--color-bg-muted);
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    background-color: rgba(255, 255, 255, 0.06);
+    transition: background-color 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
   }
 
   .cal-cell.is-today {
-    border: 2px solid var(--color-primary);
+    border: 1px solid var(--color-primary);
+    box-shadow: none;
   }
 
   .cal-cell.solved-easy {
-    background-color: var(--color-success);
+    background-color: rgba(52, 211, 153, 0.55);
+    box-shadow: none;
   }
 
   .cal-cell.solved-medium {
-    background-color: var(--color-primary);
+    background-color: rgba(244, 162, 58, 0.55);
+    box-shadow: none;
   }
 
   .cal-cell.solved-hard {
-    background-color: var(--color-error);
+    background-color: rgba(248, 113, 113, 0.55);
+    box-shadow: none;
   }
 
   .cal-cell:hover {
-    transform: scale(1.15);
+    transform: scale(1.12);
   }
 
-  /* ── Modals ──────────────────────────────────────────────── */
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -300,41 +286,87 @@
   }
 
   .modal-card {
-    box-shadow: 
-      0 20px 25px -5px rgba(0, 0, 0, 0.1),
-      0 10px 10px -5px rgba(0, 0, 0, 0.04),
-      0 0 0 1px var(--color-border);
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.65),
+      0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+
+  /* Primary reading surface — border only, no decorative chrome */
+  .intel-doc {
+    position: relative;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .intel-doc::before {
+    display: none;
   }
 }
 
 
-/* ══════════════════════════════════════════════════════════════
-   Utilities Layer
-   ══════════════════════════════════════════════════════════════ */
-
 @layer utilities {
   @keyframes shimmer {
-    100% { transform: translateX(100%); }
+    100% {
+      transform: translateX(100%);
+    }
   }
 
   @keyframes fade-up {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-3px); }
-    75% { transform: translateX(3px); }
+
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    25% {
+      transform: translateX(-3px);
+    }
+
+    75% {
+      transform: translateX(3px);
+    }
   }
 
   @keyframes pulse-soft {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.55;
+    }
+  }
+
+  @keyframes glow-pulse {
+
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(244, 162, 58, 0.15);
+    }
+
+    50% {
+      box-shadow: 0 0 48px rgba(244, 162, 58, 0.35);
+    }
   }
 
   .anim-fade-up {
-    animation: fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .anim-shake {
@@ -342,6 +374,14 @@
   }
 
   .anim-pulse-soft {
-    animation: pulse-soft 2s ease-in-out infinite;
+    animation: pulse-soft 2.4s ease-in-out infinite;
+  }
+
+  .anim-glow-pulse {
+    animation: glow-pulse 2.8s ease-in-out infinite;
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }

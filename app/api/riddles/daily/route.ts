@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTodayUTC } from '@/lib/timezone';
+import { getOfficialDailyDate } from '@/lib/timezone';
 import { getDailyRiddleOrGenerate } from '@/lib/riddles/daily';
 import { toClientRiddle } from '@/lib/riddles/toClientRiddle';
 import { getRiddleShareUrl } from '@/lib/share/getCanonicalUrl';
@@ -19,7 +19,7 @@ export const maxDuration = 300;
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const difficulty = (searchParams.get('difficulty') ?? 'medium') as 'easy' | 'medium' | 'hard';
-  const date = searchParams.get('date') ?? getTodayUTC();
+  const date = searchParams.get('date') ?? getOfficialDailyDate();
 
   if (!['easy', 'medium', 'hard'].includes(difficulty)) {
     return NextResponse.json({ error: 'Invalid difficulty' }, { status: 400 });

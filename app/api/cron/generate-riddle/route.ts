@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateAndSelectBestRiddle } from '@/lib/ai/selectBestRiddle';
 import { riddleStore } from '@/lib/db/riddleStore';
-import { getTodayUTC } from '@/lib/timezone';
+import { getOfficialDailyDate } from '@/lib/timezone';
 
 // Ensure this cron runs for up to 5 minutes if on Vercel Pro, else 10s default
 export const maxDuration = 300; 
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  const today = getTodayUTC();
+  const today = getOfficialDailyDate();
   const difficulty = process.env.DAILY_POST_DIFFICULTY || 'medium';
 
   // 1. Idempotency Check

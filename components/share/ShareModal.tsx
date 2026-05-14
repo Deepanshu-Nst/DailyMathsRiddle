@@ -116,7 +116,7 @@ export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.97, y: 6 }}
         transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-        className="modal-card w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col md:flex-row relative shadow-2xl"
+        className="modal-card relative w-full max-w-4xl overflow-hidden rounded-2xl border border-white/[0.12] bg-gradient-to-br from-zinc-950 via-zinc-950 to-zinc-900 shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_40px_120px_rgba(0,0,0,0.75)] flex flex-col md:flex-row"
         onClick={e => e.stopPropagation()}
         style={{ maxWidth: 900, minHeight: 500 }}
       >
@@ -147,7 +147,7 @@ export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
 
         {/* LEFT: Riddle Context */}
         <div className="w-full md:w-[45%] p-8 md:p-10 border-b md:border-b-0 md:border-r border-zinc-800/60 bg-zinc-900/30 flex flex-col">
-          <h2 className="font-display text-2xl font-bold mb-8 text-zinc-100">Share your ritual</h2>
+          <h2 className="mb-8 font-display text-3xl font-normal tracking-tight text-zinc-100 md:text-[2rem]">Share your ritual</h2>
           
           <div className="flex-1 flex flex-col">
             <span className="text-[11px] font-semibold tracking-widest text-zinc-500 uppercase mb-3 block">

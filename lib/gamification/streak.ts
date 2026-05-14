@@ -1,18 +1,10 @@
 /**
  * Server-side streak engine.
- * All date math is UTC-safe.
+ * All calendar dates use the official daily timezone (see lib/timezone.ts).
  * Never reads from localStorage.
  */
 
-function todayUTC(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function yesterdayUTC(): string {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() - 1);
-  return d.toISOString().slice(0, 10);
-}
+import { getOfficialDailyDate, getYesterdayOfficial } from '@/lib/timezone';
 
 export interface StreakProcessResult {
   newStreak: number;
@@ -31,7 +23,7 @@ const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100];
  */
 export async function processStreak(
   userId: string,
-  solvedDate: string = todayUTC()
+  solvedDate: string = getOfficialDailyDate()
 ): Promise<StreakProcessResult> {
   const { createServiceClient } = await import('@/utils/supabase/server');
   const supabase = (await createServiceClient()) as any;
@@ -62,7 +54,7 @@ export async function processStreak(
     };
   }
 
-  if (lastSolved === yesterdayUTC() || lastSolved === null && currentStreak === 0) {
+  if (lastSolved === getYesterdayOfficial() || (lastSolved === null && currentStreak === 0)) {
     // Consecutive day (or first solve ever)
     newStreak = currentStreak + 1;
     eventType = 'increment';
