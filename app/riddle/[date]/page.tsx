@@ -60,7 +60,12 @@ function SolvePage() {
 
     const s = loadStreakData();
     setStreak(s);
-    if (s.progressState === 'solved') { setIsSolved(true); setStatus('correct'); }
+    // Solved state from streak applies ONLY to the daily riddle (mode === 'daily').
+    // Extra riddles always start unsolved — never inherit streak state.
+    if (s.progressState === 'solved') {
+      setIsSolved(true);
+      setStatus('correct');
+    }
     fetchRiddle();
   }, [fetchRiddle]);
 
@@ -90,16 +95,20 @@ function SolvePage() {
     }
   };
 
-  const handleNewRiddle = (newRiddle?: Partial<Riddle>) => {
-    if (!newRiddle) return;
+  const handleNewRiddle = (newRiddle: Partial<Riddle>) => {
+    // Switch to extra mode and reset ALL solve state atomically.
+    // This prevents the daily riddle's solved status from bleeding
+    // into the newly generated extra challenge.
+    setMode('extra');
     setRiddle(newRiddle);
     setAnswer('');
     setStatus('idle');
-    setIsSolved(false);
+    setIsSolved(false);      // always — extra riddles start unsolved
     setExplanation('');
     setCorrectAnswer('');
     setHintsUsed(0);
-    setMode('extra');
+    setShowModal(false);
+    // Note: extraCount is for display only — quota is tracked server-side
     setExtraCount(prev => prev + 1);
   };
 
@@ -233,15 +242,18 @@ function SolvePage() {
                     <button className="btn btn-ghost" onClick={() => setShowModal(true)}>
                       View solution details
                     </button>
-                    <button className="btn btn-primary" onClick={() => setShowShareModal(true)}>
-                      Share ↗
-                    </button>
+                    {/* Share only available for the daily riddle */}
+                    {mode === 'daily' && (
+                      <button className="btn btn-primary" onClick={() => setShowShareModal(true)}>
+                        Share ↗
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               )}
               
-              {/* Share (Always visible) */}
-              {!isSolved && (
+              {/* Share — only for daily riddle, not extra challenges */}
+              {!isSolved && mode === 'daily' && (
                 <div style={{ display: 'flex', marginTop: 12 }}>
                   <button className="btn btn-ghost" onClick={() => setShowShareModal(true)} style={{ flex: 1, justifyContent: 'center' }}>
                     Share ↗

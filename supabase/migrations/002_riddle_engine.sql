@@ -59,11 +59,20 @@ create index if not exists riddles_difficulty_created
 
 alter table public.riddles enable row level security;
 
--- Anyone can read published riddles
-create policy "riddles: public can read published"
-  on public.riddles
-  for select
-  using (status = 'published');
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'riddles'
+      and policyname = 'riddles: public can read published'
+  ) then
+    create policy "riddles: public can read published"
+      on public.riddles
+      for select
+      using (status = 'published');
+  end if;
+end;
+$$;
 
 -- Only service role (backend) can insert/update/delete
 -- No user-facing insert policy — all writes go through service client
@@ -97,23 +106,50 @@ create index if not exists attempts_user_riddle
 
 alter table public.user_attempts enable row level security;
 
--- Users can see their own attempts
-create policy "attempts: users can view own"
-  on public.user_attempts
-  for select
-  using (auth.uid() = user_id);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'user_attempts'
+      and policyname = 'attempts: users can view own'
+  ) then
+    create policy "attempts: users can view own"
+      on public.user_attempts
+      for select
+      using (auth.uid() = user_id);
+  end if;
+end;
+$$;
 
--- Users can insert their own attempts
-create policy "attempts: users can insert own"
-  on public.user_attempts
-  for insert
-  with check (auth.uid() = user_id);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'user_attempts'
+      and policyname = 'attempts: users can insert own'
+  ) then
+    create policy "attempts: users can insert own"
+      on public.user_attempts
+      for insert
+      with check (auth.uid() = user_id);
+  end if;
+end;
+$$;
 
--- Anon users can insert without user_id (session-based tracking)
-create policy "attempts: anon can insert"
-  on public.user_attempts
-  for insert
-  with check (user_id is null);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'user_attempts'
+      and policyname = 'attempts: anon can insert'
+  ) then
+    create policy "attempts: anon can insert"
+      on public.user_attempts
+      for insert
+      with check (user_id is null);
+  end if;
+end;
+$$;
 
 -- ── 7. generation_logs Table ─────────────────────────────────────
 -- Tracks extra riddle generation requests for rate limiting.
@@ -141,11 +177,20 @@ create index if not exists genlogs_user_created
 
 alter table public.generation_logs enable row level security;
 
--- Users can read their own logs
-create policy "genlogs: users can read own"
-  on public.generation_logs
-  for select
-  using (auth.uid() = user_id);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'generation_logs'
+      and policyname = 'genlogs: users can read own'
+  ) then
+    create policy "genlogs: users can read own"
+      on public.generation_logs
+      for select
+      using (auth.uid() = user_id);
+  end if;
+end;
+$$;
 
 -- Service role handles all inserts (no user-facing insert policy)
 

@@ -66,6 +66,8 @@ export type Database = {
           created_by: string | null;
           validation_score: number | null;
           generator_model: string | null;
+          generation_mode: string | null;
+          template_family: string | null;
           created_at: string;
         };
         Insert: {
@@ -86,6 +88,8 @@ export type Database = {
           created_by?: string | null;
           validation_score?: number | null;
           generator_model?: string | null;
+          generation_mode?: string | null;
+          template_family?: string | null;
           created_at?: string;
         };
         Update: {
@@ -106,6 +110,8 @@ export type Database = {
           created_by?: string | null;
           validation_score?: number | null;
           generator_model?: string | null;
+          generation_mode?: string | null;
+          template_family?: string | null;
           created_at?: string;
         };
       };

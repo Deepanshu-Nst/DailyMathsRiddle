@@ -66,6 +66,25 @@ export async function getRecentRiddleQuestions(limit = 50): Promise<string[]> {
 }
 
 /**
+ * Fetch the N most recently used template families.
+ * Used by generation pipeline to enforce cooldowns.
+ */
+export async function getRecentTemplateFamilies(limit = 20): Promise<string[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('riddles')
+    .select('template_family')
+    .eq('status', 'published')
+    .not('template_family', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+    .returns<Array<{ template_family: string }>>();
+
+  if (error || !data) return [];
+  return (data as Array<{ template_family: string }>).map((r) => r.template_family);
+}
+
+/**
  * Fetch a riddle by ID — includes answer, for server-side validation only.
  * Uses anon client since RLS allows reading published riddles.
  */
@@ -180,5 +199,38 @@ export async function insertAttempt(opts: {
     });
   } catch (err) {
     console.error('[riddles/queries] insertAttempt failed:', err);
+  }
+}
+
+/**
+ * Inserts a failed generation log entry for observability.
+ * Non-throwing.
+ */
+export async function insertFailedGeneration(opts: {
+  sessionId: string | null;
+  userId: string | null;
+  difficulty: string;
+  model: string;
+  rawResponse: string;
+  rejectionStage: 'parse_error' | 'structural_rejected' | 'validation_failed' | 'duplicate_rejected';
+  rejectionReason: string;
+  templateFamily?: string | null;
+}): Promise<void> {
+  try {
+    const { createServiceClient } = await import('@/lib/supabase/server');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const supabase = (await createServiceClient()) as any;
+    await supabase.from('failed_generations').insert({
+      session_id: opts.sessionId,
+      user_id: opts.userId,
+      difficulty: opts.difficulty,
+      model: opts.model,
+      raw_response: opts.rawResponse,
+      rejection_stage: opts.rejectionStage,
+      rejection_reason: opts.rejectionReason,
+      template_family: opts.templateFamily ?? null,
+    });
+  } catch (err) {
+    console.error('[riddles/queries] insertFailedGeneration failed:', err);
   }
 }

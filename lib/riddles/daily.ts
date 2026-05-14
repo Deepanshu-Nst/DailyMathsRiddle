@@ -1,7 +1,6 @@
 import { getDailyRiddle } from '@/lib/riddles/queries';
 import { runGenerationPipeline } from '@/lib/generation/pipeline';
 import { withLock } from '@/lib/generation/concurrency';
-import { getRiddleByDateAndDifficulty } from '@/lib/riddle-bank';
 import type { DbRiddle } from '@/types/supabase';
 import type { Riddle } from '@/types';
 
@@ -70,8 +69,7 @@ export async function getActiveRiddleForServer(
       category: dbRiddle.category,
     };
   }
-
-  // Riddle bank fallback — keeps /riddle/[date] working during DB setup
-  console.warn('[daily] Falling back to riddle bank for', date, difficulty);
-  return getRiddleByDateAndDifficulty(date, difficulty);
+  // If we reach here, both DB and Generation failed. We do not fallback.
+  console.warn('[daily] Generation pipeline failed, no riddle bank fallback available for', date, difficulty);
+  throw new Error(`Failed to retrieve or generate riddle for ${date} (${difficulty})`);
 }

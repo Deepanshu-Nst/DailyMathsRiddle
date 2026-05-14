@@ -1,5 +1,3 @@
-import { passesRuleEngine } from '@/lib/ai/ruleEngine';
-import { passesMathCheck } from '@/lib/ai/mathCheck';
 import type { AIRiddle } from '@/types/ai';
 
 export interface StructuralCheckResult {
@@ -8,15 +6,44 @@ export interface StructuralCheckResult {
 }
 
 /**
- * Runs all deterministic (non-AI) structural checks on a riddle candidate.
- * These run instantly — no API calls required.
+ * Checks that the explanation references the answer value.
+ * Numeric-aware: "45 min" answer checks "45" in explanation.
+ */
+function answerAppearsInExplanation(answer: string, explanation: string): boolean {
+  const expl = explanation.toLowerCase();
+  const ans = answer.toLowerCase().trim();
+
+  if (expl.includes(ans)) return true;
+
+  const numericTokens = ans.match(/\d+(\.\d+)?/g);
+  if (numericTokens && numericTokens.length > 0) {
+    return numericTokens.every((n) => expl.includes(n));
+  }
+
+  return expl.includes(ans);
+}
+
+/**
+ * Runs fast, deterministic structural checks on a riddle candidate.
+ * No API calls — all instant.
  *
- * Checks (in order):
+ * Deliberately DOES NOT run mathCheck (passesMathCheck).
+ *
+ * Why: mathCheck uses regex to parse math equations from explanation prose.
+ * It consistently produces false positives — it treats prose like
+ * "12 students … 15 days" as the equation "12 = 15 is false", rejecting
+ * perfectly valid riddles. It also cannot handle factorials, modular
+ * arithmetic, or multi-line step-by-step explanations.
+ *
+ * Math correctness is validated by the AI validator (validateRiddle)
+ * which runs with correctness_confidence >= 0.75. That is the right
+ * layer for semantic math validation.
+ *
+ * Checks performed:
  * 1. Required fields present and non-empty
- * 2. Length constraints (question, explanation, answer)
- * 3. Answer appears in explanation (rule engine)
- * 4. No trivial arithmetic patterns (rule engine)
- * 5. Math equation consistency (mathCheck)
+ * 2. Length constraints
+ * 3. Answer appears in explanation (numeric-aware)
+ * 4. Reject genuinely trivial bare arithmetic questions
  */
 export function runStructuralChecks(
   riddle: Partial<AIRiddle>
@@ -35,13 +62,17 @@ export function runStructuralChecks(
   if (a.length > 120) return { passed: false, reason: 'Answer too long (>120 chars)' };
   if (expl.length < 40) return { passed: false, reason: 'Explanation too short (<40 chars)' };
 
-  // 3 & 4. Rule engine (answer in explanation + no trivial arithmetic)
-  const ruleResult = passesRuleEngine(riddle);
-  if (!ruleResult.passed) return { passed: false, reason: ruleResult.reason };
+  // 3. Answer must appear in explanation (numeric-aware)
+  if (!answerAppearsInExplanation(a, expl)) {
+    return { passed: false, reason: 'Explanation does not reference the answer value' };
+  }
 
-  // 5. Math consistency check
-  const mathResult = passesMathCheck(q, a, expl);
-  if (!mathResult.passed) return { passed: false, reason: mathResult.reason };
+  // 4. Reject bare trivial arithmetic (e.g. "What is 5 + 3?")
+  // Only matches if the ENTIRE question is a simple expression — not word problems
+  const strippedQ = q.replace(/^(what is|calculate|compute|find|solve)\s+/i, '').trim();
+  if (/^\d+\s*[\+\-\*\/]\s*\d+\s*\??$/.test(strippedQ)) {
+    return { passed: false, reason: 'Question is trivial bare arithmetic' };
+  }
 
   return { passed: true };
 }

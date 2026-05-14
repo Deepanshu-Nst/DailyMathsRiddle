@@ -14,7 +14,7 @@ const schema = z.object({
   sessionId: z.string().min(1).max(128),
 });
 
-const DAILY_GENERATION_LIMIT = 5;
+const DAILY_GENERATION_LIMIT = 10;
 
 /**
  * POST /api/riddles/generate
@@ -27,7 +27,9 @@ const DAILY_GENERATION_LIMIT = 5;
  * - Rate limit: max DAILY_GENERATION_LIMIT extra riddles per session per day.
  * - DB: INSERT always happens before response is sent.
  *
- * Frontend must only update state AFTER receiving 200.
+ * Error Contract:
+ * Always returns a structured error object with a stable 'code' instead of just messages.
+ * { success: false, code: string, message: string }
  */
 export async function POST(req: NextRequest) {
   try {
@@ -36,7 +38,12 @@ export async function POST(req: NextRequest) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: 'Invalid request', detail: parsed.error.flatten() },
+        { 
+          success: false, 
+          code: 'INVALID_RESPONSE',
+          message: 'Invalid request payload', 
+          detail: parsed.error.flatten() 
+        },
         { status: 400 }
       );
     }
@@ -53,8 +60,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: `You've reached the daily limit of ${DAILY_GENERATION_LIMIT} extra riddles. Come back tomorrow!`,
-          retryable: false,
+          code: 'QUOTA_EXCEEDED',
+          message: `You've reached the daily limit of ${DAILY_GENERATION_LIMIT} extra riddles. Come back tomorrow!`,
         },
         { status: 429 }
       );
@@ -74,7 +81,12 @@ export async function POST(req: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json(
-        { success: false, error: result.error, retryable: result.retryable },
+        { 
+          success: false, 
+          code: 'GENERATION_FAILED',
+          message: result.error,
+          attempts: result.attempts,
+        },
         { status: 503 }
       );
     }
@@ -87,10 +99,31 @@ export async function POST(req: NextRequest) {
       riddle: clientRiddle,
       shareUrl,
       generationCount: todayCount + 1,
+      templateFamily: result.riddle.template_family,
     });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('[POST /api/riddles/generate]', err);
+    
+    // Explicit timeout handling
+    if (err instanceof Error && err.name === 'AbortError') {
+      return NextResponse.json(
+        {
+          success: false,
+          code: 'GENERATION_TIMEOUT',
+          message: 'Generation timed out'
+        },
+        { status: 408 }
+      );
+    }
+
     const msg = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ success: false, error: msg, retryable: true }, { status: 500 });
+    return NextResponse.json(
+      { 
+        success: false, 
+        code: 'GENERATION_ERROR',
+        message: msg 
+      }, 
+      { status: 500 }
+    );
   }
 }

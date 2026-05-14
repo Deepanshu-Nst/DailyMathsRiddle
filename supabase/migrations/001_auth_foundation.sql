@@ -1,12 +1,13 @@
 -- ================================================================
 -- AdvaitAI Daily Maths Riddle — Auth Foundation Migration
--- Migration: 001_auth_foundation
+-- Migration: 001_auth_foundation  (IDEMPOTENT — safe to re-run)
 -- Run this SQL in: Supabase Dashboard → SQL Editor
+--
+-- All CREATE POLICY statements are wrapped in DO $$ blocks so
+-- re-running this on an existing database does NOT error out.
 -- ================================================================
 
 -- ── 1. Profiles Table ────────────────────────────────────────────
--- Extends auth.users with app-specific fields.
--- One row per user, auto-created via trigger on first sign-up.
 
 create table if not exists public.profiles (
   id          uuid        primary key references auth.users(id) on delete cascade,
@@ -25,33 +26,60 @@ comment on column public.profiles.role is 'user | admin — controls access to a
 
 alter table public.profiles enable row level security;
 
--- Users can view their own profile
-create policy "profiles: users can view own"
-  on public.profiles
-  for select
-  using (auth.uid() = id);
+-- Idempotent policy creation: DO block checks existence before creating
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'profiles'
+      and policyname = 'profiles: users can view own'
+  ) then
+    create policy "profiles: users can view own"
+      on public.profiles
+      for select
+      using (auth.uid() = id);
+  end if;
+end;
+$$;
 
--- Users can update their own profile (not role — admin-only)
-create policy "profiles: users can update own"
-  on public.profiles
-  for update
-  using (auth.uid() = id)
-  with check (
-    auth.uid() = id
-    -- Prevent self-promotion to admin
-    and role = (select role from public.profiles where id = auth.uid())
-  );
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'profiles'
+      and policyname = 'profiles: users can update own'
+  ) then
+    create policy "profiles: users can update own"
+      on public.profiles
+      for update
+      using (auth.uid() = id)
+      with check (
+        auth.uid() = id
+        and role = (select role from public.profiles where id = auth.uid())
+      );
+  end if;
+end;
+$$;
 
--- Admins can view all profiles
-create policy "profiles: admins can view all"
-  on public.profiles
-  for select
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'admin'
-    )
-  );
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'profiles'
+      and policyname = 'profiles: admins can view all'
+  ) then
+    create policy "profiles: admins can view all"
+      on public.profiles
+      for select
+      using (
+        exists (
+          select 1 from public.profiles
+          where id = auth.uid() and role = 'admin'
+        )
+      );
+  end if;
+end;
+$$;
 
 -- ── 3. updated_at Trigger ────────────────────────────────────────
 
@@ -72,8 +100,6 @@ create trigger on_profile_updated
   execute procedure public.handle_updated_at();
 
 -- ── 4. Auto-Create Profile on Sign-Up ───────────────────────────
--- Runs as SECURITY DEFINER to bypass RLS and insert the profile row
--- immediately after a new user is created in auth.users.
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -89,7 +115,7 @@ begin
     new.raw_user_meta_data ->> 'full_name',
     new.raw_user_meta_data ->> 'avatar_url'
   )
-  on conflict (id) do nothing; -- idempotent — safe to re-run
+  on conflict (id) do nothing;
   return new;
 end;
 $$;
@@ -101,7 +127,6 @@ create trigger on_auth_user_created
   execute procedure public.handle_new_user();
 
 -- ── 5. Helper: is_admin() ────────────────────────────────────────
--- Convenience function for use in RLS policies and server code.
 
 create or replace function public.is_admin()
 returns boolean
@@ -115,11 +140,6 @@ as $$
   );
 $$;
 
--- ── Verification Query ───────────────────────────────────────────
--- After running, execute this to confirm everything is set up:
---
+-- ── Verification ─────────────────────────────────────────────────
 -- select tablename, rowsecurity from pg_tables
 -- where schemaname = 'public' and tablename = 'profiles';
---
--- select tgname, tgtype from pg_trigger
--- where tgrelid = 'auth.users'::regclass;
