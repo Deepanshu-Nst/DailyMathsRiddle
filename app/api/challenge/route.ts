@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTodayUTC } from '@/lib/timezone';
 import { getActiveRiddleForServer } from '@/lib/riddles/daily';
-import { toClientRiddle } from '@/lib/riddles/toClientRiddle';
 import { getRiddleShareUrl } from '@/lib/share/getCanonicalUrl';
+import { createClient } from '@/utils/supabase/server';
 
 export const maxDuration = 300;
 
@@ -20,6 +20,28 @@ export async function GET(req: NextRequest) {
 
   try {
     const riddle = await getActiveRiddleForServer(date, difficulty);
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let isSolved = false;
+    let solvedAnswer: string | null = null;
+    let explanation: string | null = null;
+
+    if (user && riddle.riddleId) {
+      const { data: attempts } = await supabase
+        .from('attempt_statuses')
+        .select('status, submitted_answer')
+        .eq('user_id', user.id)
+        .eq('riddle_id', riddle.riddleId)
+        .eq('status', 'solved')
+        .single();
+      
+      if (attempts) {
+        isSolved = true;
+        solvedAnswer = riddle.answer;
+        explanation = riddle.explanation;
+      }
+    }
 
     // Strip answer before sending to client
     const { answer, answerVariants, ...safeFields } = riddle;
@@ -32,6 +54,9 @@ export async function GET(req: NextRequest) {
       difficulty,
       riddle: safeFields,
       shareUrl,
+      isSolved,
+      solvedAnswer,
+      explanation
     });
   } catch (err) {
     console.error('[GET /api/challenge]', err);

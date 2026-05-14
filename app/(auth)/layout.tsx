@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getUser } from '@/lib/auth/getUser';
+import { createClient } from '@/utils/supabase/server';
 
 /**
  * Layout for the (auth) route group — /login and future auth pages.
@@ -10,7 +10,8 @@ export default async function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getUser();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   if (user) redirect('/dashboard');
 
   return <>{children}</>;

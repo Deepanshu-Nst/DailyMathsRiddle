@@ -50,7 +50,7 @@ export async function processSolve(opts: ProcessSolveOpts): Promise<SolveResult>
 
   // 3. Insert XP events
   try {
-    const { createServiceClient } = await import('@/lib/supabase/server');
+    const { createServiceClient } = await import('@/utils/supabase/server');
     const supabase = (await createServiceClient()) as any;
 
     const xpEvents = [
@@ -95,6 +95,19 @@ export async function processSolve(opts: ProcessSolveOpts): Promise<SolveResult>
 
     if (statsErr) console.error('[STATS RECALCULATION] upsert error:', statsErr.message);
     else console.log('[STATS RECALCULATION] user_stats updated for', userId.slice(0, 8) + '…');
+
+    // 5. Check for achievement unlocks
+    const { checkAndUnlockAchievements } = await import('./achievements');
+    const newlyUnlocked = await checkAndUnlockAchievements(userId, statsUpdate as any);
+
+    return {
+      xpAwarded: xpTotal,
+      newStreak,
+      wasStreakReset: wasReset,
+      isStreakMilestone: isMilestone,
+      bonuses,
+      newlyUnlockedAchievements: newlyUnlocked,
+    };
 
   } catch (err) {
     console.error('[processSolve] unexpected error:', err);

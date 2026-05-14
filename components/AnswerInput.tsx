@@ -1,76 +1,53 @@
 'use client';
-import { useRef, useEffect, useState } from 'react';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
-interface Props {
+interface AnswerInputProps {
   value: string;
-  onChange: (v: string) => void;
+  onChange: (val: string) => void;
   onSubmit: () => void;
   status: 'idle' | 'correct' | 'incorrect';
   disabled?: boolean;
 }
 
-export default function AnswerInput({ value, onChange, onSubmit, status, disabled }: Props) {
-  const ref = useRef<HTMLInputElement>(null);
-  const [shake, setShake] = useState(false);
-
-  const handleKey = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && value.trim()) onSubmit();
+export default function AnswerInput({ value, onChange, onSubmit, status, disabled }: AnswerInputProps) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !disabled && value.trim()) {
+      onSubmit();
+    }
   };
 
-  useEffect(() => {
-    if (status === 'incorrect') {
-      setShake(true);
-      const t = setTimeout(() => setShake(false), 500);
-      return () => clearTimeout(t);
-    }
-  }, [status]);
-
-  useEffect(() => {
-    if (!disabled && status === 'idle') ref.current?.focus();
-  }, [disabled, status]);
-
-  const inputClass = [
-    'input-underline',
-    status === 'correct'   ? 'is-correct' : '',
-    status === 'incorrect' ? 'is-error'   : '',
-    shake                  ? 'anim-shake' : '',
-  ].filter(Boolean).join(' ');
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <input
-          ref={ref}
-          className={inputClass}
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2">
+        <Input
           type="text"
-          placeholder="Your answer…"
           value={value}
-          onChange={e => onChange(e.target.value)}
-          onKeyDown={handleKey}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Type your solution..."
           disabled={disabled}
-          autoComplete="off"
+          error={status === 'incorrect'}
+          className={status === 'correct' ? 'border-success ring-1 ring-success/20 text-success' : 'focus:ring-orange-500'}
         />
-        <button
-          className="btn btn-icon"
-          onClick={onSubmit}
+        <Button 
+          onClick={onSubmit} 
           disabled={disabled || !value.trim()}
-          aria-label="Submit answer"
+          className="shrink-0"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
+          Submit
+        </Button>
       </div>
-      <div style={{ height: 22, paddingTop: 5 }}>
+      <div className="h-6">
         {status === 'incorrect' && (
-          <span className="anim-fade-up" style={{ fontSize: 13, color: 'var(--error)' }}>
-            Not quite. Give it another try.
-          </span>
+          <p className="text-xs font-semibold text-error anim-shake">
+            That answer is incorrect. Try again.
+          </p>
         )}
         {status === 'correct' && (
-          <span className="anim-fade-up" style={{ fontSize: 13, color: 'var(--success)' }}>
+          <p className="text-xs font-semibold text-success anim-fade-up">
             Correct.
-          </span>
+          </p>
         )}
       </div>
     </div>

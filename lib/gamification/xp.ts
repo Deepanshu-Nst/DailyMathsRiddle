@@ -17,6 +17,9 @@ export const FAST_SOLVE_THRESHOLD_S = 60;
 export const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100];
 export const MILESTONE_BONUS = 25;
 
+/** XP awarded when a user gives up (reduced award). */
+export const XP_GIVE_UP = 5;
+
 /**
  * Calculates the full XP breakdown for a solve event.
  * Pure — does not touch the DB.
@@ -60,8 +63,24 @@ export async function awardXP(opts: {
   bonuses: XPBonus[];
   riddleId: string | null;
 }): Promise<void> {
-  const { createServiceClient } = await import('@/lib/supabase/server');
+  const { createServiceClient } = await import('@/utils/supabase/server');
   const supabase = (await createServiceClient()) as any;
+
+  // 1. Anti-abuse: Check if base XP already awarded for this riddle
+  if (opts.riddleId) {
+    const { data: existing } = await supabase
+      .from('xp_events')
+      .select('id')
+      .eq('user_id', opts.userId)
+      .eq('riddle_id', opts.riddleId)
+      .eq('reason', 'solve_base')
+      .maybeSingle();
+    
+    if (existing) {
+      console.warn(`[XP ABUSE PREVENTED] User ${opts.userId} already received XP for riddle ${opts.riddleId}`);
+      return;
+    }
+  }
 
   const events = [
     { user_id: opts.userId, amount: opts.base, reason: 'solve_base', riddle_id: opts.riddleId },
@@ -82,4 +101,33 @@ export async function awardXP(opts: {
 
   // Increment total_xp in user_stats (upsert handled by processSolve)
   // XP stat increment handled atomically by processSolve's user_stats upsert
+}
+
+/**
+ * Recalculates a user's total XP from the immutable xp_events log.
+ * Useful for auditing or restoring state after invalidations.
+ */
+export async function recalculateTotalXP(userId: string): Promise<number> {
+  try {
+    const { createServiceClient } = await import('@/utils/supabase/server');
+    const supabase = (await createServiceClient()) as any;
+    
+    const { data: events } = await supabase
+      .from('xp_events')
+      .select('amount')
+      .eq('user_id', userId);
+
+    const newTotal = (events || []).reduce((acc: number, e: any) => acc + e.amount, 0);
+    
+    await supabase
+      .from('user_stats')
+      .update({ total_xp: newTotal })
+      .eq('user_id', userId);
+
+    console.log(`[XP RECALCULATED] User ${userId}: ${newTotal} XP`);
+    return newTotal;
+  } catch (err) {
+    console.error('[XP RECALCULATED ERROR]', err);
+    return 0;
+  }
 }

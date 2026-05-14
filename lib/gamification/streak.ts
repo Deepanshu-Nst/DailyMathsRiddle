@@ -33,7 +33,7 @@ export async function processStreak(
   userId: string,
   solvedDate: string = todayUTC()
 ): Promise<StreakProcessResult> {
-  const { createServiceClient } = await import('@/lib/supabase/server');
+  const { createServiceClient } = await import('@/utils/supabase/server');
   const supabase = (await createServiceClient()) as any;
 
   // Fetch current stats

@@ -3,10 +3,12 @@ import React, { useEffect, useState } from 'react';
 interface ImagePreviewProps {
   date: string;
   difficulty: string;
+  streak?: number;
+  isSolved?: boolean;
   onLoaded?: (dataUrl: string) => void;
 }
 
-export default function ImagePreview({ date, difficulty, onLoaded }: ImagePreviewProps) {
+export default function ImagePreview({ date, difficulty, streak = 0, isSolved = false, onLoaded }: ImagePreviewProps) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -15,7 +17,7 @@ export default function ImagePreview({ date, difficulty, onLoaded }: ImagePrevie
     const fetchImage = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/share/image?date=${date}&difficulty=${difficulty}`);
+        const res = await fetch(`/api/share/image?date=${date}&difficulty=${difficulty}&streak=${streak}&isSolved=${isSolved}`);
         const data = await res.json();
         if (active && data.image_data_url) {
           setDataUrl(data.image_data_url);
@@ -29,7 +31,7 @@ export default function ImagePreview({ date, difficulty, onLoaded }: ImagePrevie
     };
     fetchImage();
     return () => { active = false; };
-  }, [date, difficulty, onLoaded]);
+  }, [date, difficulty, streak, isSolved, onLoaded]);
 
   return (
     <div className="w-full aspect-square bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden flex items-center justify-center relative">

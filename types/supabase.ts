@@ -22,33 +22,39 @@ export type Database = {
           email: string;
           full_name: string | null;
           avatar_url: string | null;
-          role: 'user' | 'admin';
+          role: 'user' | 'moderator' | 'admin';
           streak_count: number;
           xp: number;
           created_at: string;
           updated_at: string;
+          username: string | null;
+          username_updated_at: string | null;
         };
         Insert: {
           id: string;
           email: string;
           full_name?: string | null;
           avatar_url?: string | null;
-          role?: 'user' | 'admin';
+          role?: 'user' | 'moderator' | 'admin';
           streak_count?: number;
           xp?: number;
           created_at?: string;
           updated_at?: string;
+          username?: string | null;
+          username_updated_at?: string | null;
         };
         Update: {
           id?: string;
           email?: string;
           full_name?: string | null;
           avatar_url?: string | null;
-          role?: 'user' | 'admin';
+          role?: 'user' | 'moderator' | 'admin';
           streak_count?: number;
           xp?: number;
           created_at?: string;
           updated_at?: string;
+          username?: string | null;
+          username_updated_at?: string | null;
         };
       };
 
@@ -75,6 +81,7 @@ export type Database = {
           generation_mode: string | null;
           template_family: string | null;
           created_at: string;
+          is_invalid: boolean;
         };
         Insert: {
           id?: string;
@@ -97,6 +104,7 @@ export type Database = {
           generation_mode?: string | null;
           template_family?: string | null;
           created_at?: string;
+          is_invalid?: boolean;
         };
         Update: {
           id?: string;
@@ -119,6 +127,46 @@ export type Database = {
           generation_mode?: string | null;
           template_family?: string | null;
           created_at?: string;
+          is_invalid?: boolean;
+        };
+      };
+
+      challenge_submissions: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          riddle_id: string;
+          proposed_answer: string;
+          reasoning: string;
+          proof_text: string | null;
+          status: 'pending' | 'approved' | 'rejected' | 'rewarded';
+          admin_notes: string | null;
+          reviewed_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          riddle_id: string;
+          proposed_answer: string;
+          reasoning: string;
+          proof_text?: string | null;
+          status?: 'pending' | 'approved' | 'rejected' | 'rewarded';
+          admin_notes?: string | null;
+          reviewed_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          riddle_id?: string;
+          proposed_answer?: string;
+          reasoning?: string;
+          proof_text?: string | null;
+          status?: 'pending' | 'approved' | 'rejected' | 'rewarded';
+          admin_notes?: string | null;
+          reviewed_by?: string | null;
+          created_at?: string;
         };
       };
 
@@ -129,6 +177,7 @@ export type Database = {
           riddle_id: string;
           submitted_answer: string;
           is_correct: boolean;
+          status: 'solved' | 'wrong' | 'gave_up' | 'challenged';
           attempted_at: string;
         };
         Insert: {
@@ -137,6 +186,7 @@ export type Database = {
           riddle_id: string;
           submitted_answer: string;
           is_correct: boolean;
+          status?: 'solved' | 'wrong' | 'gave_up' | 'challenged';
           attempted_at?: string;
         };
         Update: {
@@ -145,6 +195,7 @@ export type Database = {
           riddle_id?: string;
           submitted_answer?: string;
           is_correct?: boolean;
+          status?: 'solved' | 'wrong' | 'gave_up' | 'challenged';
           attempted_at?: string;
         };
       };
@@ -260,6 +311,100 @@ export type Database = {
           created_at?: string;
         };
         Update: never;
+      };
+
+      // ── Phase 3.3 ───────────────────────────────────────
+      achievements: {
+        Row: {
+          id: string;
+          name: string;
+          description: string;
+          icon: string;
+          requirement_type: string;
+          threshold: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description: string;
+          icon: string;
+          requirement_type: string;
+          threshold: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string;
+          icon?: string;
+          requirement_type?: string;
+          threshold?: number;
+          created_at?: string;
+        };
+      };
+
+      user_achievements: {
+        Row: {
+          user_id: string;
+          achievement_id: string;
+          unlocked_at: string;
+        };
+        Insert: {
+          user_id: string;
+          achievement_id: string;
+          unlocked_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          achievement_id?: string;
+          unlocked_at?: string;
+        };
+      };
+
+      scheduled_riddles: {
+        Row: {
+          id: string;
+          publish_date: string;
+          difficulty: 'easy' | 'medium' | 'hard';
+          question: string;
+          answer: string;
+          explanation: string;
+          source: string | null;
+          status: 'draft' | 'scheduled' | 'published' | 'archived';
+          created_by: string | null;
+          approved_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          publish_date: string;
+          difficulty: 'easy' | 'medium' | 'hard';
+          question: string;
+          answer: string;
+          explanation: string;
+          source?: string | null;
+          status?: 'draft' | 'scheduled' | 'published' | 'archived';
+          created_by?: string | null;
+          approved_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          publish_date?: string;
+          difficulty?: 'easy' | 'medium' | 'hard';
+          question?: string;
+          answer?: string;
+          explanation?: string;
+          source?: string | null;
+          status?: 'draft' | 'scheduled' | 'published' | 'archived';
+          created_by?: string | null;
+          approved_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
       };
     };
 

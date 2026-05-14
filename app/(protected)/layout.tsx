@@ -1,4 +1,5 @@
-import { requireUser } from '@/lib/auth/requireUser';
+import { redirect } from 'next/navigation';
+import { createClient } from '@/utils/supabase/server';
 
 /**
  * Layout for the (protected) route group.
@@ -12,7 +13,9 @@ export default async function ProtectedLayout({
 }) {
   // Secondary guard — middleware is primary.
   // This ensures even if middleware is misconfigured, protected pages fail safely.
-  await requireUser();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
 
   return <>{children}</>;
 }

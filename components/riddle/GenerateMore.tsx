@@ -44,6 +44,10 @@ interface GenerateMoreProps {
  * - Quota incremented ONLY when server returns generationCount
  * - DEV TRACE badge gated behind process.env.NODE_ENV === 'development'
  */
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { RotateCw, AlertTriangle, Lock, Info } from 'lucide-react';
+
 export default function GenerateMore({ sessionId, difficulty, onNewRiddle }: GenerateMoreProps) {
   const [used, setUsed] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -76,7 +80,6 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle }: Gen
     setErrorCode(null);
     setAttempts([]);
 
-    // Create abort controller — cancels request after timeout
     const controller = new AbortController();
     abortRef.current = controller;
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -92,32 +95,16 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle }: Gen
       clearTimeout(timeoutId);
       const data = await res.json();
 
-      // Dev-only trace log — stripped at build time in production
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[GEN RESPONSE]', {
-          status: res.status,
-          success: data.success,
-          code: data.code,
-          generationCount: data.generationCount,
-          riddleId: data.riddle?.riddleId,
-          slug: data.riddle?.slug,
-          templateFamily: data.templateFamily,
-        });
-      }
-
-      // ── Error handling via stable codes ────────────────────────────
       if (!res.ok || !data.success) {
         if (data.attempts) setAttempts(data.attempts);
         throw new Error(data.code || 'GENERATION_ERROR');
       }
 
-      // ── Quota sync ──────────────────────────────────────────────────
       if (typeof data.generationCount === 'number') {
         setUsed(data.generationCount);
         localStorage.setItem(getTodayKey(), String(data.generationCount));
       }
 
-      // ── Success gate ────────────────────────────────────────────────
       if (data.riddle) {
         setCooldown(true);
         if (data.templateFamily) setTemplateFamily(data.templateFamily);
@@ -147,97 +134,80 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle }: Gen
     }
   };
 
-  const btnLabel = (() => {
-    if (loading)      return <LoadingSpinner label="Generating..." />;
-    if (cooldown)     return 'Please wait...';
-    if (limitReached) return 'Daily limit reached';
-    return 'Generate Another 🔁';
-  })();
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', marginTop: 12 }}>
+    <div className="flex flex-col gap-4">
       {/* ── Generate button ── */}
-      <button
-        id="generate-more-btn"
+      <Button
         onClick={handleGenerate}
         disabled={blocked}
-        className="btn btn-ghost"
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          opacity: blocked ? 0.45 : 1,
-          cursor: blocked ? 'not-allowed' : 'pointer',
-          transition: 'opacity 0.2s',
-        }}
+        variant="primary"
+        size="lg"
+        className="w-full shadow-lg shadow-primary/10 gap-2"
       >
-        {btnLabel}
-      </button>
+        {loading ? (
+          <>
+            <RotateCw size={18} className="animate-spin" />
+            Generating...
+          </>
+        ) : cooldown ? (
+          'Please wait...'
+        ) : limitReached ? (
+          <>
+            <Lock size={18} />
+            Limit Reached
+          </>
+        ) : (
+          <>
+            <RotateCw size={18} />
+            Generate Another Riddle
+          </>
+        )}
+      </Button>
 
       {/* ── Typed error state ── */}
       {errorMsg && (
-        <div style={{
-          marginTop: 10,
-          padding: '10px 14px',
-          background: 'rgba(239,68,68,0.06)',
-          border: '1px solid rgba(239,68,68,0.18)',
-          borderRadius: 6,
-          fontSize: 13,
-          color: 'var(--error, #ef4444)',
-          lineHeight: 1.5,
-        }}>
-          <span style={{ fontWeight: 600, display: 'block', marginBottom: 2 }}>
-            {errorCode === 'GENERATION_TIMEOUT' ? '⏱ Timed out'
-              : errorCode === 'GENERATION_ERROR' ? '⚠ AI Unavailable'
-              : errorCode === 'QUOTA_EXCEEDED' ? '🔒 Limit reached'
-              : '✗ Generation failed'}
-          </span>
-          {errorMsg}
+        <div className="flex items-start gap-3 p-4 bg-error-bg border border-error/10 rounded-xl">
+          <AlertTriangle className="text-error shrink-0 mt-0.5" size={16} />
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-bold text-error uppercase tracking-wider">
+              {errorCode === 'GENERATION_TIMEOUT' ? 'Timed Out'
+                : errorCode === 'GENERATION_ERROR' ? 'AI Unavailable'
+                : errorCode === 'QUOTA_EXCEEDED' ? 'Limit Reached'
+                : 'Generation Failed'}
+            </span>
+            <p className="text-xs text-text-2 leading-relaxed">
+              {errorMsg}
+            </p>
+          </div>
         </div>
       )}
 
-      {/* ── DEV TRACE badge — never shown in production ── */}
+      {/* ── DEV TRACE ── */}
       {process.env.NODE_ENV === 'development' && (
-        <div style={{
-          marginTop: 10,
-          padding: '8px 12px',
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: 6,
-          fontSize: 11,
-          color: 'var(--text-4)',
-          fontFamily: 'monospace',
-          lineHeight: 1.7,
-        }}>
-          <div><strong style={{ color: 'var(--text-3)' }}>DEV TRACE</strong></div>
-          <div>Route: /api/riddles/generate</div>
-          <div>Mode: {loading ? 'loading...' : 'idle'}</div>
-          <div>Used today: {used} / {MAX_PER_DAY}</div>
-          {templateFamily && <div>Template Family: <strong style={{ color: 'var(--text-3)' }}>{templateFamily}</strong></div>}
-          {errorCode && <div>Error code: <strong style={{ color: '#f87171' }}>{errorCode}</strong></div>}
-          
+        <div className="p-4 bg-bg-subtle border border-border rounded-xl font-mono text-[10px] text-text-4 leading-relaxed">
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="secondary" size="sm">DEV TRACE</Badge>
+          </div>
+          <div>Used today: <span className="text-text-2 font-bold">{used} / {MAX_PER_DAY}</span></div>
+          {templateFamily && <div>Template: <span className="text-primary">{templateFamily}</span></div>}
           {attempts.length > 0 && (
-            <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-              <div><strong>Generation Attempts ({attempts.length}):</strong></div>
-              {attempts.map((att, idx) => (
-                <div key={idx} style={{ marginTop: 4, paddingLeft: 6, borderLeft: '2px solid rgba(239,68,68,0.4)' }}>
-                  <div>Attempt: {att.attempt}</div>
-                  <div>Failed at: <span style={{ color: '#fbbf24' }}>{att.failedAt}</span></div>
-                  {att.templateFamily && <div>Template: <span style={{ color: '#60a5fa' }}>{att.templateFamily}</span></div>}
-                  {att.durationMs && <div>Duration: {att.durationMs}ms</div>}
-                  <div style={{ color: 'var(--text-4)' }}>{att.reason}</div>
-                </div>
-              ))}
-            </div>
+             <div className="mt-2 pt-2 border-t border-border/50">
+               <div className="mb-1 uppercase font-bold">Failed Attempts:</div>
+               {attempts.map((att, idx) => (
+                 <div key={idx} className="mb-1 text-error/80">• {att.failedAt}: {att.reason}</div>
+               ))}
+             </div>
           )}
         </div>
       )}
 
       {/* ── Quota counter ── */}
-      <p style={{ marginTop: 12, color: 'var(--text-4)', fontSize: 13, textAlign: 'center' }}>
+      <div className="flex items-center justify-center gap-2 text-xs font-medium text-text-3">
+        <Info size={12} />
         {limitReached
-          ? 'Come back tomorrow for more challenges.'
-          : `${used} / ${MAX_PER_DAY} used today`}
-      </p>
+          ? 'Daily quota exhausted.'
+          : `${MAX_PER_DAY - used} riddle generations remaining today`}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { generateSingleRiddle, parseGroqRetryDelay, PRIMARY_MODEL, FAST_MODEL, generateDeterministicFallback } from '@/lib/ai/generator';
 import { checkDuplication } from '@/lib/validation/duplication';
-import { insertRiddle, insertGenerationLog, getRecentTemplateFamilies, insertFailedGeneration } from '@/lib/riddles/queries';
+import { insertRiddle, insertGenerationLog, getRecentTemplateFamilies, insertFailedGeneration, getAIConfig } from '@/lib/riddles/queries';
 import { logPipelineEvent } from '@/lib/analytics/pipelineEvents';
 import { generateSlug } from '@/lib/riddles/slugify';
 import type { DbRiddle } from '@/types/supabase';
@@ -43,22 +43,34 @@ export async function runGenerationPipeline(
   const { difficulty, isDaily = false, dailyDate = null, createdBy = null, sessionId = null } = opts;
   const startedAt = Date.now();
 
+  // 1. Check AI Config
+  const config = await getAIConfig();
+  if (!config.is_enabled) {
+    console.warn('[pipeline] AI generation is DISABLED via admin override');
+    return { success: false, error: 'AI generation is currently disabled.', retryable: false };
+  }
+
+  const maxCandidates = config.max_retries || MAX_CANDIDATES;
+  if (config.safe_mode) {
+    console.log(`[AI SAFE MODE] Enabled for difficulty=${difficulty}`);
+  }
+
   let candidatesTried = 0;
   let rateLimitHits = 0;
-  let lastRejectionType: 'structural_rejected' | 'duplicate_rejected' | 'generator_error' = 'generator_error';
+  let lastRejectionType: 'structural_rejected' | 'duplicate_rejected' | 'generator_error' | 'hallucination_detected' = 'generator_error';
 
   const attempts: AttemptTrace[] = [];
   const recentTemplateFamilies = await getRecentTemplateFamilies(20);
 
-  console.log(`[pipeline] START difficulty=${difficulty}`);
+  console.log(`[pipeline] START difficulty=${difficulty} mode=${config.mode}`);
 
-  for (let slot = 0; slot < MAX_CANDIDATES; slot++) {
+  for (let slot = 0; slot < maxCandidates; slot++) {
     const attemptStartTime = Date.now();
     let riddleResult;
     let currentModel = slot === 0 ? PRIMARY_MODEL : FAST_MODEL;
     
-    if (slot < 2) {
-      console.log(`[pipeline] Candidate ${slot + 1}/${MAX_CANDIDATES} — model=${currentModel}`);
+    if (slot < maxCandidates - 1) {
+      console.log(`[pipeline] Candidate ${slot + 1}/${maxCandidates} — model=${currentModel}`);
       try {
         riddleResult = await generateSingleRiddle(difficulty, recentTemplateFamilies, currentModel);
       } catch (err) {
@@ -145,22 +157,33 @@ export async function runGenerationPipeline(
       continue;
     }
 
-    await insertGenerationLog({ userId: createdBy, sessionId, riddleId: saved.id, difficulty });
-
     const durationMs = Date.now() - startedAt;
+    await insertGenerationLog({ 
+      userId: createdBy, 
+      sessionId, 
+      riddleId: saved.id, 
+      difficulty,
+      durationMs,
+      retryCount: slot + 1,
+      templateFamily: riddleResult.templateFamily
+    });
+
     await logPipelineEvent({ sessionId, userId: createdBy, difficulty, isDaily,
       eventType: 'success', riddleId: saved.id, validationScore: score,
       durationMs, attemptsMade: slot + 1, candidatesTried, generationMode: riddleResult.generationMode, templateFamily: riddleResult.templateFamily });
 
-    console.log(`[pipeline] ✓ id=${saved.id} slug=${saved.slug} score=${score.toFixed(2)} model=${currentModel} mode=${riddleResult.generationMode} in ${durationMs}ms`);
+    console.log(`[GENERATION SUCCESS] id=${saved.id} slug=${saved.slug} model=${currentModel} in ${durationMs}ms`);
     return { success: true, riddle: saved };
   }
 
   // All candidates exhausted (even fallback failed dedupe somehow)
+  const totalDuration = Date.now() - startedAt;
   await logPipelineEvent({ sessionId, userId: createdBy, difficulty, isDaily,
-    eventType: lastRejectionType, durationMs: Date.now() - startedAt,
-    attemptsMade: MAX_CANDIDATES, candidatesTried,
-    failureReason: `All ${MAX_CANDIDATES} candidates rejected`, generationMode: 'deterministic_fallback' });
+    eventType: lastRejectionType, durationMs: totalDuration,
+    attemptsMade: maxCandidates, candidatesTried,
+    failureReason: `All ${maxCandidates} candidates rejected`, generationMode: 'deterministic_fallback' });
+
+  console.error(`[PIPELINE FAILURE] difficulty=${difficulty} after ${maxCandidates} attempts. Total time: ${totalDuration}ms`);
 
   return {
     success: false,

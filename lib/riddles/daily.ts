@@ -1,32 +1,53 @@
-import { getDailyRiddle } from '@/lib/riddles/queries';
+import { getDailyRiddle, getScheduledRiddle, insertRiddle } from '@/lib/riddles/queries';
 import { runGenerationPipeline } from '@/lib/generation/pipeline';
 import { withLock } from '@/lib/generation/concurrency';
 import type { DbRiddle } from '@/types/supabase';
 import type { Riddle } from '@/types';
+import { slugify } from '@/utils/slugify';
 
 /**
  * Retrieves the daily riddle for a given date + difficulty.
  *
  * Priority:
- * 1. DB lookup — if row exists, return it (zero generation cost)
- * 2. Generation pipeline — if not found, generate + save to DB
- * 3. Riddle bank fallback — ONLY for backwards compat with /riddle/[date]
- *    when DB is unavailable (e.g. service role key not yet set)
- *
- * The lock on `daily:${date}:${difficulty}` prevents concurrent
- * generation requests for the same daily slot from spawning
- * multiple Groq calls. The DB unique index on (daily_date, difficulty)
- * provides an additional distributed guard.
+ * 1. DB lookup (riddles table) — already served/generated.
+ * 2. Scheduled Override — if an admin pre-scheduled a riddle for today.
+ * 3. Generation pipeline — fallback if nothing is pre-set.
  */
 export async function getDailyRiddleOrGenerate(
   date: string,
   difficulty: string
 ): Promise<DbRiddle | null> {
-  // 1. Check DB first — cheap, no AI cost
+  // 1. Check live DB first
   const existing = await getDailyRiddle(date, difficulty);
   if (existing) return existing;
 
-  // 2. Generate under lock — prevents double-generation
+  // 2. Check for Scheduled Riddles (Editorial Override)
+  const scheduled = await getScheduledRiddle(date, difficulty);
+  if (scheduled) {
+    console.log(`[SCHEDULED RIDDLE SERVED] Date: ${date}, Difficulty: ${difficulty}`);
+    
+    // Promote scheduled riddle to live riddles table
+    const promoted = await insertRiddle({
+      question: scheduled.question,
+      answer: scheduled.answer,
+      explanation: scheduled.explanation,
+      difficulty: scheduled.difficulty,
+      is_daily: true,
+      daily_date: date,
+      status: 'published',
+      slug: slugify(scheduled.question.slice(0, 50)) + '-' + Date.now().toString(36),
+      source_type: 'admin',
+      category: 'Editorial'
+    });
+
+    if (promoted) {
+      console.log(`[RIDDLE MANUALLY OVERRIDDEN] Promoted ID: ${promoted.id}`);
+      return promoted;
+    }
+  }
+
+  // 3. Fallback to AI Generation under lock
+  console.log(`[AI FALLBACK USED] Date: ${date}, Difficulty: ${difficulty}`);
   const lockKey = `daily:${date}:${difficulty}`;
   const result = await withLock(lockKey, () =>
     runGenerationPipeline({
@@ -38,7 +59,6 @@ export async function getDailyRiddleOrGenerate(
 
   if (result.success) return result.riddle;
 
-  // 3. Fallback: return null — caller decides whether to use riddle bank
   console.error('[daily] Generation pipeline failed:', result.error);
   return null;
 }

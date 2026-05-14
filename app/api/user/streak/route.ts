@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getUser } from '@/lib/auth/getUser';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/utils/supabase/server';
 
 /** GET /api/user/streak — returns current_streak, best_streak, and recent events. */
 export async function GET() {
-  const user = await getUser();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const supabase = await createClient();
 
   const [statsRes, eventsRes] = await Promise.all([
     supabase

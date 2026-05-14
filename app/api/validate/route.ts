@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getTodayUTC } from '@/lib/timezone';
 import { getActiveRiddleForServer } from '@/lib/riddles/daily';
 import { validateAnswer } from '@/lib/answer-validator';
-import { getUser } from '@/lib/auth/getUser';
+import { createClient } from '@/utils/supabase/server';
 import { insertAttempt } from '@/lib/riddles/queries';
 import { processSolve } from '@/lib/gamification';
 import type { Difficulty } from '@/types';
@@ -43,7 +43,8 @@ export async function POST(req: NextRequest) {
     const isCorrect = validateAnswer(userAnswer, riddle.answer, riddle.answerVariants);
 
     // Get authenticated user
-    const user = await getUser();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
     const resolvedRiddleId = riddleId ?? riddle.riddleId ?? null;
 
     // Record attempt in DB
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
         riddleId: resolvedRiddleId,
         submittedAnswer: userAnswer,
         isCorrect,
+        status: isCorrect ? 'solved' : 'wrong'
       });
     }
 

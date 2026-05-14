@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { requireUser } from '@/lib/auth/requireUser';
-import { getCurrentProfile } from '@/lib/auth/getProfile';
-import { loadStreakData } from '@/lib/streak-engine';
+import { redirect } from 'next/navigation';
+import { createClient } from '@/utils/supabase/server';
+import type { Database } from '@/types/supabase';
 
 export const metadata: Metadata = {
   title: 'Dashboard — AdvaitAI',
@@ -13,8 +13,16 @@ export const metadata: Metadata = {
  * Shows: profile info, role badge, streak summary, CTA to start riddle.
  */
 export default async function DashboardPage() {
-  const user = await requireUser();
-  const profile = await getCurrentProfile();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  type Profile = Database['public']['Tables']['profiles']['Row'];
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single<Profile>();
 
   // Display name: prefer profile full_name → user metadata → email prefix
   const displayName =

@@ -1,6 +1,10 @@
 'use client';
-import { useEffect } from 'react';
+
 import { motion } from 'framer-motion';
+import { Modal } from '@/components/ui/Modal';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { CheckCircle2, Flame, Timer } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
 
 interface Props {
@@ -13,109 +17,79 @@ interface Props {
 }
 
 export default function CelebrationModal({ explanation, answer, streak, onClose, xpAwarded, bonuses }: Props) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [onClose]);
-
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.97, y: 6 }}
-        transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-        className="modal-card"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Top bar */}
-        <div style={{ padding: '28px 28px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          {/* Checkmark */}
-          <div style={{ width: 52, height: 52, borderRadius: '50%', border: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
-              <path className="check-path" d="M6 14l6 6 10-10" stroke="var(--text-1)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+    <Modal isOpen={true} onClose={onClose} title="Solution Correct" className="max-w-xl">
+      <div className="flex flex-col gap-8">
+        {/* Header Celebration */}
+        <div className="flex flex-col items-center text-center gap-3">
+          <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center text-success mb-2">
+            <CheckCircle2 size={40} strokeWidth={2.5} />
           </div>
-          <button
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 4, transition: 'color 140ms' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-1)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}
-            aria-label="Close"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-            </svg>
-          </button>
+          <h2 className="text-2xl font-black text-text-1 tracking-tight">
+            {streak > 1 ? `${streak} Day Streak!` : 'First Step Taken!'}
+          </h2>
+          <p className="text-text-3 text-sm max-w-sm">
+            Mathematical excellence is built through daily persistence. Your mind is sharpening.
+          </p>
         </div>
 
-        {/* Body */}
-        <div style={{ padding: '20px 28px 28px' }}>
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <h2 className="font-display" style={{ fontSize: 24, fontWeight: 700, marginBottom: 6 }}>
-              {streak > 1 ? `${streak} days strong.` : 'Nice. You\'re on a streak.'}
-            </h2>
-            <p style={{ fontSize: 15, color: 'var(--text-2)', marginBottom: 24, lineHeight: 1.6 }}>
-              Intelligence is built daily. Keep going.
+        {/* XP & Rewards */}
+        <div className="flex justify-center flex-wrap gap-2">
+          {xpAwarded && (
+            <Badge variant="primary" size="lg" className="px-4 py-1.5 text-sm">
+              +{xpAwarded} XP
+            </Badge>
+          )}
+          {(bonuses ?? []).map((b, i) => (
+            <Badge key={i} variant="secondary" size="lg" className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider">
+              {b.reason === 'first_try_bonus' ? '⚡ First try' :
+               b.reason === 'fast_solve_bonus' ? '🏃 Fast solve' :
+               b.reason.startsWith('streak_milestone') ? `🔥 Streak` :
+               b.reason} +{b.amount}
+            </Badge>
+          ))}
+        </div>
+
+        {/* Solution Details */}
+        <div className="p-6 bg-bg-subtle border border-border rounded-xl flex flex-col gap-4">
+          <div>
+            <span className="label block mb-2 text-primary font-black">Official Solution</span>
+            <p className="text-sm text-text-2 leading-relaxed italic">
+              "{explanation}"
             </p>
-
-            {/* Solution */}
-            <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '16px 18px', marginBottom: 24 }}>
-              <span className="label" style={{ display: 'block', marginBottom: 8 }}>Solution</span>
-              <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.65, marginBottom: 10 }}>{explanation}</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span className="label">Answer</span>
-                <span className="mono" style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-1)' }}>{answer}</span>
-              </div>
-            </div>
-
-            {/* Streak + XP + Countdown */}
-            {streak > 0 && (
-              <div style={{ paddingTop: 16, borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <span className="label" style={{ display: 'block', marginBottom: 4 }}>Current Streak</span>
-                    <span className="mono font-display" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em' }}>{streak}</span>
-                  </div>
-                  <CountdownTimer />
-                </div>
-
-                {xpAwarded !== null && xpAwarded !== undefined && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <div style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 5,
-                      background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
-                      borderRadius: 20, padding: '5px 12px',
-                      fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
-                      color: 'var(--text-2)',
-                    }}>
-                      <span style={{ color: 'var(--text-1)' }}>+{xpAwarded} XP</span>
-                    </div>
-                    {(bonuses ?? []).map((b, i) => (
-                      <div key={i} style={{
-                        display: 'inline-flex', alignItems: 'center',
-                        background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)',
-                        borderRadius: 20, padding: '4px 10px',
-                        fontSize: 11, color: 'var(--text-3)',
-                      }}>
-                        {b.reason === 'first_try_bonus' ? '⚡ First try' :
-                         b.reason === 'fast_solve_bonus' ? '🏃 Fast solve' :
-                         b.reason.startsWith('streak_milestone') ? `🔥 Streak milestone` :
-                         b.reason} +{b.amount}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </motion.div>
+          </div>
+          <div className="flex items-center gap-3 pt-3 border-t border-border">
+            <span className="label font-black">Answer</span>
+            <span className="px-3 py-1 bg-white border border-border rounded-md font-mono text-sm font-bold text-text-1 shadow-sm">
+              {answer}
+            </span>
+          </div>
         </div>
-      </motion.div>
-    </div>
+
+        {/* Next Steps / Stats */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1 p-4 bg-bg-subtle/50 rounded-xl border border-border/50">
+            <span className="text-[10px] uppercase font-bold text-text-4 tracking-widest flex items-center gap-1.5">
+              <Flame size={12} className="text-primary" />
+              Current Streak
+            </span>
+            <span className="text-2xl font-black text-text-1">{streak} Days</span>
+          </div>
+          <div className="flex flex-col gap-1 p-4 bg-bg-subtle/50 rounded-xl border border-border/50">
+            <span className="text-[10px] uppercase font-bold text-text-4 tracking-widest flex items-center gap-1.5">
+              <Timer size={12} className="text-text-3" />
+              Next Riddle
+            </span>
+            <div className="text-lg font-bold text-text-1">
+              <CountdownTimer />
+            </div>
+          </div>
+        </div>
+
+        <Button onClick={onClose} size="lg" className="w-full shadow-lg shadow-primary/10">
+          Continue to Ritual
+        </Button>
+      </div>
+    </Modal>
   );
 }

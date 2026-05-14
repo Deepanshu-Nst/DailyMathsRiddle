@@ -1,84 +1,73 @@
 'use client';
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
 
-interface Props { hint1: string; hint2: string; disabled?: boolean; }
+interface Props {
+  hint1: string;
+  hint2: string;
+  disabled?: boolean;
+}
 
 export default function HintLadder({ hint1, hint2, disabled }: Props) {
   const [level, setLevel] = useState(0);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {level === 0 && !disabled && (
-        <button
-          onClick={() => setLevel(1)}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            display: 'inline-flex', alignItems: 'center', gap: 7,
-            color: 'var(--text-3)', fontSize: 13, fontWeight: 500,
-            fontFamily: "'Inter', sans-serif",
-            transition: 'color 140ms',
-            alignSelf: 'flex-start',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-1)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}
+    <div className="flex flex-col gap-4">
+      {/* Hint Selection Controls */}
+      <div className="flex gap-2">
+        <Button
+          variant={level === 1 ? 'secondary' : 'ghost'}
+          size="sm"
+          onClick={() => setLevel(level === 1 ? 0 : 1)}
+          disabled={disabled}
+          className="gap-2"
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.8"/>
-            <path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-          Need a hint?
-        </button>
-      )}
+          <Lightbulb size={14} className={level >= 1 ? 'text-primary' : 'text-text-4'} />
+          Hint 1
+          {level === 1 ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </Button>
 
-      <AnimatePresence>
-        {level >= 1 && (
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            style={{ paddingLeft: 14, borderLeft: '1.5px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 5 }}
+        {hint2 && (
+          <Button
+            variant={level === 2 ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setLevel(level === 2 ? 0 : 2)}
+            disabled={disabled || level < 1}
+            className="gap-2"
           >
-            <span className="label">Hint 1</span>
-            <span style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.6 }}>{hint1}</span>
-          </motion.div>
+            <Lightbulb size={14} className={level === 2 ? 'text-primary' : 'text-text-4'} />
+            Hint 2
+            {level === 2 ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </Button>
         )}
-      </AnimatePresence>
+      </div>
 
-      {level === 1 && !disabled && (
-        <button
-          onClick={() => setLevel(2)}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            display: 'inline-flex', alignItems: 'center', gap: 7,
-            color: 'var(--text-3)', fontSize: 13, fontWeight: 500,
-            fontFamily: "'Inter', sans-serif",
-            transition: 'color 140ms',
-            alignSelf: 'flex-start',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-1)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          One more?
-        </button>
-      )}
-
-      <AnimatePresence>
-        {level >= 2 && (
+      {/* Hint Content Display */}
+      <AnimatePresence mode="wait">
+        {level > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 6 }}
+            key={level}
+            initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            style={{ paddingLeft: 14, borderLeft: '1.5px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 5 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.2 }}
+            className="p-4 bg-bg-subtle border border-border rounded-xl flex flex-col gap-3 shadow-sm shadow-black/5"
           >
-            <span className="label">Hint 2</span>
-            <span style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.6 }}>{hint2}</span>
+            <div className="flex items-center gap-2">
+              <Badge variant="warning" size="sm">Level {level} Hint</Badge>
+              <div className="h-px flex-1 bg-border/50" />
+            </div>
+            <p className="text-sm text-text-2 leading-relaxed italic pr-4">
+              "{level === 1 ? hint1 : hint2}"
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
 }
+

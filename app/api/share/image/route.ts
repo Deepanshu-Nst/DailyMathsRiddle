@@ -6,6 +6,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const date = searchParams.get('date');
   const difficulty = searchParams.get('difficulty') ?? 'medium';
+  const streak = parseInt(searchParams.get('streak') || '0', 10);
+  const isSolved = searchParams.get('isSolved') === 'true';
 
   if (!date) {
     return NextResponse.json({ error: 'Date is required' }, { status: 400 });
@@ -19,6 +21,8 @@ export async function GET(req: NextRequest) {
       difficulty: riddle.difficulty,
       category: riddle.category,
       date,
+      streak,
+      isSolved,
     });
 
     return NextResponse.json({

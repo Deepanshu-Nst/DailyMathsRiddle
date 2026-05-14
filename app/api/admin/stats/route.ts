@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/utils/supabase/server';
 import type { PipelineEventType, PipelineStats } from '@/types/analytics';
 
 /**

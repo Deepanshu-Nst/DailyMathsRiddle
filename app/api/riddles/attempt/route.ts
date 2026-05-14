@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getRiddleById } from '@/lib/riddles/queries';
 import { insertAttempt } from '@/lib/riddles/queries';
 import { validateAnswer } from '@/lib/answer-validator';
-import { getUser } from '@/lib/auth/getUser';
+import { createClient } from '@/utils/supabase/server';
 
 const schema = z.object({
   riddleId: z.string().uuid(),
@@ -50,7 +50,8 @@ export async function POST(req: NextRequest) {
     );
 
     // Get user (null for anon)
-    const user = await getUser();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
     // Record attempt (non-blocking — don't let DB failure break the UX)
     await insertAttempt({
@@ -58,6 +59,7 @@ export async function POST(req: NextRequest) {
       riddleId,
       submittedAnswer,
       isCorrect,
+      status: isCorrect ? 'solved' : 'wrong'
     });
 
     return NextResponse.json({

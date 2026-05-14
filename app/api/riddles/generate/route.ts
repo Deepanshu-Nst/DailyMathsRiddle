@@ -4,7 +4,7 @@ import { runGenerationPipeline } from '@/lib/generation/pipeline';
 import { withLock } from '@/lib/generation/concurrency';
 import { countTodayGenerations } from '@/lib/riddles/queries';
 import { toClientRiddle } from '@/lib/riddles/toClientRiddle';
-import { getUser } from '@/lib/auth/getUser';
+import { createClient } from '@/utils/supabase/server';
 import { getRiddleShareUrl } from '@/lib/share/getCanonicalUrl';
 
 export const maxDuration = 300;
@@ -51,7 +51,8 @@ export async function POST(req: NextRequest) {
     const { difficulty, sessionId } = parsed.data;
 
     // Get authenticated user (null for anon)
-    const user = await getUser();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
     const userId = user?.id ?? null;
 
     // Rate limit check

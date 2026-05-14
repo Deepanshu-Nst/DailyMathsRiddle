@@ -13,6 +13,7 @@ import {
   getLinkedInShareUrl,
   getWhatsAppShareUrl
 } from '@/lib/share/getShareUrl';
+import { useChallengeSession } from '@/components/providers/ChallengeSessionProvider';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://daily-maths-riddle.vercel.app";
 
@@ -25,6 +26,7 @@ interface ShareModalProps {
 type Platform = 'linkedin' | 'whatsapp' | 'instagram';
 
 export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
+  const { session } = useChallengeSession();
   const [platform, setPlatform] = useState<Platform>('linkedin');
   const [captions, setCaptions] = useState<Record<Platform, string>>({
     linkedin: '',
@@ -198,6 +200,8 @@ export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
                 <ImagePreview 
                   date={date} 
                   difficulty={riddle.difficulty ?? 'medium'} 
+                  streak={session?.streak.currentStreak || 0}
+                  isSolved={session?.solvedToday || false}
                   onLoaded={setImageDataUrl} 
                 />
               </div>

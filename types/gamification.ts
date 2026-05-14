@@ -23,6 +23,7 @@ export interface SolveResult {
   wasStreakReset: boolean;
   isStreakMilestone: boolean;
   bonuses: XPBonus[];
+  newlyUnlockedAchievements?: string[];
 }
 
 export interface XPBonus {
@@ -38,3 +39,21 @@ export type XPReason =
   | 'first_try_bonus'
   | 'fast_solve_bonus'
   | `streak_milestone_${number}`;
+
+/** Represents an achievement in the system */
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  requirement_type: string;
+  threshold: number;
+}
+
+/** Represents an achievement unlocked by a user */
+export interface UserAchievement {
+  user_id: string;
+  achievement_id: string;
+  unlocked_at: string;
+  achievement?: Achievement; // for joined queries
+}

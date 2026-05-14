@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/utils/supabase/server';
 import type { DbRiddle, DbRiddleInsert } from '@/types/supabase';
 
 /**
@@ -45,6 +45,26 @@ export async function getDailyRiddle(
 
   if (error || !data) return null;
   return data as DbRiddle;
+}
+
+/**
+ * Fetch a scheduled riddle for a specific date and difficulty.
+ */
+export async function getScheduledRiddle(
+  date: string,
+  difficulty: string
+): Promise<any | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('scheduled_riddles')
+    .select('*')
+    .eq('publish_date', date)
+    .eq('difficulty', difficulty)
+    .in('status', ['scheduled', 'published'])
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data;
 }
 
 /**
@@ -109,7 +129,7 @@ export async function getRiddleById(id: string): Promise<DbRiddle | null> {
  * Returns the inserted row.
  */
 export async function insertRiddle(payload: DbRiddleInsert): Promise<DbRiddle | null> {
-  const { createServiceClient } = await import('@/lib/supabase/server');
+  const { createServiceClient } = await import('@/utils/supabase/server');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = (await createServiceClient()) as any;
 
@@ -135,17 +155,34 @@ export async function insertGenerationLog(opts: {
   sessionId: string | null;
   riddleId: string;
   difficulty: string;
+  durationMs?: number;
+  retryCount?: number;
+  templateFamily?: string | null;
 }): Promise<void> {
   try {
-    const { createServiceClient } = await import('@/lib/supabase/server');
+    const { createServiceClient } = await import('@/utils/supabase/server');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = (await createServiceClient()) as any;
+    
+    // 1. Legacy rate limiting log
     await supabase.from('generation_logs').insert({
       user_id: opts.userId,
       session_id: opts.sessionId,
       generated_riddle_id: opts.riddleId,
       difficulty: opts.difficulty,
     });
+
+    // 2. New observability log
+    await insertPipelineLog({
+      userId: opts.userId,
+      sessionId: opts.sessionId,
+      difficulty: opts.difficulty,
+      status: 'success',
+      durationMs: opts.durationMs,
+      retryCount: opts.retryCount,
+      templateFamily: opts.templateFamily
+    });
+
   } catch (err) {
     console.error('[riddles/queries] insertGenerationLog failed:', err);
   }
@@ -186,9 +223,10 @@ export async function insertAttempt(opts: {
   riddleId: string;
   submittedAnswer: string;
   isCorrect: boolean;
+  status: 'solved' | 'wrong' | 'gave_up' | 'challenged';
 }): Promise<void> {
   try {
-    const { createServiceClient } = await import('@/lib/supabase/server');
+    const { createServiceClient } = await import('@/utils/supabase/server');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = (await createServiceClient()) as any;
     await supabase.from('user_attempts').insert({
@@ -196,9 +234,47 @@ export async function insertAttempt(opts: {
       riddle_id: opts.riddleId,
       submitted_answer: opts.submittedAnswer,
       is_correct: opts.isCorrect,
+      status: opts.status,
     });
   } catch (err) {
     console.error('[riddles/queries] insertAttempt failed:', err);
+  }
+}
+
+/**
+ * Records a pipeline event (success or failure) for AI observability.
+ */
+export async function insertPipelineLog(opts: {
+  sessionId: string | null;
+  userId: string | null;
+  difficulty: string;
+  model?: string;
+  status: 'success' | 'failure';
+  rejectionStage?: 'parse_error' | 'structural_rejected' | 'validation_failed' | 'duplicate_rejected' | 'hallucination_detected';
+  rejectionReason?: string;
+  durationMs?: number;
+  retryCount?: number;
+  similarityScore?: number;
+  templateFamily?: string | null;
+}): Promise<void> {
+  try {
+    const { createServiceClient } = await import('@/utils/supabase/server');
+    const supabase = (await createServiceClient()) as any;
+    await supabase.from('ai_pipeline_logs').insert({
+      session_id: opts.sessionId,
+      user_id: opts.userId,
+      difficulty: opts.difficulty,
+      model: opts.model,
+      status: opts.status,
+      rejection_stage: opts.rejectionStage,
+      rejection_reason: opts.rejectionReason,
+      duration_ms: opts.durationMs,
+      retry_count: opts.retryCount,
+      similarity_score: opts.similarityScore,
+      template_family: opts.templateFamily ?? null,
+    });
+  } catch (err) {
+    console.error('[riddles/queries] insertPipelineLog failed:', err);
   }
 }
 
@@ -217,7 +293,8 @@ export async function insertFailedGeneration(opts: {
   templateFamily?: string | null;
 }): Promise<void> {
   try {
-    const { createServiceClient } = await import('@/lib/supabase/server');
+    // 1. Record in legacy table for backward compatibility
+    const { createServiceClient } = await import('@/utils/supabase/server');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = (await createServiceClient()) as any;
     await supabase.from('failed_generations').insert({
@@ -230,7 +307,32 @@ export async function insertFailedGeneration(opts: {
       rejection_reason: opts.rejectionReason,
       template_family: opts.templateFamily ?? null,
     });
+
+    // 2. Record in new observability table
+    await insertPipelineLog({
+      ...opts,
+      status: 'failure',
+    });
+
   } catch (err) {
     console.error('[riddles/queries] insertFailedGeneration failed:', err);
+  }
+}
+
+/**
+ * Fetches the global AI engine configuration.
+ */
+export async function getAIConfig(): Promise<{ is_enabled: boolean; safe_mode: boolean; max_retries: number; mode: string }> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from('ai_settings')
+      .select('value')
+      .eq('key', 'engine_config')
+      .single();
+    
+    return (data as any)?.value || { is_enabled: true, safe_mode: false, max_retries: 3, mode: 'standard' };
+  } catch (err) {
+    return { is_enabled: true, safe_mode: false, max_retries: 3, mode: 'standard' };
   }
 }
