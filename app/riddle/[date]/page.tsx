@@ -1,12 +1,11 @@
 'use client';
-import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import AnswerInput from '@/components/AnswerInput';
 import HintLadder from '@/components/HintLadder';
 import CelebrationModal from '@/components/CelebrationModal';
 import ShareModal from '@/components/share/ShareModal';
-import StreakChip from '@/components/StreakChip';
 import CountdownTimer from '@/components/CountdownTimer';
 import GenerateMore from '@/components/riddle/GenerateMore';
 import { Difficulty, StreakData, Riddle } from '@/types';
@@ -35,12 +34,20 @@ function SolvePage() {
   const [sessionId, setSessionId] = useState('');
   const [mode, setMode] = useState<'daily'|'extra'>('daily');
   const [extraCount, setExtraCount] = useState(0);
+  // Gamification
+  const [xpAwarded, setXpAwarded] = useState<number | null>(null);
+  const [newStreak, setNewStreak] = useState<number | null>(null);
+  const [bonuses, setBonuses] = useState<Array<{reason:string;amount:number}>>([]);
+  const [attemptCount, setAttemptCount] = useState(0);
+  const solveStartedAt = useRef<string | null>(null);
 
   const fetchRiddle = useCallback(async () => {
     setLoading(true); setError('');
+    console.log('[DAILY FETCH]', { difficulty, dateParam });
     try {
       const res = await fetch(`/api/challenge?difficulty=${difficulty}&date=${dateParam}`);
       const data = await res.json();
+      console.log('[ACTIVE RIDDLE ID]', data.riddle?.id ?? 'none');
       setRiddle(data.riddle);
     } catch {
       setError('Failed to load riddle. Please refresh.');
@@ -50,7 +57,6 @@ function SolvePage() {
   }, [difficulty, dateParam]);
 
   useEffect(() => {
-    // Generate or retrieve session ID for extra riddles limit tracking
     let sid = localStorage.getItem('advaitai_session_id');
     if (!sid) {
       sid = crypto.randomUUID();
@@ -60,28 +66,40 @@ function SolvePage() {
 
     const s = loadStreakData();
     setStreak(s);
-    // Solved state from streak applies ONLY to the daily riddle (mode === 'daily').
-    // Extra riddles always start unsolved — never inherit streak state.
     if (s.progressState === 'solved') {
       setIsSolved(true);
       setStatus('correct');
     }
+    console.log('[RIDDLE SOURCE] daily', dateParam, difficulty);
     fetchRiddle();
+    // Record when the riddle was first presented for solve-time tracking
+    solveStartedAt.current = new Date().toISOString();
   }, [fetchRiddle]);
 
   const handleSubmit = async () => {
     if (!answer.trim() || status === 'correct') return;
+    const currentAttempt = attemptCount + 1;
+    setAttemptCount(currentAttempt);
     try {
       const res = await fetch('/api/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userAnswer: answer, difficulty, date: dateParam }),
+        body: JSON.stringify({
+          userAnswer: answer, difficulty, date: dateParam,
+          solveStartedAt: solveStartedAt.current,
+          attemptCount: currentAttempt,
+          hintsUsed,
+        }),
       });
       const data = await res.json();
       if (data.isCorrect) {
         setStatus('correct');
         setExplanation(data.explanation ?? '');
         setCorrectAnswer(data.answer ?? '');
+        // Gamification
+        if (data.xpAwarded !== null) setXpAwarded(data.xpAwarded);
+        if (data.newStreak !== null) setNewStreak(data.newStreak);
+        if (data.bonuses)            setBonuses(data.bonuses);
         const updated = markSolved(dateParam, difficulty, hintsUsed);
         setStreak(updated);
         setIsSolved(true);
@@ -96,39 +114,28 @@ function SolvePage() {
   };
 
   const handleNewRiddle = (newRiddle: Partial<Riddle>) => {
-    // Switch to extra mode and reset ALL solve state atomically.
-    // This prevents the daily riddle's solved status from bleeding
-    // into the newly generated extra challenge.
+    console.log('[EXTRA RIDDLE SET]', newRiddle.id ?? 'no-id');
+    console.log('[RERENDER SOURCE] GenerateMore callback → extra mode');
     setMode('extra');
     setRiddle(newRiddle);
     setAnswer('');
     setStatus('idle');
-    setIsSolved(false);      // always — extra riddles start unsolved
+    setIsSolved(false);
     setExplanation('');
     setCorrectAnswer('');
     setHintsUsed(0);
     setShowModal(false);
-    // Note: extraCount is for display only — quota is tracked server-side
+    setAttemptCount(0);
+    setXpAwarded(null);
+    setNewStreak(null);
+    setBonuses([]);
     setExtraCount(prev => prev + 1);
+    // Reset solve timer for this extra riddle
+    solveStartedAt.current = new Date().toISOString();
   };
 
   return (
     <div style={{ minHeight: '100vh', padding: '0 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
-      {/* ── Nav ─────────────────────────────────── */}
-      <nav style={{
-        width: '100%', maxWidth: 1100,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '28px 0 0',
-      }}>
-        <button className="nav-back" onClick={() => router.push('/')}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Home
-        </button>
-        {streak && <StreakChip current={streak.currentStreak} />}
-      </nav>
 
       {/* ── Two-column ──────────────────────────── */}
       <main style={{
@@ -315,7 +322,9 @@ function SolvePage() {
           <CelebrationModal
             explanation={explanation}
             answer={correctAnswer}
-            streak={streak?.currentStreak ?? 0}
+            streak={newStreak ?? streak?.currentStreak ?? 0}
+            xpAwarded={xpAwarded}
+            bonuses={bonuses}
             onClose={() => setShowModal(false)}
           />
         )}

@@ -8,9 +8,11 @@ interface Props {
   answer: string;
   streak: number;
   onClose: () => void;
+  xpAwarded?: number | null;
+  bonuses?: Array<{ reason: string; amount: number }>;
 }
 
-export default function CelebrationModal({ explanation, answer, streak, onClose }: Props) {
+export default function CelebrationModal({ explanation, answer, streak, onClose, xpAwarded, bonuses }: Props) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
@@ -72,14 +74,43 @@ export default function CelebrationModal({ explanation, answer, streak, onClose 
               </div>
             </div>
 
-            {/* Streak + Countdown */}
+            {/* Streak + XP + Countdown */}
             {streak > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, borderTop: '1px solid var(--border-subtle)' }}>
-                <div>
-                  <span className="label" style={{ display: 'block', marginBottom: 4 }}>Current Streak</span>
-                  <span className="mono font-display" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em' }}>{streak}</span>
+              <div style={{ paddingTop: 16, borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <span className="label" style={{ display: 'block', marginBottom: 4 }}>Current Streak</span>
+                    <span className="mono font-display" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em' }}>{streak}</span>
+                  </div>
+                  <CountdownTimer />
                 </div>
-                <CountdownTimer />
+
+                {xpAwarded !== null && xpAwarded !== undefined && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <div style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
+                      borderRadius: 20, padding: '5px 12px',
+                      fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
+                      color: 'var(--text-2)',
+                    }}>
+                      <span style={{ color: 'var(--text-1)' }}>+{xpAwarded} XP</span>
+                    </div>
+                    {(bonuses ?? []).map((b, i) => (
+                      <div key={i} style={{
+                        display: 'inline-flex', alignItems: 'center',
+                        background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)',
+                        borderRadius: 20, padding: '4px 10px',
+                        fontSize: 11, color: 'var(--text-3)',
+                      }}>
+                        {b.reason === 'first_try_bonus' ? '⚡ First try' :
+                         b.reason === 'fast_solve_bonus' ? '🏃 Fast solve' :
+                         b.reason.startsWith('streak_milestone') ? `🔥 Streak milestone` :
+                         b.reason} +{b.amount}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </motion.div>

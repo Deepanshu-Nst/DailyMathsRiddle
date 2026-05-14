@@ -2,14 +2,15 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DifficultySelector from '@/components/DifficultySelector';
-import StreakChip from '@/components/StreakChip';
+
 import CountdownTimer from '@/components/CountdownTimer';
 import ProgressCalendar from '@/components/ProgressCalendar';
 import { Difficulty, StreakData } from '@/types';
 import { loadStreakData } from '@/lib/streak-engine';
 import { getTodayUTC } from '@/lib/timezone';
-import GenerateMore from '@/components/riddle/GenerateMore';
 import { motion } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
+import type { UserStats } from '@/types/gamification';
 
 const APPEAR = {
   initial: { opacity: 0, y: 10 },
@@ -21,7 +22,8 @@ export default function HomePage() {
   const router = useRouter();
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [streak, setStreak] = useState<StreakData | null>(null);
-  const [sessionId, setSessionId] = useState('');
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const today = getTodayUTC();
   const formattedDate = new Date(today + 'T00:00:00Z').toLocaleDateString('en-US', {
@@ -29,18 +31,44 @@ export default function HomePage() {
   });
 
   useEffect(() => {
-    // Persist session ID for extra-riddle usage tracking
-    let sid = localStorage.getItem('advaitai_session_id');
-    if (!sid) {
-      sid = crypto.randomUUID();
-      localStorage.setItem('advaitai_session_id', sid);
-    }
-    setSessionId(sid);
+    async function hydrate() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
 
-    const data = loadStreakData();
-    setStreak(data);
-    if (data.solvedDifficulty) setDifficulty(data.solvedDifficulty);
-  }, []);
+      if (user) {
+        console.log('[HOME HYDRATE] Authenticated, fetching DB stats');
+        try {
+          const res = await fetch('/api/user/stats');
+          if (res.ok) {
+            const stats: UserStats = await res.json();
+            setUserStats(stats);
+            // Sync streak state for compatibility with existing UI
+            setStreak({
+              currentStreak: stats.current_streak,
+              bestStreak: stats.best_streak,
+              lastSolvedDate: stats.last_solved_date,
+              totalSolved: stats.riddles_solved,
+              solvedDates: [], // we could fetch these from /api/user/streak if needed
+              progressState: stats.last_solved_date === today ? 'solved' : 'unsolved',
+              solvedDifficulty: null, // would need to track which difficulty was solved today in user_stats
+            });
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.error('[HOME HYDRATE] API error', e);
+        }
+      }
+
+      console.log('[HOME HYDRATE] Anonymous or API failed, using localStorage');
+      const data = loadStreakData();
+      setStreak(data);
+      if (data.solvedDifficulty) setDifficulty(data.solvedDifficulty);
+      setLoading(false);
+    }
+
+    hydrate();
+  }, [today]);
 
   const isSolved = streak?.progressState === 'solved';
   const pct = streak && streak.bestStreak > 0
@@ -49,41 +77,6 @@ export default function HomePage() {
 
   return (
     <div style={{ minHeight: '100vh', padding: '0 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
-      {/* ── Nav ─────────────────────────────────────── */}
-      <nav style={{
-        width: '100%', maxWidth: 1100,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '28px 0 0',
-      }}>
-        {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 7,
-            background: 'var(--text-1)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--bg)', fontSize: 15, fontWeight: 800,
-            fontFamily: "'Bricolage Grotesque', sans-serif",
-          }}>
-            ∑
-          </div>
-          <span className="font-display" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em' }}>
-            AdvaitAI
-          </span>
-        </div>
-
-        {/* Streak + progress link */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-          {streak && <StreakChip current={streak.currentStreak} />}
-          <button
-            className="btn btn-ghost"
-            onClick={() => router.push('/streak')}
-            style={{ fontSize: 13 }}
-          >
-            Progress →
-          </button>
-        </div>
-      </nav>
 
       {/* ── Two-column layout ────────────────────── */}
       <main style={{
@@ -149,16 +142,19 @@ export default function HomePage() {
                 <CountdownTimer />
               </div>
 
-              {/* Generate more — visible once today is solved */}
-              {sessionId && (
-                <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 20, marginTop: 4 }}>
-                  <GenerateMore
-                    sessionId={sessionId}
-                    difficulty={difficulty}
-                    onNewRiddle={() => router.push(`/riddle/${today}?difficulty=${difficulty}`)}
-                  />
-                </div>
-              )}
+              {/* Navigate to riddle page to generate extra challenges inline */}
+              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 20, marginTop: 4 }}>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    console.log('[RERENDER SOURCE] homepage → riddle page navigation');
+                    router.push(`/riddle/${today}?difficulty=${difficulty}`);
+                  }}
+                  style={{ width: '100%', justifyContent: 'center', fontSize: 13 }}
+                >
+                  Generate extra challenges →
+                </button>
+              </div>
             </div>
           ) : (
             <div>
@@ -199,8 +195,8 @@ export default function HomePage() {
                   <span className="stat-num">{streak.currentStreak}</span>
                 </div>
                 <div>
-                  <span className="label" style={{ display: 'block', marginBottom: 8 }}>Best streak</span>
-                  <span className="stat-num muted">{streak.bestStreak}</span>
+                  <span className="label" style={{ display: 'block', marginBottom: 8 }}>{userStats ? 'Total XP' : 'Best streak'}</span>
+                  <span className="stat-num muted">{userStats ? userStats.total_xp : streak.bestStreak}</span>
                 </div>
               </div>
 

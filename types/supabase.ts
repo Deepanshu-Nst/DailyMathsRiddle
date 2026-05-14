@@ -23,6 +23,8 @@ export type Database = {
           full_name: string | null;
           avatar_url: string | null;
           role: 'user' | 'admin';
+          streak_count: number;
+          xp: number;
           created_at: string;
           updated_at: string;
         };
@@ -32,6 +34,8 @@ export type Database = {
           full_name?: string | null;
           avatar_url?: string | null;
           role?: 'user' | 'admin';
+          streak_count?: number;
+          xp?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -41,6 +45,8 @@ export type Database = {
           full_name?: string | null;
           avatar_url?: string | null;
           role?: 'user' | 'admin';
+          streak_count?: number;
+          xp?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -168,6 +174,92 @@ export type Database = {
           difficulty?: string;
           created_at?: string;
         };
+      };
+
+      // ── Phase 3.2 ───────────────────────────────────────
+      user_stats: {
+        Row: {
+          user_id: string;
+          total_xp: number;
+          current_streak: number;
+          best_streak: number;
+          riddles_solved: number;
+          easy_solved: number;
+          medium_solved: number;
+          hard_solved: number;
+          total_attempts: number;
+          correct_attempts: number;
+          last_solved_date: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          total_xp?: number;
+          current_streak?: number;
+          best_streak?: number;
+          riddles_solved?: number;
+          easy_solved?: number;
+          medium_solved?: number;
+          hard_solved?: number;
+          total_attempts?: number;
+          correct_attempts?: number;
+          last_solved_date?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          total_xp?: number;
+          current_streak?: number;
+          best_streak?: number;
+          riddles_solved?: number;
+          easy_solved?: number;
+          medium_solved?: number;
+          hard_solved?: number;
+          total_attempts?: number;
+          correct_attempts?: number;
+          last_solved_date?: string | null;
+          updated_at?: string;
+        };
+      };
+
+      streak_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          event_type: 'increment' | 'reset' | 'restore';
+          streak_value: number;
+          solved_date: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          event_type: 'increment' | 'reset' | 'restore';
+          streak_value: number;
+          solved_date: string;
+          created_at?: string;
+        };
+        Update: never;
+      };
+
+      xp_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          amount: number;
+          reason: string;
+          riddle_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          amount: number;
+          reason: string;
+          riddle_id?: string | null;
+          created_at?: string;
+        };
+        Update: never;
       };
     };
 

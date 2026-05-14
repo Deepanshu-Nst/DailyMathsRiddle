@@ -11,10 +11,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import { getUserProfile } from '@/lib/auth/guards';
+import Header from '@/components/layout/Header';
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const profile = await getUserProfile();
+
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Header profile={profile} />
+        {children}
+      </body>
     </html>
   );
 }

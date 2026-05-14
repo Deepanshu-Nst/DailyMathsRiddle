@@ -73,7 +73,9 @@ alter table public.pipeline_events enable row level security;
 -- ── 4. Analytics View ────────────────────────────────────────────
 -- Pre-computed aggregates — query this from the admin stats API.
 
-create or replace view public.v_pipeline_stats as
+drop view if exists public.v_pipeline_stats;
+
+create view public.v_pipeline_stats as
 select
   -- Timeframe buckets
   date_trunc('day', created_at)   as day,

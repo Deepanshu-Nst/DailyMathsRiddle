@@ -7,14 +7,62 @@ import CountdownTimer from '@/components/CountdownTimer';
 import StreakChip from '@/components/StreakChip';
 import { StreakData } from '@/types';
 import { loadStreakData } from '@/lib/streak-engine';
+import { createClient } from '@/lib/supabase/client';
+import type { UserStats } from '@/types/gamification';
+import { getTodayUTC } from '@/lib/timezone';
 
 export default function StreakPage() {
   const router = useRouter();
   const [streak, setStreak] = useState<StreakData | null>(null);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const today = getTodayUTC();
 
-  useEffect(() => { setStreak(loadStreakData()); }, []);
+  useEffect(() => {
+    async function hydrate() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
 
-  if (!streak) return <div style={{ minHeight: '100vh', background: 'var(--bg)' }} />;
+      if (user) {
+        console.log('[STREAK HYDRATE] Authenticated, fetching DB streak');
+        try {
+          const [statsRes, streakRes] = await Promise.all([
+            fetch('/api/user/stats'),
+            fetch('/api/user/streak')
+          ]);
+
+          if (statsRes.ok && streakRes.ok) {
+            const stats: UserStats = await statsRes.json();
+            const streakInfo = await streakRes.json();
+            setUserStats(stats);
+            setStreak({
+              currentStreak: stats.current_streak,
+              bestStreak: stats.best_streak,
+              lastSolvedDate: stats.last_solved_date,
+              totalSolved: stats.riddles_solved,
+              solvedDates: streakInfo.events.map((e: any) => ({
+                date: e.solved_date,
+                difficulty: 'medium', // fallback difficulty
+                hintsUsed: 0
+              })),
+              progressState: stats.last_solved_date === today ? 'solved' : 'unsolved',
+              solvedDifficulty: null,
+            });
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.error('[STREAK HYDRATE] API error', e);
+        }
+      }
+
+      setStreak(loadStreakData());
+      setLoading(false);
+    }
+    hydrate();
+  }, [today]);
+
+  if (loading || !streak) return <div style={{ minHeight: '100vh', background: 'var(--bg)' }} />;
 
   const isSolved = streak.progressState === 'solved';
   const pct = streak.bestStreak > 0
@@ -138,12 +186,16 @@ export default function StreakPage() {
               <span className="stat-num muted">{streak.bestStreak}</span>
             </div>
             <div>
-              <span className="label" style={{ display: 'block', marginBottom: 10 }}>Total solved</span>
-              <span className="stat-num muted">{streak.totalSolved}</span>
+              <span className="label" style={{ display: 'block', marginBottom: 10 }}>{userStats ? 'Total XP' : 'Total solved'}</span>
+              <span className="stat-num muted">{userStats ? userStats.total_xp : streak.totalSolved}</span>
             </div>
             <div>
-              <span className="label" style={{ display: 'block', marginBottom: 10 }}>To best</span>
-              <span className="stat-num muted">{streak.bestStreak > 0 ? `${pct}%` : '—'}</span>
+              <span className="label" style={{ display: 'block', marginBottom: 10 }}>{userStats ? 'Accuracy' : 'To best'}</span>
+              <span className="stat-num muted">
+                {userStats 
+                  ? (userStats.total_attempts > 0 ? `${Math.round((userStats.correct_attempts / userStats.total_attempts) * 100)}%` : '—')
+                  : (streak.bestStreak > 0 ? `${pct}%` : '—')}
+              </span>
             </div>
           </div>
 

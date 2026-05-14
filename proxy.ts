@@ -7,7 +7,7 @@ import { updateSession } from '@/lib/supabase/middleware';
  * Protected route prefixes.
  * Any path starting with one of these requires authentication.
  */
-const PROTECTED_PREFIXES = ['/dashboard'];
+const PROTECTED_PREFIXES = ['/dashboard', '/admin'];
 
 /**
  * Auth routes — authenticated users are redirected away from these.
@@ -20,15 +20,23 @@ export async function proxy(request: NextRequest) {
   // Refresh the Supabase session and get current user
   const { supabaseResponse, user } = await updateSession(request);
 
+  // Never intercept the OAuth callback or API auth routes —
+  // they need to run without session checks to exchange the code.
+  if (
+    pathname.startsWith('/auth/callback') ||
+    pathname.startsWith('/api/auth/')
+  ) {
+    return supabaseResponse;
+  }
+
   // ── Redirect authenticated users away from auth pages ──
   if (user && AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   // ── Protect routes that require authentication ──
   if (!user && PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
-    const redirectUrl = new URL('/login', request.url);
-    redirectUrl.searchParams.set('next', pathname);
+    const redirectUrl = new URL('/', request.url);
     return NextResponse.redirect(redirectUrl);
   }
 
