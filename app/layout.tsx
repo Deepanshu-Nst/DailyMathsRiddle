@@ -3,11 +3,11 @@ import './globals.css';
 import { ChallengeSessionProvider } from '@/components/providers/ChallengeSessionProvider';
 
 export const metadata: Metadata = {
-  title: 'AdvaitAI — Daily Intelligence Ritual',
-  description: 'One curated math challenge every day. Build your streak. Sharpen your mind.',
+  title: 'AdvaitAI — Daily Math Challenge',
+  description: 'A new math challenge every day. Track your streak and progress.',
   openGraph: {
-    title: 'AdvaitAI — Daily Intelligence Ritual',
-    description: 'One challenge a day. Infinite curiosity.',
+    title: 'AdvaitAI — Daily Math Challenge',
+    description: 'Daily math challenges with streak tracking.',
     type: 'website',
   },
 };

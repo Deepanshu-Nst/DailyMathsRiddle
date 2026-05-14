@@ -1,49 +1,78 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateAndSelectBestRiddle } from '@/lib/ai/selectBestRiddle';
-import { riddleStore } from '@/lib/db/riddleStore';
-import { getOfficialDailyDate } from '@/lib/timezone';
+import { preGenerateForDate } from '@/lib/admin/publishPipeline';
+import { getOfficialDailyDate, addOfficialCalendarDays } from '@/lib/timezone';
 
-// Ensure this cron runs for up to 5 minutes if on Vercel Pro, else 10s default
-export const maxDuration = 300; 
+export const maxDuration = 300;
 
+/**
+ * Cron: Pre-generate tomorrow's riddle.
+ * Runs at 15:00 UTC (8:30 PM IST) — 3.5 hours before the midnight publish.
+ * Idempotent: skips if a pending queue entry already exists for tomorrow.
+ */
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
-  // In production, ensure VERCEL_CRON_SECRET matches
   if (process.env.VERCEL_CRON_SECRET && authHeader !== `Bearer ${process.env.VERCEL_CRON_SECRET}`) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
   const today = getOfficialDailyDate();
-  const difficulty = process.env.DAILY_POST_DIFFICULTY || 'medium';
+  const tomorrow = addOfficialCalendarDays(today, 1);
+  const difficulty = (process.env.DAILY_POST_DIFFICULTY || 'medium') as 'easy' | 'medium' | 'hard';
 
-  // 1. Idempotency Check
-  const existingRiddle = await riddleStore.getByDate(today, difficulty);
-  if (existingRiddle) {
+  console.log(`[cron/generate-riddle] Generating for ${tomorrow} (${difficulty})`);
+
+  // Check if queue already has a pending entry for tomorrow
+  const { createServiceClient } = await import('@/utils/supabase/server');
+  const supabase = (await createServiceClient()) as any;
+
+  const { data: existing } = await supabase
+    .from('daily_riddle_queue')
+    .select('id')
+    .eq('target_date', tomorrow)
+    .eq('difficulty', difficulty)
+    .eq('status', 'pending')
+    .limit(1)
+    .maybeSingle();
+
+  if (existing) {
     return NextResponse.json({
       success: true,
-      message: 'Riddle already exists for today. Skipped generation.',
-      riddle: existingRiddle
+      message: `Queue entry already exists for ${tomorrow}. Skipped generation.`,
+      skipped: true,
     });
   }
 
-  try {
-    // 2. Generate and Select
-    const newRiddle = await generateAndSelectBestRiddle(today, difficulty);
+  // Also check if a live riddle already exists for tomorrow
+  const { data: liveRiddle } = await supabase
+    .from('riddles')
+    .select('id')
+    .eq('daily_date', tomorrow)
+    .eq('difficulty', difficulty)
+    .eq('is_daily', true)
+    .eq('status', 'published')
+    .maybeSingle();
 
-    if (!newRiddle) {
-      return NextResponse.json({ success: false, error: 'All AI retries failed.' }, { status: 500 });
-    }
-
-    // 3. Store the result
-    await riddleStore.save(today, newRiddle);
-
+  if (liveRiddle) {
     return NextResponse.json({
       success: true,
-      message: 'Successfully generated and stored a new riddle.',
-      riddle: newRiddle
+      message: `Live riddle already exists for ${tomorrow}. Skipped generation.`,
+      skipped: true,
     });
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ success: false, error: msg }, { status: 500 });
   }
+
+  const result = await preGenerateForDate(tomorrow, difficulty);
+
+  if (!result.success) {
+    console.error(`[cron/generate-riddle] Failed for ${tomorrow}:`, result.error);
+    return NextResponse.json(
+      { success: false, error: result.error, job: result.job },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: `Generated and queued riddle for ${tomorrow}.`,
+    job: result.job,
+  });
 }

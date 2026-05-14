@@ -34,16 +34,16 @@ export default function ImagePreview({ date, difficulty, streak = 0, isSolved = 
   }, [date, difficulty, streak, isSolved, onLoaded]);
 
   return (
-    <div className="w-full aspect-square bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden flex items-center justify-center relative">
+    <div className="w-full aspect-square rounded-xl border border-border bg-bg-muted overflow-hidden flex items-center justify-center">
       {loading ? (
         <div className="flex flex-col items-center gap-3">
-          <div className="w-6 h-6 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
-          <span className="text-xs text-zinc-500 font-medium">Generating image...</span>
+          <div className="w-5 h-5 border-2 border-text-4 border-t-text-2 rounded-full animate-spin" />
+          <span className="text-xs text-text-3">Generating…</span>
         </div>
       ) : dataUrl ? (
-        <img src={dataUrl} alt="Riddle preview" className="w-full h-full object-cover" />
+        <img src={dataUrl} alt="Challenge preview" className="w-full h-full object-cover" />
       ) : (
-        <span className="text-sm text-red-400">Preview unavailable</span>
+        <span className="text-sm text-text-3">Preview unavailable</span>
       )}
     </div>
   );

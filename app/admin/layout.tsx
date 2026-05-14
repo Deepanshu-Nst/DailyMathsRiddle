@@ -9,8 +9,8 @@ import {
   Users, 
   ShieldCheck,
   Cpu,
-  LogOut,
-  Bell
+  ListChecks,
+  ClipboardList
 } from 'lucide-react';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -18,36 +18,36 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const navItems = [
     { label: 'Dashboard', icon: <LayoutDashboard size={18} />, href: '/admin' },
-    { label: 'Scheduled Riddles', icon: <Calendar size={18} />, href: '/admin/riddles' },
-    { label: 'AI Ops Center', icon: <Cpu size={18} />, href: '/admin/ai' },
+    { label: 'Scheduled riddles', icon: <Calendar size={18} />, href: '/admin/riddles' },
+    { label: 'Publish queue', icon: <ListChecks size={18} />, href: '/admin/queue' },
+    { label: 'Generation', icon: <Cpu size={18} />, href: '/admin/ai' },
     { label: 'Challenges', icon: <Trophy size={18} />, href: '/admin/challenges' },
-    { label: 'AI Failures', icon: <AlertCircle size={18} />, href: '/admin/failures' },
+    { label: 'Failed generations', icon: <AlertCircle size={18} />, href: '/admin/failures' },
     { label: 'Users', icon: <Users size={18} />, href: '/admin/users' },
+    { label: 'Audit history', icon: <ClipboardList size={18} />, href: '/admin/audit' },
   ];
 
   return (
     <div className="flex min-h-screen bg-bg-subtle">
       {/* Sidebar */}
-      <Sidebar className="border-r border-border shadow-sm">
+      <Sidebar className="border-r border-border">
         <div className="p-6">
           <Link href="/admin" className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-text-1 text-white rounded-lg flex items-center justify-center">
-              <ShieldCheck size={20} />
+            <div className="w-8 h-8 rounded-lg border border-border bg-bg-muted flex items-center justify-center text-text-2">
+              <ShieldCheck size={18} />
             </div>
-            <span className="font-display text-lg tracking-tight text-text-1">
-              Advait<span className="text-text-4 font-normal">AI</span>
-            </span>
+            <span className="text-sm font-semibold text-text-1">Admin</span>
           </Link>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-2 space-y-0.5">
           {navItems.map((item) => (
             <Link 
               key={item.href} 
               href={item.href}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-text-2 rounded-lg hover:bg-white hover:text-text-1 hover:shadow-sm transition-all group"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-text-2 rounded-lg hover:bg-surface-hover hover:text-text-1 transition-colors group"
             >
-              <span className="text-text-3 group-hover:text-primary transition-colors">
+              <span className="text-text-3 group-hover:text-text-2 transition-colors">
                 {item.icon}
               </span>
               {item.label}
@@ -56,20 +56,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </nav>
 
         <div className="border-t border-border p-4">
-          <p className="px-4 py-2 text-xs font-medium text-text-3">Admin</p>
+          <Link href="/" className="px-4 py-2 text-xs font-medium text-text-3 hover:text-text-2 transition-colors">
+            ← Back to app
+          </Link>
         </div>
       </Sidebar>
 
       <div className="flex-1 flex flex-col">
         <Topbar className="px-8 border-b border-border">
           <div className="flex items-center justify-between w-full">
-            <h1 className="text-sm font-semibold text-text-2">Admin</h1>
-            <div className="flex items-center gap-6">
-              <button className="text-text-3 hover:text-text-1 transition-colors">
-                <Bell size={20} />
-              </button>
-              <div className="w-8 h-8 rounded-full bg-bg-subtle border border-border" />
-            </div>
+            <span className="text-sm font-medium text-text-3">AdvaitAI Admin</span>
           </div>
         </Topbar>
 

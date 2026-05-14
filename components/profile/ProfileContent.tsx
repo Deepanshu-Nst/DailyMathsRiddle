@@ -1,13 +1,23 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import ProgressCalendar from '@/components/ProgressCalendar';
 import type { UserStats, Achievement } from '@/types/gamification';
 import type { DbProfile } from '@/types/supabase';
 import type { DailySolvedEntry } from '@/types';
 import { Container } from '@/components/ui/Layout';
 import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import { Calendar, Award, Target, Flame } from 'lucide-react';
+import Link from 'next/link';
+
+interface SolveHistoryEntry {
+  id: string;
+  solvedAt: string;
+  question: string;
+  difficulty: string;
+  dailyDate: string | null;
+  slug: string | null;
+}
 
 interface Props {
   profile: DbProfile;
@@ -15,19 +25,26 @@ interface Props {
   activity: DailySolvedEntry[];
   achievements: (Achievement & { unlocked_at: string })[];
   xpRank: number | null;
+  solveHistory: SolveHistoryEntry[];
 }
 
-export default function ProfileContent({ profile, stats, activity, achievements, xpRank }: Props) {
+export default function ProfileContent({ profile, stats, activity, achievements, xpRank, solveHistory }: Props) {
   const currentStreak = stats?.current_streak ?? 0;
   const bestStreak = stats?.best_streak ?? 0;
   const totalXP = stats?.total_xp ?? 0;
   const riddlesSolved = stats?.riddles_solved ?? 0;
+  const easySolved = stats?.easy_solved ?? 0;
+  const mediumSolved = stats?.medium_solved ?? 0;
+  const hardSolved = stats?.hard_solved ?? 0;
   const accuracy =
     stats && stats.total_attempts > 0 ? Math.round((stats.correct_attempts / stats.total_attempts) * 100) : 0;
+
+  const totalDiffSolved = easySolved + mediumSolved + hardSolved;
 
   return (
     <Container wide className="py-14 lg:py-20">
       <main className="mx-auto flex max-w-3xl flex-col gap-10">
+        {/* Header */}
         <Card padding="lg" className="flex flex-col gap-6 sm:flex-row sm:items-center">
           <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border border-border bg-bg-muted">
             {profile.avatar_url ? (
@@ -62,6 +79,7 @@ export default function ProfileContent({ profile, stats, activity, achievements,
           )}
         </Card>
 
+        {/* Stats */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard icon={<Flame className="text-primary" size={16} />} label="Streak" value={currentStreak} sub={`best ${bestStreak}`} />
           <StatCard icon={<Award className="text-text-3" size={16} />} label="XP" value={totalXP.toLocaleString()} />
@@ -69,14 +87,61 @@ export default function ProfileContent({ profile, stats, activity, achievements,
           <StatCard icon={<Calendar className="text-text-3" size={16} />} label="Accuracy" value={`${accuracy}%`} />
         </div>
 
+        {/* Difficulty Breakdown */}
+        {totalDiffSolved > 0 && (
+          <section>
+            <h2 className="text-sm font-semibold text-text-1">Difficulty breakdown</h2>
+            <p className="mt-1 text-xs text-text-3">{totalDiffSolved} total solves by difficulty level.</p>
+            <Card padding="md" className="mt-4">
+              <div className="flex flex-col gap-3">
+                <DiffBar label="Easy" count={easySolved} total={totalDiffSolved} color="bg-success" />
+                <DiffBar label="Medium" count={mediumSolved} total={totalDiffSolved} color="bg-primary" />
+                <DiffBar label="Hard" count={hardSolved} total={totalDiffSolved} color="bg-error" />
+              </div>
+            </Card>
+          </section>
+        )}
+
+        {/* Activity Calendar */}
         <section>
-          <h2 className="text-sm font-semibold text-text-1">Activity (30 days)</h2>
-          <p className="mt-1 text-xs text-text-3">One cell per official day · color encodes hardest difficulty solved that day.</p>
+          <h2 className="text-sm font-semibold text-text-1">Activity (90 days)</h2>
+          <p className="mt-1 text-xs text-text-3">One cell per day · color encodes hardest difficulty solved.</p>
           <Card padding="md" className="mt-4">
             <ProgressCalendar solvedDates={activity} />
           </Card>
         </section>
 
+        {/* Recent Solve History */}
+        <section>
+          <h2 className="text-sm font-semibold text-text-1">Recent solves</h2>
+          <div className="mt-4 flex flex-col gap-2">
+            {solveHistory.length > 0 ? (
+              solveHistory.map((solve) => (
+                <Card key={solve.id} padding="sm" className="flex items-center gap-3 px-4 py-3">
+                  <Badge
+                    variant={solve.difficulty === 'hard' ? 'danger' : solve.difficulty === 'easy' ? 'success' : 'warning'}
+                    size="sm"
+                    className="font-mono uppercase shrink-0"
+                  >
+                    {solve.difficulty}
+                  </Badge>
+                  <p className="min-w-0 flex-1 truncate text-sm text-text-2">
+                    {solve.question}
+                  </p>
+                  <span className="shrink-0 text-[11px] text-text-4 font-mono">
+                    {new Date(solve.solvedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                </Card>
+              ))
+            ) : (
+              <Card padding="lg" className="text-center text-sm text-text-3">
+                No solves recorded yet.
+              </Card>
+            )}
+          </div>
+        </section>
+
+        {/* Achievements */}
         <section>
           <h2 className="text-sm font-semibold text-text-1">Achievements</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -126,5 +191,28 @@ function StatCard({
         {sub && <span className="text-[10px] text-text-4">{sub}</span>}
       </div>
     </Card>
+  );
+}
+
+function DiffBar({
+  label,
+  count,
+  total,
+  color,
+}: {
+  label: string;
+  count: number;
+  total: number;
+  color: string;
+}) {
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-16 text-xs font-medium text-text-2">{label}</span>
+      <div className="flex-1 h-2 rounded-full bg-surface overflow-hidden">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="w-12 text-right font-mono text-xs tabular-nums text-text-3">{count}</span>
+    </div>
   );
 }

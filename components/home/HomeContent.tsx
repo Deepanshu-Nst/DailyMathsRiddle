@@ -51,18 +51,17 @@ export default function HomeContent() {
               </Badge>
             </div>
 
-            <h1 className="max-w-xl text-balance font-display text-[clamp(2.25rem,5vw,3.25rem)] leading-[1.08] tracking-tight text-text-1">
-              One proof a day. Built for focus.
+            <h1 className="max-w-xl font-display text-[clamp(2.25rem,5vw,3.25rem)] leading-[1.08] tracking-tight text-text-1">
+              Today&apos;s challenge
             </h1>
 
             <p className="max-w-lg text-[15px] leading-relaxed text-text-2">
-              Streaks, XP, and solves are stored on the server. The activity grid uses the same calendar as the daily
-              reset — no local pretend state.
+              Your progress syncs automatically. Pick a difficulty and solve today&apos;s puzzle.
             </p>
           </motion.div>
 
           <motion.div variants={fadeUp} transition={{ type: 'spring', damping: 28, stiffness: 260 }}>
-            <div className="intel-doc relative px-6 py-8 sm:px-8 sm:py-9">
+            <div className="content-panel relative px-6 py-8 sm:px-8 sm:py-9">
               <div className="relative">
                   {loading ? (
                     <div className="flex flex-col gap-4">
@@ -97,7 +96,7 @@ export default function HomeContent() {
 
                       <div className="flex flex-col gap-4 border-t border-white/[0.06] pt-8 sm:flex-row sm:items-end sm:justify-between">
                         <div>
-                          <span className="label mb-2 block text-text-4">Next boundary</span>
+                          <span className="label mb-2 block text-text-4">Next challenge in</span>
                           <CountdownTimer />
                         </div>
                         <Button
@@ -178,7 +177,7 @@ export default function HomeContent() {
 
             <div className="glass-panel p-6 sm:p-7">
               <div className="mb-5 flex items-center justify-between">
-                <span className="label text-text-4">Continuity</span>
+                <span className="label text-text-4">Activity</span>
                 <span className="font-mono text-[10px] text-text-4">30d</span>
               </div>
               <ProgressCalendar solvedDates={activityMap} />

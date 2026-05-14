@@ -12,7 +12,7 @@ interface CaptionInput {
 }
 
 export function generateLinkedInCaption({ riddle }: CaptionInput): string {
-  return `🧠 Daily Intelligence Ritual
+  return `🧠 Daily Math Challenge
 
 ${riddle.question}
 

@@ -2,7 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/generate-riddle",
-      "schedule": "5 0 * * *"
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/daily-publish",
+      "schedule": "30 18 * * *"
     }
   ]
 }

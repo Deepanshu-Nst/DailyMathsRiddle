@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
+@import "../styles/tokens/spacing.css";
+@import "../styles/tokens/typography.css";
 
 /* AdvaitAI — production UI tokens (Tailwind v4). Restrained, dark, high legibility. */
 
@@ -49,6 +51,20 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
   --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+
+  /* ─── Elevation Hierarchy ─────────────────────────────────────── */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --elevation-3: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+  /* ─── Motion Rules ────────────────────────────────────────────── */
+  --duration-micro: 150ms;
+  --duration-fast: 200ms;
+  --duration-normal: 300ms;
+  --duration-page: 350ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 
@@ -104,26 +120,26 @@
     border-radius: 14px;
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.06) inset,
-      0 24px 80px rgba(0, 0, 0, 0.45);
+      var(--elevation-2);
     transition:
-      box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-      border-color 0.25s ease,
-      transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) ease,
+      transform var(--duration-fast) var(--ease-out);
   }
 
   .card-hoverable:hover {
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.08) inset,
-      0 32px 100px rgba(0, 0, 0, 0.55),
+      var(--elevation-3),
       0 0 0 1px rgba(244, 162, 58, 0.12);
     border-color: var(--color-border-dark);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
   }
 
   .card-elevated {
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.06) inset,
-      0 20px 60px rgba(0, 0, 0, 0.5);
+      var(--elevation-3);
   }
 
   .card-sunken {
@@ -292,7 +308,7 @@
   }
 
   /* Primary reading surface — border only, no decorative chrome */
-  .intel-doc {
+  .content-panel {
     position: relative;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -300,7 +316,7 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
-  .intel-doc::before {
+  .content-panel::before {
     display: none;
   }
 }
@@ -375,10 +391,6 @@
 
   .anim-pulse-soft {
     animation: pulse-soft 2.4s ease-in-out infinite;
-  }
-
-  .anim-glow-pulse {
-    animation: glow-pulse 2.8s ease-in-out infinite;
   }
 
   .text-balance {

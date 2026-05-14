@@ -97,7 +97,7 @@ export default function Header({ user, profile }: HeaderProps) {
                     <div className="w-7 h-7 rounded-full bg-bg-subtle border border-border" />
                   )}
                   <span className="text-sm font-medium text-text-2 group-hover:text-text-1 transition-colors">
-                    {profile?.username || profile?.full_name?.split(' ')[0] || 'Seeker'}
+                    {profile?.username || profile?.full_name?.split(' ')[0] || 'User'}
                   </span>
                 </div>
                 <Button 

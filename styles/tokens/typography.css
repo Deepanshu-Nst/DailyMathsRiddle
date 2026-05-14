@@ -1,0 +1,50 @@
+/* ─── Design System Tokens: Typography ──────────────────────────────
+ * Single source of truth for type scale, line-height, and tracking.
+ * Usage: font-size: var(--text-sm); line-height: var(--leading-normal);
+ * ──────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Type Scale */
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+
+  /* Line Height */
+  --leading-none: 1;
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+  --leading-loose: 1.8;
+
+  /* Letter Spacing */
+  --tracking-tighter: -0.03em;
+  --tracking-tight: -0.02em;
+  --tracking-normal: -0.01em;
+  --tracking-wide: 0.02em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+
+  /* Font Weight */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* Semantic text styles (compose scale + leading + tracking) */
+  --text-heading-lg: var(--text-3xl) / var(--leading-tight);
+  --text-heading-md: var(--text-2xl) / var(--leading-tight);
+  --text-heading-sm: var(--text-xl) / var(--leading-tight);
+  --text-body: var(--text-base) / var(--leading-normal);
+  --text-body-sm: var(--text-sm) / var(--leading-normal);
+  --text-label: var(--text-xs) / var(--leading-normal);
+  --text-mono: var(--text-2xs) / var(--leading-normal);
+}

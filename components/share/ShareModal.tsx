@@ -147,11 +147,11 @@ export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
 
         {/* LEFT: Riddle Context */}
         <div className="w-full md:w-[45%] p-8 md:p-10 border-b md:border-b-0 md:border-r border-zinc-800/60 bg-zinc-900/30 flex flex-col">
-          <h2 className="mb-8 font-display text-3xl font-normal tracking-tight text-zinc-100 md:text-[2rem]">Share your ritual</h2>
+          <h2 className="mb-8 font-display text-3xl font-normal tracking-tight text-zinc-100 md:text-[2rem]">Share result</h2>
           
           <div className="flex-1 flex flex-col">
             <span className="text-[11px] font-semibold tracking-widest text-zinc-500 uppercase mb-3 block">
-              Riddle Preview
+              Challenge preview
             </span>
             <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-6 flex flex-col gap-4 shadow-inner">
               <div className="flex flex-wrap items-center gap-2">
@@ -194,7 +194,7 @@ export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
             {/* Asset Preview */}
             <div className="w-full sm:w-[140px] flex-shrink-0">
               <span className="text-[11px] font-semibold tracking-widest text-zinc-500 uppercase mb-3 block">
-                Asset
+                Image
               </span>
               <div className="rounded-xl overflow-hidden shadow-2xl border border-zinc-800 bg-zinc-900 aspect-square">
                 <ImagePreview 

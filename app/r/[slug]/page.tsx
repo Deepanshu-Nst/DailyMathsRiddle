@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: canonicalUrl,
       title: `Can you solve this? — ${difficulty} Math Riddle`,
       description: shortQuestion,
-      siteName: 'AdvaitAI Daily Intelligence Ritual',
+      siteName: 'AdvaitAI Daily Math Challenge',
     },
     twitter: {
       card: 'summary',

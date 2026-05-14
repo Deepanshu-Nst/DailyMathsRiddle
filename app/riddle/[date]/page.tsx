@@ -240,7 +240,7 @@ function SolvePage() {
         <main className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_340px]">
           {/* LEFT — classified workspace */}
           <motion.div layout className="min-w-0 space-y-6">
-            <div className="intel-doc relative min-h-[480px] px-5 py-8 sm:px-8 sm:py-10 lg:min-h-[520px]">
+            <div className="content-panel relative min-h-[480px] px-5 py-8 sm:px-8 sm:py-10 lg:min-h-[520px]">
               {loading ? (
                 <div className="flex w-full flex-col gap-5">
                   <Skeleton className="h-6 w-28 rounded-md" />
@@ -420,7 +420,7 @@ function SolvePage() {
                     onClick={() => setShowShareModal(true)}
                   >
                     <Share2 size={14} className="mr-2 opacity-80" />
-                    Share brief
+                    Share
                   </Button>
                 )}
                 <Button
@@ -446,7 +446,7 @@ function SolvePage() {
             )}
 
             <div>
-              <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Continuity</span>
+              <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Activity</span>
               <div className="mt-2 flex flex-wrap gap-1">
                 {recentActivity.map((entry) => (
                   <motion.div
@@ -463,7 +463,7 @@ function SolvePage() {
         </main>
       </LayoutGroup>
 
-      <Modal isOpen={showGiveUpModal} onClose={() => setShowGiveUpModal(false)} title="Declassify answer?" size="sm">
+      <Modal isOpen={showGiveUpModal} onClose={() => setShowGiveUpModal(false)} title="Show answer?" size="sm">
         <div className="flex flex-col gap-6">
           <p className="text-[14px] leading-relaxed text-text-2">
             This ends the run in <span className="text-text-1">no XP</span> mode. Your daily streak will{' '}
@@ -471,7 +471,7 @@ function SolvePage() {
           </p>
           <div className="flex gap-3">
             <Button variant="secondary" fullWidth onClick={() => setShowGiveUpModal(false)} disabled={isGivingUp}>
-              Stay in proof
+              Keep trying
             </Button>
             <Button variant="primary" fullWidth onClick={handleGiveUp} disabled={isGivingUp}>
               {isGivingUp ? 'Opening…' : 'Reveal'}

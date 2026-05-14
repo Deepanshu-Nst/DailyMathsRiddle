@@ -2,7 +2,6 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import ProfileContent from '@/components/profile/ProfileContent';
-import { traceSocialAction } from '@/lib/analytics/pipelineEvents';
 import type { DbProfile } from '@/types/supabase';
 import { toOfficialDateFromInstant } from '@/lib/timezone';
 import type { DailySolvedEntry } from '@/types';
@@ -43,8 +42,6 @@ export default async function UserProfilePage({ params }: Props) {
   };
 
   if (!profile) notFound();
-
-  traceSocialAction('profile_view', { username, userId: profile.id });
 
   const { data: stats } = await supabase.from('user_stats').select('*').eq('user_id', profile.id).single();
 
@@ -95,6 +92,30 @@ export default async function UserProfilePage({ params }: Props) {
     )
     .eq('user_id', profile.id);
 
+  // Recent solve history (last 20 solves with riddle details)
+  const { data: recentSolves } = await supabase
+    .from('user_attempts')
+    .select(
+      `
+      id,
+      attempted_at,
+      riddles ( id, question, difficulty, daily_date, slug )
+    `,
+    )
+    .eq('user_id', profile.id)
+    .eq('status', 'solved')
+    .order('attempted_at', { ascending: false })
+    .limit(20);
+
+  const solveHistory = (recentSolves ?? []).map((s: any) => ({
+    id: s.id,
+    solvedAt: s.attempted_at,
+    question: s.riddles?.question ?? '',
+    difficulty: s.riddles?.difficulty ?? 'medium',
+    dailyDate: s.riddles?.daily_date,
+    slug: s.riddles?.slug,
+  }));
+
   return (
     <ProfileContent
       profile={profile as DbProfile}
@@ -105,6 +126,7 @@ export default async function UserProfilePage({ params }: Props) {
         unlocked_at: ua.unlocked_at,
       }))}
       xpRank={stats ? xpRank : null}
+      solveHistory={solveHistory}
     />
   );
 }
