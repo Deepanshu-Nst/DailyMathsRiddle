@@ -164,6 +164,7 @@ function RankRow({ user, rank, type, onClick }: { user: LeaderboardUser; rank: n
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
           {user.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
             <span style={{ fontSize: 18 }}>👤</span>

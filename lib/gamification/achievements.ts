@@ -7,12 +7,12 @@ import type { UserStats } from '@/types/gamification';
  */
 export async function checkAndUnlockAchievements(userId: string, stats: UserStats): Promise<string[]> {
   try {
-    const supabase = await createServiceClient();
+    const supabase = (await createServiceClient()) as any;
 
     // 1. Fetch all possible achievements
     const { data: allAchievements, error: fetchErr } = await supabase
       .from('achievements')
-      .select('*') as { data: any[] | null; error: any };
+      .select('*');
 
     if (fetchErr || !allAchievements) {
       console.error('[ACHIEVEMENT CHECK] fetch error:', fetchErr?.message);
@@ -23,14 +23,14 @@ export async function checkAndUnlockAchievements(userId: string, stats: UserStat
     const { data: unlocked, error: unlockedErr } = await supabase
       .from('user_achievements')
       .select('achievement_id')
-      .eq('user_id', userId) as { data: any[] | null; error: any };
+      .eq('user_id', userId);
 
     if (unlockedErr) {
       console.error('[ACHIEVEMENT CHECK] unlocked fetch error:', unlockedErr.message);
       return [];
     }
 
-    const unlockedIds = new Set((unlocked || []).map(u => u.achievement_id));
+    const unlockedIds = new Set(((unlocked as Record<string, any>[]) || []).map(u => u.achievement_id));
     const newlyUnlocked: string[] = [];
 
     // 3. Evaluate each achievement
@@ -59,8 +59,8 @@ export async function checkAndUnlockAchievements(userId: string, stats: UserStat
 
       if (met) {
         // Unlock it!
-        const { error: unlockErr } = await (supabase
-          .from('user_achievements') as any)
+        const { error: unlockErr } = await supabase
+          .from('user_achievements')
           .insert({ user_id: userId, achievement_id: achievement.id });
 
         if (!unlockErr) {

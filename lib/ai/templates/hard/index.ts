@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { RiddleTemplate } from '../types';
 
-export const hardTemplates: RiddleTemplate<any>[] = [
+export const hardTemplates: RiddleTemplate<Record<string, number>>[] = [
   {
     id: 'hard_set_intersection',
     name: 'Set Intersection (LCM)',

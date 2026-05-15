@@ -24,6 +24,7 @@ function useAnimatedInt(target: number, active: boolean, durationMs = 900) {
 
   useEffect(() => {
     if (!active) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setV(0);
     start.current = null;
     const tick = (now: number) => {

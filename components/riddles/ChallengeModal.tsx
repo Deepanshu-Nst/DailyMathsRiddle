@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { AlertTriangle, Send, CheckCircle2 } from 'lucide-react';
 
 interface ChallengeModalProps {
@@ -13,7 +11,7 @@ interface ChallengeModalProps {
   riddleQuestion: string;
 }
 
-export function ChallengeModal({ isOpen, onClose, riddleId, riddleQuestion }: ChallengeModalProps) {
+export function ChallengeModal({ isOpen, onClose, riddleId }: ChallengeModalProps) {
   const [proposedAnswer, setProposedAnswer] = useState('');
   const [reasoning, setReasoning] = useState('');
   const [proofText, setProofText] = useState('');
@@ -49,8 +47,8 @@ export function ChallengeModal({ isOpen, onClose, riddleId, riddleQuestion }: Ch
         setReasoning('');
         setProofText('');
       }, 3000);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsSubmitting(false);
     }
@@ -71,7 +69,7 @@ export function ChallengeModal({ isOpen, onClose, riddleId, riddleQuestion }: Ch
           </div>
           <h3 className="text-xl font-bold text-text-1">Dispute Filed Successfully</h3>
           <p className="text-sm text-text-3 max-w-xs">
-            Our mathematical review team will analyze your reasoning. You'll receive a notification and bonus XP if your claim is verified.
+            Our mathematical review team will analyze your reasoning. You&apos;ll receive a notification and bonus XP if your claim is verified.
           </p>
         </div>
       ) : (

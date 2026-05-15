@@ -326,7 +326,7 @@ export async function rollbackChallenge(
     .limit(10);
 
   const relevantEntry = (auditEntry ?? []).find(
-    (e: any) => e.metadata?.date === date && e.metadata?.difficulty === difficulty
+    (e: Record<string, unknown>) => (e.metadata as Record<string, unknown>)?.date === date && (e.metadata as Record<string, unknown>)?.difficulty === difficulty
   );
 
   if (!relevantEntry?.metadata?.previous_riddle_id) {

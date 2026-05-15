@@ -1,4 +1,9 @@
 import { createServiceClient } from '@/utils/supabase/server';
+import type { Database } from '@/types/supabase';
+
+type AuditLogWithActor = Database['public']['Tables']['admin_audit_logs']['Row'] & {
+  actor: { username: string | null; full_name: string | null } | null;
+};
 
 /**
  * Records an immutable audit log entry for an admin action.
@@ -45,7 +50,7 @@ export async function getAuditLogs(opts?: {
   actorId?: string;
   limit?: number;
   offset?: number;
-}): Promise<{ logs: any[]; total: number }> {
+}): Promise<{ logs: AuditLogWithActor[]; total: number }> {
   const supabase = (await createServiceClient()) as any;
   const limit = opts?.limit ?? 50;
   const offset = opts?.offset ?? 0;

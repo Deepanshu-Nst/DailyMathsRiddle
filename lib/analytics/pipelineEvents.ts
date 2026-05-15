@@ -26,7 +26,6 @@ export interface LogPipelineEventOpts {
 export async function logPipelineEvent(opts: LogPipelineEventOpts): Promise<void> {
   try {
     const { createServiceClient } = await import('@/utils/supabase/server');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = (await createServiceClient()) as any;
 
     await supabase.from('pipeline_events').insert({
@@ -51,7 +50,7 @@ export async function logPipelineEvent(opts: LogPipelineEventOpts): Promise<void
 }
 
 /** Dev-mode trace for social layer actions. */
-export function traceSocialAction(action: string, metadata: any) {
+export function traceSocialAction(action: string, metadata: Record<string, unknown>) {
   if (process.env.NODE_ENV === 'development') {
     console.log(`[DEV TRACE: SOCIAL] ${action}`, metadata);
   }

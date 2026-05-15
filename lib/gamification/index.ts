@@ -27,7 +27,7 @@ export interface ProcessSolveOpts {
 }
 
 export async function processSolve(opts: ProcessSolveOpts): Promise<SolveResult> {
-  const { userId, difficulty, riddleId, solveStartedAt, attemptCount, hintsUsed } = opts;
+  const { userId, difficulty, riddleId, solveStartedAt, attemptCount } = opts;
   const solvedDate = opts.solvedDate ?? getOfficialDailyDate();
 
   // Calculate solve duration
@@ -63,7 +63,6 @@ export async function processSolve(opts: ProcessSolveOpts): Promise<SolveResult>
     else console.log(`[XP AWARDED] +${xpTotal} XP for user ${userId.slice(0, 8)}…`);
 
     // 4. Upsert user_stats — one atomic operation
-    const diffColumn = `${difficulty}_solved` as const;
     const { data: existing } = await supabase
       .from('user_stats')
       .select('total_xp, riddles_solved, easy_solved, medium_solved, hard_solved, total_attempts, correct_attempts')
@@ -88,6 +87,7 @@ export async function processSolve(opts: ProcessSolveOpts): Promise<SolveResult>
       total_attempts:   (prev.total_attempts ?? 0)   + attemptCount,
       correct_attempts: (prev.correct_attempts ?? 0) + 1,
       last_solved_date: solvedDate,
+      updated_at: new Date().toISOString(),
     };
 
     const { error: statsErr } = await supabase
@@ -99,7 +99,7 @@ export async function processSolve(opts: ProcessSolveOpts): Promise<SolveResult>
 
     // 5. Check for achievement unlocks
     const { checkAndUnlockAchievements } = await import('./achievements');
-    const newlyUnlocked = await checkAndUnlockAchievements(userId, statsUpdate as any);
+    const newlyUnlocked = await checkAndUnlockAchievements(userId, statsUpdate);
 
     return {
       xpAwarded: xpTotal,

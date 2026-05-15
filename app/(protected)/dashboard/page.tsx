@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import type { Database } from '@/types/supabase';
@@ -65,7 +66,7 @@ export default async function DashboardPage() {
           padding: '28px 0 0',
         }}
       >
-        <a
+        <Link
           href="/"
           style={{
             display: 'flex',
@@ -98,7 +99,7 @@ export default async function DashboardPage() {
           >
             AdvaitAI
           </span>
-        </a>
+        </Link>
 
         {/* Sign out */}
         <form action="/api/auth/signout" method="POST">
@@ -231,7 +232,7 @@ export default async function DashboardPage() {
         >
           <span className="label">Quick actions</span>
 
-          <a
+          <Link
             href="/"
             id="start-riddle-cta"
             className="btn btn-primary"
@@ -247,15 +248,15 @@ export default async function DashboardPage() {
                 strokeLinejoin="round"
               />
             </svg>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/streak"
             className="btn btn-ghost"
             style={{ fontSize: 14, width: 'fit-content', textDecoration: 'none' }}
           >
             View streak history →
-          </a>
+          </Link>
         </div>
 
         {/* Section: Account info */}

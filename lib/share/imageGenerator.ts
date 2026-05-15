@@ -61,7 +61,7 @@ function escSvg(s: string): string {
 }
 
 export function generateRiddleImage(input: ImageInput): string {
-  const { question, difficulty, category, date, streak = 0, isSolved = false } = input;
+  const { question, difficulty, category, streak = 0, isSolved = false } = input;
   const diff = DIFF_COLORS[difficulty] ?? DIFF_COLORS.medium;
   const diffLabel = DIFF_LABELS[difficulty] ?? 'Medium';
 

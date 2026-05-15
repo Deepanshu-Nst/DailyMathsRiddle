@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/Feedback';
 import { ChevronLeft, Share2, Flag, Clock, Target, Hash, Sparkles, Trophy } from 'lucide-react';
-import { fadeUp, spring } from '@/lib/motion';
+import { spring } from '@/lib/motion';
 import { useChallengeSession } from '@/components/providers/ChallengeSessionProvider';
 
 function activityCellClass(difficulty: Difficulty) {
@@ -49,7 +49,7 @@ function SolvePage() {
   const [explanation, setExplanation] = useState('');
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
-  const [sessionId, setSessionId] = useState('');
+  const sessionIdRef = useRef<string>('');
   const [mode, setMode] = useState<'daily' | 'extra'>('daily');
   const [extraCount, setExtraCount] = useState(0);
 
@@ -92,7 +92,7 @@ function SolvePage() {
       sid = crypto.randomUUID();
       localStorage.setItem('advaitai_session_id', sid);
     }
-    setSessionId(sid);
+    sessionIdRef.current = sid;
 
     fetchRiddle();
     solveStartedAt.current = new Date().toISOString();
@@ -435,13 +435,13 @@ function SolvePage() {
               </div>
             </div>
 
-            {riddle && !loading && !error && sessionId && (
+            {riddle && !loading && !error && sessionIdRef.current && (
               <div className="border-t border-white/[0.06] pt-2">
                 <div className="mb-2 flex items-center gap-2 text-text-4">
                   <Sparkles size={12} />
                   <span className="font-mono text-[9px] uppercase tracking-[0.14em]">Generate more</span>
                 </div>
-                <GenerateMore sessionId={sessionId} difficulty={difficulty} onNewRiddle={handleNewRiddle} />
+                <GenerateMore sessionId={sessionIdRef.current} difficulty={difficulty} onNewRiddle={handleNewRiddle} />
               </div>
             )}
 

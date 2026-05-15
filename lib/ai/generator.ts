@@ -64,7 +64,7 @@ export async function generateSingleRiddle(
   // Construct template info
   const templateInfos = selectedTemplates.map(t => {
     // Extract parameter keys from the Zod schema
-    const shape = (t.paramsSchema as z.ZodObject<any>).shape || {};
+    const shape = (t.paramsSchema as z.ZodObject<z.ZodRawShape>).shape || {};
     const paramsKeys = Object.keys(shape);
     return `- ID: "${t.id}" | Category: ${t.category}\n  Description: ${t.description}\n  Required Params: { ${paramsKeys.map(k => `${k}: number`).join(', ')} }`;
   });
@@ -109,15 +109,15 @@ Return ONLY valid JSON in this exact schema. No markdown, no prose outside JSON.
         response_format: { type: 'json_object' },
       }),
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     throw err;
   }
 
   if (!response.ok) {
     const body = await response.text();
     const err = new Error(`Groq ${response.status}: ${body}`);
-    (err as any).groqHeaders = response.headers;
-    (err as any).groqBody = body;
+    (err as Error & { groqHeaders: Headers }).groqHeaders = response.headers;
+    (err as Error & { groqBody: string }).groqBody = body;
     throw err;
   }
 
@@ -129,14 +129,14 @@ Return ONLY valid JSON in this exact schema. No markdown, no prose outside JSON.
     return { success: false, rawResponse: rawContent, stage: 'parse_error', reason: 'Could not extract JSON from response.', generationMode: 'templated', templateFamily: null };
   }
 
-  let parsed: any;
+  let parsed: Record<string, unknown>;
   try {
     parsed = JSON.parse(jsonStr);
-  } catch (e) {
+  } catch {
     return { success: false, rawResponse: rawContent, stage: 'parse_error', reason: 'Invalid JSON syntax.', generationMode: 'templated', templateFamily: null };
   }
 
-  const templateId = parsed.templateId;
+  const templateId = typeof parsed.templateId === 'string' ? parsed.templateId : '';
   const template = getTemplate(templateId);
   if (!template) {
     return { success: false, rawResponse: rawContent, stage: 'structural_rejected', reason: `Invalid templateId: ${templateId}`, generationMode: 'templated', templateFamily: templateId || null };
@@ -175,11 +175,11 @@ Return ONLY valid JSON in this exact schema. No markdown, no prose outside JSON.
     generationMode: 'templated',
     templateFamily: templateId,
     riddle: {
-      question: parsed.wording,
+      question: parsed.wording as string,
       answer,
       explanation,
-      hint1: parsed.hint1,
-      hint2: parsed.hint2,
+      hint1: parsed.hint1 as string,
+      hint2: parsed.hint2 as string,
       difficulty: difficulty as 'easy' | 'medium' | 'hard',
       category: template.category,
       version: 'v2',

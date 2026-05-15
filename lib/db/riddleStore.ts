@@ -57,7 +57,7 @@ class JsonFileStore implements RiddleStore {
   async logRejection(date: string, scoredRiddle: ScoredRiddle, reason: string): Promise<void> {
     try {
       const logPath = this.getLogPath();
-      let logs: any[] = [];
+      let logs: Record<string, unknown>[] = [];
       try {
         const data = await fs.readFile(logPath, 'utf-8');
         logs = JSON.parse(data);

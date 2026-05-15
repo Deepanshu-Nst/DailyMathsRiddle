@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -33,11 +33,7 @@ export default function AuditHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
 
-  useEffect(() => {
-    fetchLogs();
-  }, [filter]);
-
-  async function fetchLogs() {
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ limit: '100' });
@@ -51,7 +47,11 @@ export default function AuditHistoryPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [filter]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   return (
     <div className="flex flex-col gap-10">

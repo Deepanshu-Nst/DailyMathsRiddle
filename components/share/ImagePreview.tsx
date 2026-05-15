@@ -41,6 +41,7 @@ export default function ImagePreview({ date, difficulty, streak = 0, isSolved = 
           <span className="text-xs text-text-3">Generating…</span>
         </div>
       ) : dataUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img src={dataUrl} alt="Challenge preview" className="w-full h-full object-cover" />
       ) : (
         <span className="text-sm text-text-3">Preview unavailable</span>

@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
-import type { DbRiddle, DbRiddleInsert } from '@/types/supabase';
+import type { Database, DbRiddle, DbRiddleInsert } from '@/types/supabase';
 
 /**
  * All Supabase query operations for the riddles table.
@@ -50,10 +50,12 @@ export async function getDailyRiddle(
 /**
  * Fetch a scheduled riddle for a specific date and difficulty.
  */
+type ScheduledRiddle = Database['public']['Tables']['scheduled_riddles']['Row'];
+
 export async function getScheduledRiddle(
   date: string,
   difficulty: string
-): Promise<any | null> {
+): Promise<ScheduledRiddle | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('scheduled_riddles')
@@ -130,7 +132,6 @@ export async function getRiddleById(id: string): Promise<DbRiddle | null> {
  */
 export async function insertRiddle(payload: DbRiddleInsert): Promise<DbRiddle | null> {
   const { createServiceClient } = await import('@/utils/supabase/server');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = (await createServiceClient()) as any;
 
   const { data, error } = await supabase
@@ -161,7 +162,6 @@ export async function insertGenerationLog(opts: {
 }): Promise<void> {
   try {
     const { createServiceClient } = await import('@/utils/supabase/server');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = (await createServiceClient()) as any;
     
     // 1. Legacy rate limiting log
@@ -249,7 +249,6 @@ export async function insertAttempt(opts: {
 }): Promise<void> {
   try {
     const { createServiceClient } = await import('@/utils/supabase/server');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = (await createServiceClient()) as any;
     await supabase.from('user_attempts').insert({
       user_id: opts.userId,
@@ -317,7 +316,6 @@ export async function insertFailedGeneration(opts: {
   try {
     // 1. Record in legacy table for backward compatibility
     const { createServiceClient } = await import('@/utils/supabase/server');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = (await createServiceClient()) as any;
     await supabase.from('failed_generations').insert({
       session_id: opts.sessionId,
@@ -354,7 +352,7 @@ export async function getAIConfig(): Promise<{ is_enabled: boolean; safe_mode: b
       .single();
     
     return (data as any)?.value || { is_enabled: true, safe_mode: false, max_retries: 3, mode: 'standard' };
-  } catch (err) {
+  } catch {
     return { is_enabled: true, safe_mode: false, max_retries: 3, mode: 'standard' };
   }
 }

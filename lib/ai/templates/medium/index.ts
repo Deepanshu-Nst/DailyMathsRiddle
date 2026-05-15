@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { RiddleTemplate } from '../types';
 
-export const mediumTemplates: RiddleTemplate<any>[] = [
+export const mediumTemplates: RiddleTemplate<Record<string, number>>[] = [
   {
     id: 'medium_average_speed',
     name: 'Round Trip Average Speed',

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { RiddleTemplate } from '../types';
 
-export const easyTemplates: RiddleTemplate<any>[] = [
+export const easyTemplates: RiddleTemplate<Record<string, number>>[] = [
   {
     id: 'easy_percentage_scaling',
     name: 'Percentage of a Number',

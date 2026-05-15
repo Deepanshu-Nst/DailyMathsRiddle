@@ -406,6 +406,178 @@ export type Database = {
           updated_at?: string;
         };
       };
+      
+      admin_audit_logs: {
+        Row: {
+          id: string;
+          actor_id: string;
+          action: string;
+          target_type: string;
+          target_id: string;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          actor_id: string;
+          action: string;
+          target_type: string;
+          target_id: string;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          actor_id?: string;
+          action?: string;
+          target_type?: string;
+          target_id?: string;
+          metadata?: Json;
+          created_at?: string;
+        };
+      };
+
+      generation_jobs: {
+        Row: {
+          id: string;
+          target_date: string;
+          difficulty: 'easy' | 'medium' | 'hard';
+          status: 'queued' | 'running' | 'completed' | 'failed';
+          riddle_id: string | null;
+          queue_entry_id: string | null;
+          error_message: string | null;
+          retry_count: number;
+          duration_ms: number | null;
+          created_by: string | null;
+          started_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          target_date: string;
+          difficulty: 'easy' | 'medium' | 'hard';
+          status?: 'queued' | 'running' | 'completed' | 'failed';
+          riddle_id?: string | null;
+          queue_entry_id?: string | null;
+          error_message?: string | null;
+          retry_count?: number;
+          duration_ms?: number | null;
+          created_by?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          target_date?: string;
+          difficulty?: 'easy' | 'medium' | 'hard';
+          status?: 'queued' | 'running' | 'completed' | 'failed';
+          riddle_id?: string | null;
+          queue_entry_id?: string | null;
+          error_message?: string | null;
+          retry_count?: number;
+          duration_ms?: number | null;
+          created_by?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+        };
+      };
+
+      daily_riddle_queue: {
+        Row: {
+          id: string;
+          target_date: string;
+          difficulty: 'easy' | 'medium' | 'hard';
+          riddle_id: string;
+          position: number;
+          status: 'pending' | 'published' | 'rejected' | 'expired';
+          rejected_reason: string | null;
+          generated_at: string;
+          published_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          target_date: string;
+          difficulty: 'easy' | 'medium' | 'hard';
+          riddle_id: string;
+          position?: number;
+          status?: 'pending' | 'published' | 'rejected' | 'expired';
+          rejected_reason?: string | null;
+          generated_at?: string;
+          published_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          target_date?: string;
+          difficulty?: 'easy' | 'medium' | 'hard';
+          riddle_id?: string;
+          position?: number;
+          status?: 'pending' | 'published' | 'rejected' | 'expired';
+          rejected_reason?: string | null;
+          generated_at?: string;
+          published_at?: string | null;
+        };
+      };
+
+      pipeline_events: {
+        Row: {
+          id: string;
+          session_id: string | null;
+          user_id: string | null;
+          difficulty: string;
+          is_daily: boolean;
+          event_type: string;
+          riddle_id: string | null;
+          validation_score: number | null;
+          duration_ms: number | null;
+          attempts_made: number;
+          candidates_tried: number;
+          failure_reason: string | null;
+          generation_mode: string;
+          template_family: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          session_id?: string | null;
+          user_id?: string | null;
+          difficulty: string;
+          is_daily: boolean;
+          event_type: string;
+          riddle_id?: string | null;
+          validation_score?: number | null;
+          duration_ms?: number | null;
+          attempts_made?: number;
+          candidates_tried?: number;
+          failure_reason?: string | null;
+          generation_mode?: string;
+          template_family?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          session_id?: string | null;
+          user_id?: string | null;
+          difficulty?: string;
+          is_daily?: boolean;
+          event_type?: string;
+          riddle_id?: string | null;
+          validation_score?: number | null;
+          duration_ms?: number | null;
+          attempts_made?: number;
+          candidates_tried?: number;
+          failure_reason?: string | null;
+          generation_mode?: string;
+          template_family?: string | null;
+          created_at?: string;
+        };
+      };
+
+
+
+
     };
 
     Views: Record<string, never>;
@@ -427,3 +599,6 @@ export type DbRiddleInsert = Database['public']['Tables']['riddles']['Insert'];
 export type DbUserAttempt = Database['public']['Tables']['user_attempts']['Row'];
 export type DbGenerationLog = Database['public']['Tables']['generation_logs']['Row'];
 export type DbProfile = Database['public']['Tables']['profiles']['Row'];
+export type DbAdminAuditLog = Database['public']['Tables']['admin_audit_logs']['Row'];
+export type DbGenerationJob = Database['public']['Tables']['generation_jobs']['Row'];
+export type DbDailyRiddleQueue = Database['public']['Tables']['daily_riddle_queue']['Row'];

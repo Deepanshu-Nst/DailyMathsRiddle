@@ -45,6 +45,7 @@ export const ChallengeSessionProvider = ({ children }: { children: React.ReactNo
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSession();
   }, [fetchSession]);
 

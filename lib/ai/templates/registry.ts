@@ -5,20 +5,20 @@ import { hardTemplates } from './hard';
 
 const ALL_TEMPLATES = [...easyTemplates, ...mediumTemplates, ...hardTemplates];
 
-export const TEMPLATE_REGISTRY: Record<string, RiddleTemplate<any>> = {};
+export const TEMPLATE_REGISTRY: Record<string, RiddleTemplate<Record<string, number>>> = {};
 
 ALL_TEMPLATES.forEach(t => {
   TEMPLATE_REGISTRY[t.id] = t;
 });
 
-export function getTemplate(id: string): RiddleTemplate<any> | null {
+export function getTemplate(id: string): RiddleTemplate<Record<string, number>> | null {
   return TEMPLATE_REGISTRY[id] || null;
 }
 
-export function getRandomTemplate(difficulty?: string): RiddleTemplate<any> {
+export function getRandomTemplate(difficulty?: string): RiddleTemplate<Record<string, number>> {
   let pool = ALL_TEMPLATES;
   if (difficulty) {
-    pool = ALL_TEMPLATES.filter(t => t.difficulty.includes(difficulty as any));
+    pool = ALL_TEMPLATES.filter(t => t.difficulty.includes(difficulty as 'easy' | 'medium' | 'hard'));
   }
   if (pool.length === 0) pool = ALL_TEMPLATES; // fallback
   return pool[Math.floor(Math.random() * pool.length)];
@@ -28,8 +28,8 @@ export function getRandomTemplate(difficulty?: string): RiddleTemplate<any> {
  * Selects a weighted subset of templates for the AI prompt.
  * Templates recently used have a heavily reduced chance of being selected.
  */
-export function getWeightedTemplates(difficulty: string, recentTemplateIds: string[], count: number = 5): RiddleTemplate<any>[] {
-  const pool = ALL_TEMPLATES.filter(t => t.difficulty.includes(difficulty as any));
+export function getWeightedTemplates(difficulty: string, recentTemplateIds: string[], count: number = 5): RiddleTemplate<Record<string, number>>[] {
+  const pool = ALL_TEMPLATES.filter(t => t.difficulty.includes(difficulty as 'easy' | 'medium' | 'hard'));
   
   if (pool.length <= count) {
     return pool;
@@ -51,7 +51,7 @@ export function getWeightedTemplates(difficulty: string, recentTemplateIds: stri
   });
 
   // Select `count` templates without replacement using weighted random
-  const selected: RiddleTemplate<any>[] = [];
+  const selected: RiddleTemplate<Record<string, number>>[] = [];
   
   for (let i = 0; i < count; i++) {
     if (weightedPool.length === 0) break;

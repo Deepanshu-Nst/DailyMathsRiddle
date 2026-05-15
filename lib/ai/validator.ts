@@ -1,9 +1,9 @@
-import { ValidationResult } from '@/types/ai';
+import { AIRiddle, ValidationResult } from '@/types/ai';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const MODEL = 'llama-3.3-70b-versatile';
 
-export async function validateRiddle(riddle: any): Promise<ValidationResult> {
+export async function validateRiddle(riddle: Partial<AIRiddle>): Promise<ValidationResult> {
   if (!GROQ_API_KEY) throw new Error("GROQ_API_KEY is not set.");
 
   const prompt = `You are a ruthless IIT professor evaluating math riddles submitted by your students.
@@ -53,7 +53,7 @@ Return a STRICT JSON object matching this schema exactly:
   try {
     const result = JSON.parse(content) as ValidationResult;
     return result;
-  } catch (err) {
+  } catch {
     throw new Error(`Failed to parse Validator response: ${content}`);
   }
 }

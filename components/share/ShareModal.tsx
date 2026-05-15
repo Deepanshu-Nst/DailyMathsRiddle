@@ -42,6 +42,7 @@ export default function ShareModal({ riddle, date, onClose }: ShareModalProps) {
     if (shareUrl) {
       const input = { riddle, date, url: shareUrl };
       const li = generateLinkedInCaption(input);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCaptions({
         linkedin: li,
         whatsapp: generateWhatsAppCaption(input),

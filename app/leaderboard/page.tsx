@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Trophy, Flame, Calendar, Globe, Medal, ChevronRight } from 'lucide-react';
@@ -31,11 +31,7 @@ export default function LeaderboardsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchLeaderboard();
-  }, [activeTab]);
-
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/leaderboards/${activeTab}?limit=50`);
@@ -47,7 +43,11 @@ export default function LeaderboardsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab]);
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [fetchLeaderboard]);
 
   const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: 'global', label: 'Global XP', icon: <Globe size={14} /> },
@@ -192,6 +192,7 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
           <div className="relative mb-2">
             <div className={`${avatarSize} overflow-hidden rounded-full border-2 border-white/15 bg-black/40 shadow-[0_0_24px_rgba(0,0,0,0.4)]`}>
               {entry.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={entry.avatar_url} alt={entry.username} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-bg-muted text-text-3 font-bold text-2xl">
@@ -250,6 +251,7 @@ function LeaderboardRow({ entry, tab, index }: { entry: LeaderboardEntry; tab: T
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-bg-muted border border-border-subtle overflow-hidden shrink-0">
             {entry.avatar_url && (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={entry.avatar_url} alt={entry.username} className="w-full h-full object-cover" />
             )}
           </div>

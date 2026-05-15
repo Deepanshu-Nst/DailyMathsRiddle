@@ -61,6 +61,7 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle }: Gen
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     setUsed(Number(localStorage.getItem(getTodayKey()) || 0));
     return () => {
       if (cooldownTimer.current) clearTimeout(cooldownTimer.current);
@@ -212,18 +213,4 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle }: Gen
   );
 }
 
-function LoadingSpinner({ label }: { label: string }) {
-  return (
-    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <svg style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" opacity="0.25" />
-        <path
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          opacity="0.75"
-        />
-      </svg>
-      {label}
-    </span>
-  );
-}
+

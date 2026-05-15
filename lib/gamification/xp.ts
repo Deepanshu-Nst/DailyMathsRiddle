@@ -117,7 +117,7 @@ export async function recalculateTotalXP(userId: string): Promise<number> {
       .select('amount')
       .eq('user_id', userId);
 
-    const newTotal = (events || []).reduce((acc: number, e: any) => acc + e.amount, 0);
+    const newTotal = (events || []).reduce((acc: number, e: { amount: number }) => acc + e.amount, 0);
     
     await supabase
       .from('user_stats')

@@ -52,7 +52,7 @@ export async function GET(req: Request) {
   }
 
   // Post-process to calculate accuracy and filter out users without usernames if desired
-  let results = data.map((row: any) => ({
+  const results = data.map((row: any) => ({
     user_id: row.user_id,
     username: row.profiles?.username || row.profiles?.full_name?.split(' ')[0] || 'Anonymous',
     avatar_url: row.profiles?.avatar_url,

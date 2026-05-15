@@ -48,7 +48,8 @@ export default function ProfileContent({ profile, stats, activity, achievements,
         <Card padding="lg" className="flex flex-col gap-6 sm:flex-row sm:items-center">
           <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border border-border bg-bg-muted">
             {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={profile.avatar_url} alt={profile.username || "Avatar"} className="h-full w-full object-cover" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-text-3">
                 {(profile.username?.[0] || 'U').toUpperCase()}

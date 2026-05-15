@@ -9,7 +9,9 @@ export default function CountdownTimer({ minimal }: { minimal?: boolean }) {
   const tz = getOfficialTimezoneShort();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSecs(getSecondsUntilOfficialMidnight());
+     
     setMounted(true);
     const id = setInterval(() => setSecs(getSecondsUntilOfficialMidnight()), 1000);
     return () => clearInterval(id);

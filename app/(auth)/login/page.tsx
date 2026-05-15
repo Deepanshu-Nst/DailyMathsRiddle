@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Sign In — AdvaitAI',
@@ -195,9 +196,9 @@ export default async function LoginPage({
           </div>
 
           {/* Back to app */}
-          <a href="/" className="login-back-link">
+          <Link href="/" className="login-back-link">
             ← Back to daily riddle
-          </a>
+          </Link>
         </div>
       </div>
     </>

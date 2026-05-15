@@ -61,7 +61,7 @@ export default function ProgressCalendar({ solvedDates, days = 90 }: Props) {
     rangeStart.setDate(rangeStart.getDate() - days + 1);
     const rangeStartStr = rangeStart.toISOString().split('T')[0];
 
-    let cursor = new Date(start);
+    const cursor = new Date(start);
     let currentWeek: typeof weeks[0] = [];
     const mLabels: Array<{ label: string; weekIndex: number }> = [];
     let lastMonth = -1;
