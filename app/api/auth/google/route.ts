@@ -7,7 +7,12 @@ export async function GET(request: Request) {
   
   const supabase = await createClient();
   
-  const redirectUrl = new URL('/auth/callback', request.url);
+  // Dynamic origin detection for production/local flexibility
+  const host = request.headers.get('host');
+  const protocol = request.headers.get('x-forwarded-proto') || 'http';
+  const origin = `${protocol}://${host}`;
+  
+  const redirectUrl = new URL('/auth/callback', origin);
   if (nextParam) {
     redirectUrl.searchParams.set('next', nextParam);
   }
