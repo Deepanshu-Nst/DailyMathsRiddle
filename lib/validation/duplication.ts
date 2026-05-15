@@ -8,7 +8,7 @@ import { getRecentRiddleQuestions } from '@/lib/riddles/queries';
  * Replaces the old file-based dedupe that compared against a local JSON store.
  */
 
-const SIMILARITY_THRESHOLD = 0.55; // 55% overlap = too similar
+const SIMILARITY_THRESHOLD = 0.45; // 45% overlap = too similar (stricter for math)
 const RECENT_LIMIT = 50;
 
 function jaccardSimilarity(a: string, b: string): number {

@@ -169,7 +169,11 @@ export default function LeaderboardsPage() {
 
 function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: number; tab: Tab }) {
   const isAnonymous = entry.username === 'Anonymous Seeker';
-  const score = entry.total_xp || entry.weekly_xp || entry.monthly_xp || entry.current_streak || 0;
+  let score = 0;
+  if (tab === 'streaks') score = entry.current_streak || 0;
+  else if (tab === 'global') score = entry.total_xp || 0;
+  else if (tab === 'weekly') score = entry.weekly_xp || 0;
+  else if (tab === 'monthly') score = entry.monthly_xp || 0;
   
   const isFirst = rank === 1;
   const isSecond = rank === 2;
@@ -236,7 +240,11 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
 
 function LeaderboardRow({ entry, tab, index }: { entry: LeaderboardEntry; tab: Tab; index: number }) {
   const isAnonymous = entry.username === 'Anonymous Seeker';
-  const score = entry.total_xp || entry.weekly_xp || entry.monthly_xp || entry.current_streak || 0;
+  let score = 0;
+  if (tab === 'streaks') score = entry.current_streak || 0;
+  else if (tab === 'global') score = entry.total_xp || 0;
+  else if (tab === 'weekly') score = entry.weekly_xp || 0;
+  else if (tab === 'monthly') score = entry.monthly_xp || 0;
 
   // Max score for bar width calculation. Realistically this should be passed from parent, but simplified here.
   // Using a visual trick where width is just a relative mapping

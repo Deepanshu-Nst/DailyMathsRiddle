@@ -21,7 +21,7 @@ const errorMessages: Record<string, string> = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; next?: string }>;
+  searchParams: Promise<{ error?: string; next?: string; reason?: string }>;
 }) {
   const params = await searchParams;
 
@@ -115,7 +115,9 @@ export default async function LoginPage({
                 AdvaitAI
               </h1>
               <p style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.6 }}>
-                Sign in to track your streak and progress.
+                {params.reason === 'challenge' 
+                  ? 'Log in to save progress, streaks, and challenge history.'
+                  : 'Sign in to track your streak and progress.'}
               </p>
             </div>
           </div>
@@ -153,7 +155,7 @@ export default async function LoginPage({
 
             {/* Google sign-in button */}
             <a
-              href="/api/auth/google"
+              href={`/api/auth/google${params.next ? `?next=${encodeURIComponent(params.next)}` : ''}`}
               id="google-signin-btn"
               className="login-google-btn"
             >

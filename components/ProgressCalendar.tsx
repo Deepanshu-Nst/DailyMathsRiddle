@@ -11,14 +11,13 @@ interface Props {
 const DAY_LABELS = ['', 'M', '', 'W', '', 'F', ''];
 
 function getDifficultyOpacity(diff: Difficulty): number {
-  if (diff === 'easy') return 0.4;
-  if (diff === 'medium') return 0.65;
-  return 1;
+  if (diff === 'easy') return 0.25;
+  if (diff === 'medium') return 0.5;
+  return 0.85;
 }
 
 function getDifficultyColor(diff: Difficulty): string {
-  if (diff === 'easy') return 'var(--color-success)';
-  if (diff === 'hard') return 'var(--color-error, #ef4444)';
+  // Use a monochromatic primary heat scale instead of distinct warning/error colors
   return 'var(--color-primary)';
 }
 
@@ -150,14 +149,14 @@ export default function ProgressCalendar({ solvedDates, days = 90 }: Props) {
                     onMouseLeave={() => setHovered(null)}
                   >
                     <div
-                      className={`h-[12px] w-[12px] rounded-[2px] transition-colors ${
+                      className={`h-[11px] w-[11px] rounded-[3px] transition-all duration-300 ${
                         !cell.inRange
                           ? 'bg-transparent'
                           : cell.isToday && !isSolved
-                          ? 'ring-1 ring-text-3/40 bg-surface'
+                          ? 'ring-[1.5px] ring-white/20 bg-transparent'
                           : isSolved
-                          ? ''
-                          : 'bg-surface-hover'
+                          ? 'shadow-[0_0_8px_rgba(244,162,58,0.15)]'
+                          : 'bg-white/[0.04] hover:bg-white/[0.08]'
                       }`}
                       style={
                         isSolved && cell.inRange
@@ -171,8 +170,8 @@ export default function ProgressCalendar({ solvedDates, days = 90 }: Props) {
 
                     {/* Tooltip */}
                     {hovered === cell.date && cell.inRange && (
-                      <div className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-border bg-bg px-3 py-1.5 text-[11px] shadow-lg">
-                        <span className="font-medium text-text-1">
+                      <div className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-white/[0.08] bg-[#111111]/95 px-3 py-2 text-[11px] shadow-xl backdrop-blur-md transition-all">
+                        <span className="font-semibold text-text-1">
                           {new Date(cell.date + 'T00:00:00').toLocaleDateString('en-US', {
                             weekday: 'short',
                             month: 'short',
@@ -180,11 +179,13 @@ export default function ProgressCalendar({ solvedDates, days = 90 }: Props) {
                           })}
                         </span>
                         {isSolved ? (
-                          <span className="ml-2 text-text-2">
-                            Solved ({difficulty})
+                          <span className="ml-2 font-mono uppercase tracking-widest text-primary/90 text-[9px]">
+                            {difficulty}
                           </span>
                         ) : (
-                          <span className="ml-2 text-text-4">No solve</span>
+                          <span className="ml-2 font-mono uppercase tracking-widest text-text-4 text-[9px]">
+                            Unsolved
+                          </span>
                         )}
                       </div>
                     )}
@@ -197,13 +198,13 @@ export default function ProgressCalendar({ solvedDates, days = 90 }: Props) {
       </div>
 
       {/* Legend */}
-      <div className="mt-1 flex items-center gap-3 text-[10px] text-text-4">
+      <div className="mt-2 flex items-center gap-3 text-[9px] font-mono uppercase tracking-[0.1em] text-text-4">
         <span>Less</span>
-        <div className="flex gap-0.5">
-          <div className="h-[10px] w-[10px] rounded-[2px] bg-surface-hover" />
-          <div className="h-[10px] w-[10px] rounded-[2px] bg-success/40" />
-          <div className="h-[10px] w-[10px] rounded-[2px] bg-primary/65" />
-          <div className="h-[10px] w-[10px] rounded-[2px] bg-error" />
+        <div className="flex gap-1">
+          <div className="h-[11px] w-[11px] rounded-[3px] bg-white/[0.04]" />
+          <div className="h-[11px] w-[11px] rounded-[3px] bg-primary/25" />
+          <div className="h-[11px] w-[11px] rounded-[3px] bg-primary/50" />
+          <div className="h-[11px] w-[11px] rounded-[3px] bg-primary/85" />
         </div>
         <span>More</span>
       </div>

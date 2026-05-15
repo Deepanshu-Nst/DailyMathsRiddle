@@ -33,8 +33,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className="dark">
+      <body className="bg-bg text-text-1 antialiased">
         <ChallengeSessionProvider>
           <Header user={user} profile={profile} />
           {children}

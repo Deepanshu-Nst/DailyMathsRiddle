@@ -6,12 +6,6 @@
 /* AdvaitAI — production UI tokens (Tailwind v4). Restrained, dark, high legibility. */
 
 @theme {
-  /* Accent — warm signal in a cool void */
-  --color-primary: #f4a23a;
-  --color-primary-hover: #ffb24d;
-  --color-primary-active: #d88922;
-  --color-primary-glow: rgba(244, 162, 58, 0.35);
-
   /* Canvas */
   --color-bg: #050506;
   --color-bg-subtle: #0a0a0d;
@@ -20,10 +14,10 @@
   --color-surface-hover: rgba(255, 255, 255, 0.055);
   --color-surface-raised: rgba(18, 18, 22, 0.92);
 
-  /* Borders & glass */
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-dark: rgba(255, 255, 255, 0.14);
-  --color-border-subtle: rgba(255, 255, 255, 0.04);
+  /* Accent */
+  --color-primary: #f4a23a;
+  --color-primary-hover: #ffb24d;
+  --color-primary-active: #d88922;
 
   /* Text */
   --color-text-1: #f4f4f5;
@@ -31,84 +25,66 @@
   --color-text-3: #71717a;
   --color-text-4: #52525b;
 
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-dark: rgba(255, 255, 255, 0.14);
+  --color-border-subtle: rgba(255, 255, 255, 0.04);
+
   --color-success: #34d399;
-  --color-success-bg: rgba(52, 211, 153, 0.08);
-
   --color-error: #f87171;
-  --color-error-bg: rgba(248, 113, 113, 0.08);
-
-  --color-info: #60a5fa;
-  --color-info-bg: rgba(96, 165, 250, 0.08);
-
-  --color-warning: #fbbf24;
-  --color-warning-bg: rgba(251, 191, 36, 0.08);
-
-  --color-gold: #e8c547;
-  --color-gold-bg: rgba(232, 197, 71, 0.1);
-  --color-silver: #c4c4cc;
-  --color-bronze: #c97a4a;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
   --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+}
 
-  /* ─── Elevation Hierarchy ─────────────────────────────────────── */
-  --elevation-0: none;
-  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --elevation-3: 0 12px 40px rgba(0, 0, 0, 0.5);
-
-  /* ─── Motion Rules ────────────────────────────────────────────── */
-  --duration-micro: 150ms;
-  --duration-fast: 200ms;
-  --duration-normal: 300ms;
-  --duration-page: 350ms;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+:root {
+  background-color: #050506;
+  color: #f4f4f5;
+  color-scheme: dark;
 }
 
 
-@layer base {
-  html {
-    scroll-behavior: smooth;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    color-scheme: dark;
-  }
+html {
+  scroll-behavior: smooth;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  color-scheme: dark;
+  background-color: #050506; /* Hardcoded fallback */
+}
 
-  body {
-    font-family: var(--font-sans);
-    background-color: var(--color-bg);
-    background-image: radial-gradient(900px 500px at 50% -20%, rgba(255, 255, 255, 0.04), transparent 60%);
-    color: var(--color-text-1);
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    line-height: 1.55;
-    letter-spacing: -0.013em;
-  }
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  background-image: radial-gradient(900px 500px at 50% -20%, rgba(255, 255, 255, 0.04), transparent 60%);
+  color: var(--color-text-1);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.55;
+  letter-spacing: -0.013em;
+  margin: 0;
+}
 
-  ::selection {
-    background: rgba(244, 162, 58, 0.22);
-    color: var(--color-text-1);
-  }
+::selection {
+  background: rgba(244, 162, 58, 0.22);
+  color: var(--color-text-1);
+}
 
-  ::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
-  }
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
 
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-  }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 

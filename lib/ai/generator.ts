@@ -50,12 +50,13 @@ function extractJson(text: string): string | null {
 export async function generateSingleRiddle(
   difficulty: string,
   recentTemplateIds: string[] = [],
-  model: string = PRIMARY_MODEL
+  model: string = PRIMARY_MODEL,
+  avoidCategories: string[] = []
 ): Promise<GenerateResponse> {
   if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY is not set.');
 
   const { getWeightedTemplates, getTemplate } = await import('./templates/registry');
-  const selectedTemplates = getWeightedTemplates(difficulty, recentTemplateIds, 5);
+  const selectedTemplates = getWeightedTemplates(difficulty, recentTemplateIds, 5, avoidCategories.map(c => c.toLowerCase()));
   
   if (selectedTemplates.length === 0) {
     throw new Error(`No templates found for difficulty: ${difficulty}`);
@@ -83,6 +84,7 @@ STRICT CONSTRAINTS:
 2. "params" MUST be a JSON object containing the required numerical parameters for the template. Make sure they are integers and reasonable.
 3. "wording" MUST be the actual riddle question text.
 4. "hint1" and "hint2" MUST be concise hints (2-5 sentences max).
+${avoidCategories.length > 0 ? `5. TOPIC DIVERSITY: Do NOT generate riddles related to these recent categories: ${avoidCategories.join(', ')}. Use a DIFFERENT mathematical domain.` : ''}
 
 Return ONLY valid JSON in this exact schema. No markdown, no prose outside JSON.
 {

@@ -2,11 +2,11 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { Database } from '@/types/supabase';
 
-const PROTECTED_PREFIXES = ['/dashboard', '/admin'];
+const PROTECTED_PREFIXES = ['/dashboard', '/admin', '/riddle', '/r/', '/practice'];
 const AUTH_ROUTES = ['/login'];
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export async function proxy(request: NextRequest) {
+  const { pathname, search } = request.nextUrl;
 
   // Never intercept the OAuth callback or API auth routes
   if (
@@ -61,7 +61,12 @@ export async function middleware(request: NextRequest) {
 
   // ── Protect routes that require authentication ──
   if (!user && PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
-    return createRedirectResponse(new URL('/', request.url));
+    const url = new URL('/login', request.url);
+    url.searchParams.set('next', pathname + search);
+    if (['/riddle', '/r/', '/practice'].some(prefix => pathname.startsWith(prefix))) {
+      url.searchParams.set('reason', 'challenge');
+    }
+    return createRedirectResponse(url);
   }
 
   return supabaseResponse;

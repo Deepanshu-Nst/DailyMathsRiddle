@@ -8,7 +8,7 @@ import HintLadder from '@/components/HintLadder';
 import CelebrationModal from '@/components/CelebrationModal';
 import ShareModal from '@/components/share/ShareModal';
 import CountdownTimer from '@/components/CountdownTimer';
-import GenerateMore from '@/components/riddle/GenerateMore';
+import Link from 'next/link';
 import { ChallengeModal } from '@/components/riddles/ChallengeModal';
 import { Difficulty, Riddle, ChallengeState } from '@/types';
 import { getOfficialDailyDate } from '@/lib/timezone';
@@ -50,8 +50,7 @@ function SolvePage() {
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
   const sessionIdRef = useRef<string>('');
-  const [mode, setMode] = useState<'daily' | 'extra'>('daily');
-  const [extraCount, setExtraCount] = useState(0);
+  const [mode] = useState<'daily' | 'extra'>('daily');
 
   const [xpAwarded, setXpAwarded] = useState<number | null>(null);
   const [newStreak, setNewStreak] = useState<number | null>(null);
@@ -185,22 +184,6 @@ function SolvePage() {
     }
   };
 
-  const handleNewRiddle = (newRiddle: Partial<Riddle>) => {
-    setMode('extra');
-    setRiddle(newRiddle);
-    setAnswer('');
-    setChallengeState('AVAILABLE');
-    setExplanation('');
-    setCorrectAnswer('');
-    setHintsUsed(0);
-    setShowModal(false);
-    setAttemptCount(0);
-    setXpAwarded(null);
-    setNewStreak(null);
-    setBonuses([]);
-    setExtraCount((prev) => prev + 1);
-    solveStartedAt.current = new Date().toISOString();
-  };
 
   const isCompleted = challengeState === 'SOLVED' || challengeState === 'ABANDONED';
 
@@ -231,7 +214,7 @@ function SolvePage() {
                 {mode === 'daily' ? 'Daily puzzle' : 'Extra puzzle'}
               </span>
               <span className="text-sm font-semibold text-text-1">
-                {mode === 'daily' ? dateParam : `Extra #${extraCount}`}
+                {dateParam}
               </span>
             </div>
           </div>
@@ -437,11 +420,19 @@ function SolvePage() {
 
             {riddle && !loading && !error && sessionIdRef.current && (
               <div className="border-t border-white/[0.06] pt-2">
-                <div className="mb-2 flex items-center gap-2 text-text-4">
+                <div className="mb-3 flex items-center gap-2 text-text-4">
                   <Sparkles size={12} />
-                  <span className="font-mono text-[9px] uppercase tracking-[0.14em]">Generate more</span>
+                  <span className="font-mono text-[9px] uppercase tracking-[0.14em]">Practice Mode</span>
                 </div>
-                <GenerateMore sessionId={sessionIdRef.current} difficulty={difficulty} onNewRiddle={handleNewRiddle} />
+                <Link href="/practice">
+                  <Button variant="primary" size="sm" className="w-full gap-2">
+                    <Target size={14} />
+                    Continue to Practice
+                  </Button>
+                </Link>
+                <p className="mt-3 text-center text-[10px] text-text-4 leading-relaxed">
+                  Earn XP without affecting your daily streak.
+                </p>
               </div>
             )}
 

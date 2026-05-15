@@ -28,8 +28,21 @@ export function getRandomTemplate(difficulty?: string): RiddleTemplate<Record<st
  * Selects a weighted subset of templates for the AI prompt.
  * Templates recently used have a heavily reduced chance of being selected.
  */
-export function getWeightedTemplates(difficulty: string, recentTemplateIds: string[], count: number = 5): RiddleTemplate<Record<string, number>>[] {
-  const pool = ALL_TEMPLATES.filter(t => t.difficulty.includes(difficulty as 'easy' | 'medium' | 'hard'));
+export function getWeightedTemplates(
+  difficulty: string, 
+  recentTemplateIds: string[], 
+  count: number = 5,
+  avoidCategories: string[] = []
+): RiddleTemplate<Record<string, number>>[] {
+  let pool = ALL_TEMPLATES.filter(t => 
+    t.difficulty.includes(difficulty as 'easy' | 'medium' | 'hard') &&
+    !avoidCategories.includes(t.category.toLowerCase())
+  );
+
+  // If strict category avoidance leaves us with too few templates, relax the constraint
+  if (pool.length < count) {
+    pool = ALL_TEMPLATES.filter(t => t.difficulty.includes(difficulty as 'easy' | 'medium' | 'hard'));
+  }
   
   if (pool.length <= count) {
     return pool;
@@ -39,16 +52,19 @@ export function getWeightedTemplates(difficulty: string, recentTemplateIds: stri
   const weightedPool = pool.map(t => {
     let weight = 100;
     
-    // Penalize recently used templates
+    // Penalize or exclude recently used templates
     const recentIndex = recentTemplateIds.indexOf(t.id);
     if (recentIndex !== -1) {
-      // If it's the most recent (index 0), massive penalty. If it's 10th most recent, smaller penalty.
-      const penalty = Math.max(1, 10 - recentIndex);
-      weight = weight / (penalty * 10); // drastic reduction
+      if (recentIndex < 3 && pool.length > count + 3) {
+        weight = 0; // Strictly exclude the 3 most recent if we have enough templates
+      } else {
+        const penalty = Math.max(1, 10 - recentIndex);
+        weight = weight / (penalty * 20); // extreme reduction
+      }
     }
 
     return { template: t, weight };
-  });
+  }).filter(item => item.weight > 0);
 
   // Select `count` templates without replacement using weighted random
   const selected: RiddleTemplate<Record<string, number>>[] = [];

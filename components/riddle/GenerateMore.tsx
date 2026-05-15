@@ -32,6 +32,7 @@ interface GenerateMoreProps {
   sessionId: string;
   difficulty: string;
   onNewRiddle: (riddle: Partial<Riddle>) => void;
+  onStartGeneration?: () => void;
 }
 
 /**
@@ -48,7 +49,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { RotateCw, AlertTriangle, Lock, Info } from 'lucide-react';
 
-export default function GenerateMore({ sessionId, difficulty, onNewRiddle }: GenerateMoreProps) {
+export default function GenerateMore({ sessionId, difficulty, onNewRiddle, onStartGeneration }: GenerateMoreProps) {
   const [used, setUsed] = useState(0);
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(false);
@@ -80,6 +81,8 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle }: Gen
     setLoading(true);
     setErrorCode(null);
     setAttempts([]);
+    setTemplateFamily(null);
+    if (onStartGeneration) onStartGeneration();
 
     const controller = new AbortController();
     abortRef.current = controller;
