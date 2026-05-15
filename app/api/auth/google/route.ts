@@ -7,15 +7,13 @@ export async function GET(request: Request) {
   
   const supabase = await createClient();
   
-  // Dynamic origin detection for production/local flexibility
+  // Dynamic origin detection
   const host = request.headers.get('host');
   const protocol = request.headers.get('x-forwarded-proto') || 'http';
   const origin = `${protocol}://${host}`;
   
+  // We use a STATIC redirect URL. This is critical for Supabase "Allow List" matching.
   const redirectUrl = new URL('/auth/callback', origin);
-  if (nextParam) {
-    redirectUrl.searchParams.set('next', nextParam);
-  }
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -35,5 +33,19 @@ export async function GET(request: Request) {
     return NextResponse.redirect(errorUrl);
   }
 
-  return NextResponse.redirect(data.url);
+  const response = NextResponse.redirect(data.url);
+
+  // Store the deep-link 'next' parameter in a secure cookie.
+  // This keeps the OAuth redirectTo parameter static and safe.
+  if (nextParam) {
+    response.cookies.set('advaitai_next_url', nextParam, {
+      path: '/',
+      maxAge: 600, // 10 minutes
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+  }
+
+  return response;
 }

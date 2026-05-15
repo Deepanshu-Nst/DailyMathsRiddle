@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { cookies } from 'next/headers';
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get('code');
+  
+  // Try to get 'next' from cookie first (set in google/route.ts), then from searchParams
+  const cookieStore = await cookies();
+  const nextCookie = cookieStore.get('advaitai_next_url')?.value;
+  let next = nextCookie || requestUrl.searchParams.get('next') || '/';
 
   // Dynamic origin detection
   const host = request.headers.get('host');
@@ -16,9 +21,23 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (!error) {
-      // Create the redirect response
+      // Ensure next is a relative path to prevent open redirect vulnerabilities
+      if (next.startsWith('http')) {
+        try {
+          const nextUrl = new URL(next);
+          next = nextUrl.pathname + nextUrl.search;
+        } catch {
+          next = '/';
+        }
+      }
+
       const redirectTo = next.startsWith('/') ? next : '/';
-      return NextResponse.redirect(`${requestOrigin}${redirectTo}`);
+      const response = NextResponse.redirect(`${requestOrigin}${redirectTo}`);
+      
+      // Clean up the next cookie
+      response.cookies.delete('advaitai_next_url');
+      
+      return response;
     } else {
       console.error('[CALLBACK ERROR]', error.message);
     }
