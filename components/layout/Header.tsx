@@ -56,21 +56,21 @@ export default function Header({ user, profile }: HeaderProps) {
           {/* Brand & Nav */}
           <div className="flex items-center gap-10">
             <div
-              className="flex items-center gap-2 cursor-pointer group"
+              className="flex items-center gap-3 cursor-pointer group"
               onClick={() => router.push('/')}
             >
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-black text-lg transition-transform group-hover:scale-105">
+              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(108,123,255,0.4)]">
                 ∑
               </div>
-              <span className="font-display text-lg tracking-tight text-text-1">
+              <span className="font-display text-xl tracking-tight text-text-1">
                 AdvaitAI
               </span>
             </div>
 
-            <nav className="hidden md:flex items-center gap-6">
+            <nav className="hidden md:flex items-center gap-8">
               <Link 
                 href="/leaderboard" 
-                className="text-sm font-medium text-text-2 hover:text-text-1 transition-colors"
+                className="relative text-[13px] font-semibold text-text-2 hover:text-text-1 transition-colors after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-primary after:transition-transform hover:after:scale-x-100"
               >
                 Leaderboard
               </Link>
@@ -84,19 +84,19 @@ export default function Header({ user, profile }: HeaderProps) {
             {user ? (
               <div className="flex items-center gap-4">
                 <div 
-                  className="flex items-center gap-2 cursor-pointer group"
+                  className="flex items-center gap-2.5 cursor-pointer group"
                   onClick={() => profile?.username && router.push(`/u/${profile.username}`)}
                 >
                   {profile?.avatar_url ? (
                     <img
                       src={profile.avatar_url}
                       alt="Avatar"
-                      className="w-7 h-7 rounded-full border border-border group-hover:border-text-3 transition-colors"
+                      className="w-8 h-8 rounded-full border border-border group-hover:ring-2 group-hover:ring-primary/50 group-hover:border-primary transition-all"
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-bg-subtle border border-border" />
+                    <div className="w-8 h-8 rounded-full bg-bg-subtle border border-border group-hover:ring-2 group-hover:ring-primary/50 group-hover:border-primary transition-all" />
                   )}
-                  <span className="text-sm font-medium text-text-2 group-hover:text-text-1 transition-colors">
+                  <span className="text-[13px] font-semibold text-text-2 group-hover:text-text-1 transition-colors">
                     {profile?.username || profile?.full_name?.split(' ')[0] || 'User'}
                   </span>
                 </div>
@@ -110,9 +110,9 @@ export default function Header({ user, profile }: HeaderProps) {
               </div>
             ) : (
               <Button 
+                variant="primary"
                 onClick={handleSignIn} 
                 disabled={isSigningIn}
-                size="sm"
               >
                 {isSigningIn ? 'Redirecting…' : 'Sign in'}
               </Button>

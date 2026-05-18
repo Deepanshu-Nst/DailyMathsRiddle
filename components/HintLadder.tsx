@@ -31,7 +31,7 @@ export default function HintLadder({ hint1, hint2, disabled, onLevelChange }: Pr
           size="sm"
           onClick={() => setLevelTracked(level === 1 ? 0 : 1)}
           disabled={disabled}
-          className="gap-2"
+          className="gap-2 rounded-full"
         >
           <Lightbulb size={14} className={level >= 1 ? 'text-primary' : 'text-text-4'} />
           Hint 1
@@ -44,7 +44,7 @@ export default function HintLadder({ hint1, hint2, disabled, onLevelChange }: Pr
             size="sm"
             onClick={() => setLevelTracked(level === 2 ? 0 : 2)}
             disabled={disabled || level < 1}
-            className="gap-2"
+            className="gap-2 rounded-full"
           >
             <Lightbulb size={14} className={level === 2 ? 'text-primary' : 'text-text-4'} />
             Hint 2
@@ -62,7 +62,7 @@ export default function HintLadder({ hint1, hint2, disabled, onLevelChange }: Pr
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.2 }}
-            className="flex flex-col gap-3 border border-white/[0.08] bg-black/30 p-4 shadow-inner shadow-black/40"
+            className="flex flex-col gap-3 rounded-xl border border-white/[0.08] bg-surface-soft p-5 shadow-sm"
           >
             <div className="flex items-center gap-2">
               <Badge variant="warning" size="sm">Level {level} Hint</Badge>

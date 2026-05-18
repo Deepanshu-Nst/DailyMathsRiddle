@@ -58,7 +58,7 @@ export default function CelebrationModal({ explanation, answer, streak, onClose,
       <motion.button
         type="button"
         aria-label="Close"
-        className="absolute inset-0 bg-black/75 backdrop-blur-md"
+        className="absolute inset-0 bg-black/80 backdrop-blur-2xl"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -86,7 +86,7 @@ export default function CelebrationModal({ explanation, answer, streak, onClose,
                 <Sparkles size={28} strokeWidth={1.5} />
               </motion.div>
               <p className="font-mono text-[10px] font-medium text-text-3">Correct</p>
-              <h2 className="mt-2 font-display text-[1.85rem] leading-tight text-text-1 sm:text-[2rem]">Saved to your record</h2>
+              <h2 className="mt-2 font-display text-[2.25rem] leading-tight text-text-1 sm:text-[2.5rem]">Saved to your record</h2>
               <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-text-2">
                 XP and streak below reflect what was written to the database for this solve.
               </p>
@@ -145,7 +145,7 @@ export default function CelebrationModal({ explanation, answer, streak, onClose,
                   <CountdownTimer />
                 </div>
               </div>
-              <Button size="lg" onClick={onClose}>
+              <Button size="lg" variant="primary" onClick={onClose} className="px-8">
                 Close
               </Button>
             </div>

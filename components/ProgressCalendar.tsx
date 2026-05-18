@@ -167,7 +167,7 @@ export default function ProgressCalendar({ solvedDates, days = 90, todayIST }: P
                           : cell.isToday && !isSolved
                           ? 'ring-[1.5px] ring-white/20 bg-transparent'
                           : isSolved
-                          ? 'shadow-[0_0_8px_rgba(244,162,58,0.15)]'
+                          ? 'shadow-[0_0_8px_rgba(108,123,255,0.4)]'
                           : 'bg-white/[0.04] hover:bg-white/[0.08]'
                       }`}
                       style={

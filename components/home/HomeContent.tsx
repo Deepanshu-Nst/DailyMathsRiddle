@@ -34,12 +34,14 @@ export default function HomeContent() {
   const activityMap = session?.activityMap ?? [];
 
   return (
-    <Container wide className="pt-10 pb-20 lg:pt-14 lg:pb-28">
+    <Container wide className="pt-16 pb-24 lg:pt-24 lg:pb-32 relative">
+      <div className="hero-glow" />
+      <div className="surface-grain" />
       <motion.main
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className="relative grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)] lg:gap-16 lg:items-start"
+        className="relative z-10 grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)] lg:gap-16 lg:items-start"
       >
         <div className="flex flex-col gap-10 lg:gap-12">
           <motion.div variants={fadeUp} className="space-y-5">
@@ -51,17 +53,17 @@ export default function HomeContent() {
               </Badge>
             </div>
 
-            <h1 className="max-w-xl font-display text-[clamp(2.25rem,5vw,3.25rem)] leading-[1.08] tracking-tight text-text-1">
+            <h1 className="max-w-2xl font-display text-[clamp(2.75rem,6vw,4.5rem)] leading-[1.05] tracking-tight text-text-1">
               Today&apos;s challenge
             </h1>
 
-            <p className="max-w-lg text-[15px] leading-relaxed text-text-2">
+            <p className="max-w-lg text-base leading-relaxed text-text-2">
               Your progress syncs automatically. Pick a difficulty and solve today&apos;s puzzle.
             </p>
           </motion.div>
 
           <motion.div variants={fadeUp} transition={{ type: 'spring', damping: 28, stiffness: 260 }}>
-            <div className="content-panel relative px-6 py-8 sm:px-8 sm:py-9">
+            <div className="content-panel relative px-8 py-10 sm:px-10 sm:py-12 bg-bg-muted/80 backdrop-blur-xl border border-white/[0.08] shadow-[0_24px_80px_rgba(0,0,0,0.4)]">
               <div className="relative">
                 {loading ? (
                   <div className="flex flex-col gap-4">
@@ -100,9 +102,9 @@ export default function HomeContent() {
                         <CountdownTimer />
                       </div>
                       <Button
-                        variant="secondary"
+                        variant="primary"
+                        size="lg"
                         onClick={() => router.push(`/riddle/${today}?difficulty=${difficulty}`)}
-                        className="border-white/10 bg-white/[0.04] hover:bg-white/[0.07]"
                       >
                         Open today&apos;s puzzle
                       </Button>
@@ -133,6 +135,7 @@ export default function HomeContent() {
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={spring}>
                         <Button
                           size="lg"
+                          variant="primary"
                           onClick={() => router.push(`/riddle/${today}?difficulty=${difficulty}`)}
                           className="gap-2 px-8"
                         >
@@ -160,8 +163,8 @@ export default function HomeContent() {
                   Streak
                 </span>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-display text-4xl tabular-nums text-text-1">{currentStreak}</span>
-                  <span className="text-xs font-medium text-text-3">d</span>
+                  <span className="font-display text-5xl tabular-nums gradient-text-accent">{currentStreak}</span>
+                  <span className="text-sm font-medium text-text-3">d</span>
                 </div>
               </div>
               <div className="space-y-1 border-l border-white/[0.08] pl-4">
@@ -169,7 +172,7 @@ export default function HomeContent() {
                   Total XP
                 </span>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-display text-4xl tabular-nums text-text-1">{totalXp.toLocaleString()}</span>
+                  <span className="font-display text-5xl tabular-nums gradient-text-accent">{totalXp.toLocaleString()}</span>
                 </div>
               </div>
             </div>

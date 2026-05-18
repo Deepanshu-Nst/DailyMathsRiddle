@@ -47,7 +47,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={[
-              'relative flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-medium rounded-lg transition-colors',
+              'relative flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium rounded-full transition-colors',
               isActive
                 ? 'text-text-1'
                 : 'text-text-3 hover:text-text-2',
@@ -56,8 +56,8 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className
             {isActive && (
               <motion.div
                 layoutId="tab-pill"
-                className="absolute inset-0 rounded-lg border border-white/[0.12] bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
-                transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                className="absolute inset-0 rounded-full border border-white/[0.08] bg-white/[0.05] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-md"
+                transition={{ type: 'spring', damping: 26, stiffness: 300 }}
               />
             )}
             <span className="relative z-10 flex items-center gap-1.5">

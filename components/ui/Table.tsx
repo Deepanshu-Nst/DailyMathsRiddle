@@ -26,8 +26,8 @@ export const TableBody: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> 
 
 export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement> & { hover?: boolean }> = ({ children, className, hover = true, ...props }) => (
   <tr className={[
-    'transition-colors',
-    hover ? 'hover:bg-white/[0.04]' : '',
+    'transition-colors relative',
+    hover ? 'hover:bg-white/[0.03] hover:shadow-[inset_2px_0_0_var(--color-primary)]' : '',
     className,
   ].filter(Boolean).join(' ')} {...props}>
     {children}
@@ -36,7 +36,7 @@ export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement> & { ho
 
 export const TableHead: React.FC<React.ThHTMLAttributes<HTMLTableCellElement>> = ({ children, className, ...props }) => (
   <th className={[
-    'px-4 py-2.5 text-[11px] font-semibold text-text-3 uppercase tracking-[0.05em]',
+    'px-5 py-3.5 text-[11px] font-bold text-text-3 uppercase tracking-[0.1em]',
     className,
   ].filter(Boolean).join(' ')} {...props}>
     {children}
@@ -44,7 +44,7 @@ export const TableHead: React.FC<React.ThHTMLAttributes<HTMLTableCellElement>> =
 );
 
 export const TableCell: React.FC<React.TdHTMLAttributes<HTMLTableCellElement>> = ({ children, className, ...props }) => (
-  <td className={['px-4 py-3 text-[13px] text-text-1', className].filter(Boolean).join(' ')} {...props}>
+  <td className={['px-5 py-4 text-[13px] text-text-1', className].filter(Boolean).join(' ')} {...props}>
     {children}
   </td>
 );

@@ -3,27 +3,32 @@
 @import "../styles/tokens/spacing.css";
 @import "../styles/tokens/typography.css";
 
-/* AdvaitAI — production UI tokens (Tailwind v4). Restrained, dark, high legibility. */
+/* AdvaitAI — production UI tokens (Tailwind v4). Premium SaaS aesthetic. */
 
 @theme {
   /* Canvas */
-  --color-bg: #050506;
-  --color-bg-subtle: #0a0a0d;
-  --color-bg-muted: #101014;
-  --color-surface: rgba(255, 255, 255, 0.035);
+  --color-bg: #050505;
+  --color-bg-subtle: #0E0E11;
+  --color-bg-muted: #121217;
+  --color-surface: #121217;
+  --color-surface-soft: #18181F;
+  --color-surface-2: #1e1e24;
+  --color-surface-3: #27272e;
   --color-surface-hover: rgba(255, 255, 255, 0.055);
-  --color-surface-raised: rgba(18, 18, 22, 0.92);
+  --color-surface-raised: rgba(24, 24, 31, 0.92);
 
   /* Accent */
-  --color-primary: #f4a23a;
-  --color-primary-hover: #ffb24d;
-  --color-primary-active: #d88922;
+  --color-primary: #6C7BFF;
+  --color-primary-hover: #8190FF;
+  --color-primary-active: #5b68df;
+  --color-accent-glow: rgba(108, 123, 255, 0.4);
+  --color-accent-glow-subtle: rgba(108, 123, 255, 0.15);
 
   /* Text */
-  --color-text-1: #f4f4f5;
-  --color-text-2: #a1a1aa;
-  --color-text-3: #71717a;
-  --color-text-4: #52525b;
+  --color-text-1: #F5F5F7;
+  --color-text-2: #A1A1AA;
+  --color-text-3: #71717A;
+  --color-text-4: #52525B;
 
   --color-border: rgba(255, 255, 255, 0.08);
   --color-border-dark: rgba(255, 255, 255, 0.14);
@@ -38,8 +43,8 @@
 }
 
 :root {
-  background-color: #050506;
-  color: #f4f4f5;
+  background-color: var(--color-bg);
+  color: var(--color-text-1);
   color-scheme: dark;
 }
 
@@ -91,25 +96,25 @@ body {
 @layer components {
 
   .card {
-    background: linear-gradient(165deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+    background: linear-gradient(165deg, var(--color-surface-soft) 0%, var(--color-surface) 100%);
     border: 1px solid var(--color-border);
-    border-radius: 14px;
+    border-radius: 16px;
     box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.06) inset,
-      var(--elevation-2);
+      0 1px 0 rgba(255, 255, 255, 0.04) inset,
+      0 4px 12px rgba(0, 0, 0, 0.2);
     transition:
-      box-shadow var(--duration-fast) var(--ease-out),
-      border-color var(--duration-fast) ease,
-      transform var(--duration-fast) var(--ease-out);
+      box-shadow 0.2s ease-out,
+      border-color 0.2s ease,
+      transform 0.2s ease-out;
   }
 
   .card-hoverable:hover {
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.08) inset,
-      var(--elevation-3),
-      0 0 0 1px rgba(244, 162, 58, 0.12);
+      0 8px 24px rgba(0, 0, 0, 0.4),
+      0 0 0 1px var(--color-accent-glow-subtle);
     border-color: var(--color-border-dark);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
   }
 
   .card-elevated {
@@ -124,11 +129,13 @@ body {
   }
 
   .glass-panel {
-    background: linear-gradient(180deg, rgba(20, 20, 26, 0.85) 0%, rgba(12, 12, 16, 0.72) 100%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--color-border);
+    background: linear-gradient(180deg, rgba(24, 24, 31, 0.65) 0%, rgba(18, 18, 23, 0.5) 100%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--color-border-subtle);
+    border-top: 1px solid var(--color-border);
     border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
 
   .btn {
@@ -138,7 +145,7 @@ body {
     gap: 6px;
     font-weight: 550;
     font-family: var(--font-sans);
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid transparent;
     cursor: pointer;
     transition:
@@ -172,10 +179,10 @@ body {
     width: 100%;
     font-family: var(--font-sans);
     font-size: 14px;
-    padding: 10px 14px;
-    background-color: rgba(0, 0, 0, 0.35);
+    padding: 12px 16px;
+    background-color: var(--color-surface-soft);
     border: 1px solid var(--color-border);
-    border-radius: 10px;
+    border-radius: 12px;
     color: var(--color-text-1);
     transition:
       border-color 0.2s ease,
@@ -194,9 +201,9 @@ body {
   }
 
   .input:focus {
-    border-color: rgba(244, 162, 58, 0.55);
-    box-shadow: 0 0 0 3px rgba(244, 162, 58, 0.12);
-    background-color: rgba(0, 0, 0, 0.45);
+    border-color: rgba(108, 123, 255, 0.55);
+    box-shadow: 0 0 0 3px rgba(108, 123, 255, 0.15);
+    background-color: var(--color-surface-2);
   }
 
   .font-display {
@@ -251,12 +258,12 @@ body {
   }
 
   .cal-cell.solved-medium {
-    background-color: rgba(244, 162, 58, 0.55);
+    background-color: rgba(108, 123, 255, 0.55);
     box-shadow: none;
   }
 
   .cal-cell.solved-hard {
-    background-color: rgba(248, 113, 113, 0.55);
+    background-color: rgba(108, 123, 255, 0.85);
     box-shadow: none;
   }
 
@@ -349,11 +356,11 @@ body {
 
     0%,
     100% {
-      box-shadow: 0 0 20px rgba(244, 162, 58, 0.15);
+      box-shadow: 0 0 20px rgba(108, 123, 255, 0.15);
     }
 
     50% {
-      box-shadow: 0 0 48px rgba(244, 162, 58, 0.35);
+      box-shadow: 0 0 48px rgba(108, 123, 255, 0.35);
     }
   }
 
@@ -371,5 +378,50 @@ body {
 
   .text-balance {
     text-wrap: balance;
+  }
+
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(108, 123, 255, 0.15), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card-glow {
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(108, 123, 255, 0.4) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+  }
+  
+  .card-hoverable:hover .card-glow {
+    opacity: 1;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--color-text-1) 0%, #A1A1AA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .gradient-text-accent {
+    background: linear-gradient(135deg, #A8B1FF 0%, #6C7BFF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .surface-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    z-index: 0;
   }
 }

@@ -26,9 +26,14 @@
   --space-16: 64px;
   --space-20: 80px;
   --space-24: 96px;
+  --space-28: 112px;
+  --space-32: 128px;
+  --space-40: 160px;
 
   /* Semantic spacing */
   --space-section: var(--space-16);
+  --space-section-lg: var(--space-24);
+  --space-hero: var(--space-32);
   --space-card: var(--space-5);
   --space-input: var(--space-3);
   --space-stack-sm: var(--space-2);

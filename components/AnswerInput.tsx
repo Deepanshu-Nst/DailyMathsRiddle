@@ -28,12 +28,14 @@ export default function AnswerInput({ value, onChange, onSubmit, status, disable
           placeholder="Type your solution..."
           disabled={disabled}
           error={status === 'incorrect'}
-          className={status === 'correct' ? 'border-success ring-1 ring-success/20 text-success' : 'focus:ring-orange-500'}
+          className={status === 'correct' ? 'border-success ring-1 ring-success/20 text-success' : ''}
         />
         <Button 
+          variant="primary"
+          size="lg"
           onClick={onSubmit} 
           disabled={disabled || !value.trim()}
-          className="shrink-0"
+          className="shrink-0 px-8"
         >
           Submit
         </Button>

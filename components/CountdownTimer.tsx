@@ -20,7 +20,7 @@ export default function CountdownTimer({ minimal }: { minimal?: boolean }) {
   if (minimal) {
     return (
       <span
-        className="font-mono text-sm font-semibold tracking-[0.08em] text-text-1"
+        className="font-display text-2xl tracking-wide text-text-1"
         suppressHydrationWarning
       >
         {mounted ? formatCountdown(secs) : '--:--:--'}
@@ -32,7 +32,7 @@ export default function CountdownTimer({ minimal }: { minimal?: boolean }) {
     <div className="flex flex-wrap items-center gap-2.5">
       <span className="label text-[10px] text-text-4">Next reset · {tz}</span>
       <span
-        className="font-mono text-sm font-semibold tracking-[0.08em] text-text-1"
+        className="font-display text-2xl tracking-wide text-text-1"
         suppressHydrationWarning
       >
         {mounted ? formatCountdown(secs) : '--:--:--'}

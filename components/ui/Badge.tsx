@@ -16,12 +16,12 @@ export const Badge: React.FC<BadgeProps> = ({
   dot = false,
 }) => {
   const variantStyles = {
-    primary: 'bg-primary/8 text-primary ring-primary/10',
+    primary: 'bg-primary/15 text-primary ring-primary/20 shadow-[0_0_12px_rgba(108,123,255,0.15)]',
     secondary: 'bg-bg-muted text-text-2 ring-border',
-    success: 'bg-success/8 text-success ring-success/10',
-    danger: 'bg-error/8 text-error ring-error/10',
-    warning: 'bg-warning/8 text-warning ring-warning/10',
-    info: 'bg-info/8 text-info ring-info/10',
+    success: 'bg-success/10 text-success ring-success/20',
+    danger: 'bg-error/10 text-error ring-error/20',
+    warning: 'bg-warning/10 text-warning ring-warning/20',
+    info: 'bg-info/10 text-info ring-info/20',
   };
 
   const sizeStyles = {
@@ -31,7 +31,7 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const styles = [
-    'inline-flex items-center gap-1.5 rounded-md font-semibold ring-1 ring-inset',
+    'inline-flex items-center gap-1.5 rounded-lg font-semibold ring-1 ring-inset',
     variantStyles[variant],
     sizeStyles[size],
     className,

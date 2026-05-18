@@ -128,7 +128,7 @@ export default function PracticePage() {
       <main className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
         {/* LEFT — Workspace */}
         <div className="min-w-0 space-y-6">
-          <div className="content-panel relative min-h-[480px] px-5 py-8 sm:px-8 sm:py-10">
+          <div className="content-panel relative min-h-[480px] px-8 py-10 sm:px-10 sm:py-12 bg-bg-muted/80 backdrop-blur-xl border border-white/[0.08] shadow-[0_24px_80px_rgba(0,0,0,0.4)]">
             {!riddle ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-20">
                 <Target size={48} className="text-text-4 mb-6 opacity-50" />
@@ -184,9 +184,9 @@ export default function PracticePage() {
                   </Badge>
                 </div>
 
-                <p className="font-display text-balance text-[1.35rem] leading-snug text-text-1 sm:text-[1.55rem]">
+                <h2 className="font-display text-balance text-[clamp(1.75rem,4vw,2.5rem)] leading-snug text-text-1">
                   {riddle.question}
-                </p>
+                </h2>
 
                 <div className="mt-auto border-t border-white/[0.06] pt-8">
                   {challengeState !== 'SOLVED' ? (

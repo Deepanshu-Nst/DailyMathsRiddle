@@ -223,7 +223,7 @@ function SolvePage() {
         <main className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_340px]">
           {/* LEFT — classified workspace */}
           <motion.div layout className="min-w-0 space-y-6">
-            <div className="content-panel relative min-h-[480px] px-5 py-8 sm:px-8 sm:py-10 lg:min-h-[520px]">
+            <div className="content-panel relative min-h-[480px] px-8 py-10 sm:px-10 sm:py-12 bg-bg-muted/80 backdrop-blur-xl border border-white/[0.08] shadow-[0_24px_80px_rgba(0,0,0,0.4)] lg:min-h-[520px]">
               {loading ? (
                 <div className="flex w-full flex-col gap-5">
                   <Skeleton className="h-6 w-28 rounded-md" />
@@ -259,9 +259,9 @@ function SolvePage() {
                     </span>
                   </div>
 
-                  <p className="font-display text-balance text-[1.35rem] leading-snug text-text-1 sm:text-[1.55rem] lg:text-[1.65rem]">
+                  <h2 className="font-display text-balance text-[clamp(1.75rem,4vw,2.5rem)] leading-snug text-text-1">
                     {riddle.question}
-                  </p>
+                  </h2>
 
                   <div className="mt-auto border-t border-white/[0.06] pt-8">
                     {!isCompleted ? (
@@ -362,26 +362,26 @@ function SolvePage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-lg border border-white/[0.06] bg-black/30 p-3">
+              <div className="rounded-xl border border-white/[0.06] bg-surface-soft p-4 shadow-sm transition-colors hover:bg-surface-2">
                 <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Streak</span>
-                <p className="mt-1 font-display text-2xl tabular-nums text-text-1">{session?.streak.currentStreak ?? 0}</p>
-                <p className="text-[10px] text-text-3">consecutive dailies</p>
+                <p className="mt-1 font-display text-3xl tabular-nums text-text-1">{session?.streak.currentStreak ?? 0}</p>
+                <p className="mt-0.5 text-[10px] text-text-3">consecutive dailies</p>
               </div>
-              <div className="rounded-lg border border-white/[0.06] bg-black/30 p-3">
+              <div className="rounded-xl border border-white/[0.06] bg-surface-soft p-4 shadow-sm transition-colors hover:bg-surface-2">
                 <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Total XP</span>
-                <p className="mt-1 font-display text-2xl tabular-nums text-text-1">
+                <p className="mt-1 font-display text-3xl tabular-nums text-text-1">
                   {(session?.streak.totalXP ?? 0).toLocaleString()}
                 </p>
-                <p className="text-[10px] text-text-3">lifetime</p>
+                <p className="mt-0.5 text-[10px] text-text-3">lifetime</p>
               </div>
             </div>
 
-            <div className="rounded-lg border border-white/[0.06] bg-black/25 p-3">
+            <div className="rounded-xl border border-white/[0.06] bg-surface-soft p-4 shadow-sm transition-colors hover:bg-surface-2">
               <div className="flex items-center gap-2 text-text-3">
                 <Trophy size={14} />
                 <span className="text-[11px] font-semibold text-text-2">Global rank (XP)</span>
               </div>
-              <p className="mt-2 font-display text-3xl text-text-1">{rank != null ? `#${rank}` : '—'}</p>
+              <p className="mt-2 font-display text-4xl text-text-1">{rank != null ? `#${rank}` : '—'}</p>
             </div>
 
             <div className="flex items-center justify-between gap-3 border-y border-white/[0.06] py-4">

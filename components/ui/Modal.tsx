@@ -39,7 +39,7 @@ export const Modal: React.FC<ModalProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            className="absolute inset-0 bg-black/70 backdrop-blur-xl"
           />
 
           {/* Panel */}
@@ -53,7 +53,7 @@ export const Modal: React.FC<ModalProps> = ({
               stiffness: 280,
             }}
             className={[
-              'relative w-full overflow-hidden rounded-xl border border-white/[0.1]',
+              'relative w-full overflow-hidden rounded-2xl border border-white/[0.12]',
               'bg-[linear-gradient(180deg,rgba(22,22,28,0.98)_0%,rgba(10,10,14,0.98)_100%)]',
               'shadow-[0_24px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)]',
               sizeMap[size],

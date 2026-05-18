@@ -6,7 +6,7 @@ interface CardProps {
   padding?: 'none' | 'sm' | 'md' | 'lg';
   bordered?: boolean;
   title?: string;
-  variant?: 'default' | 'elevated' | 'sunken' | 'ghost';
+  variant?: 'default' | 'elevated' | 'sunken' | 'ghost' | 'glow' | 'glass';
   hoverable?: boolean;
 }
 
@@ -31,6 +31,8 @@ export const Card: React.FC<CardProps> = ({
     elevated: 'card card-elevated',
     sunken: 'card-sunken border border-border-subtle',
     ghost: 'bg-transparent border border-dashed border-border',
+    glow: 'card relative z-0',
+    glass: 'glass-panel',
   };
 
   const styles = [
@@ -44,12 +46,13 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <div className={styles}>
+      {variant === 'glow' && <div className="card-glow" />}
       {title && (
-        <div className="px-5 py-3 border-b border-border-subtle bg-bg-subtle/60">
+        <div className="px-5 py-3 border-b border-border-subtle bg-bg-subtle/60 relative z-10">
           <h3 className="text-[11px] font-semibold text-text-3 uppercase tracking-[0.06em]">{title}</h3>
         </div>
       )}
-      <div className={title ? paddingMap[padding] : ''}>
+      <div className={`${title ? paddingMap[padding] : ''} relative z-10`}>
         {children}
       </div>
     </div>

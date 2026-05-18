@@ -177,7 +177,7 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
   const isSecond = rank === 2;
 
   const cardClasses = isFirst
-    ? 'z-10 scale-[1.06] -translate-y-3 border-primary/35 bg-gradient-to-b from-white/[0.08] to-black/40 shadow-[0_0_60px_rgba(244,162,58,0.18),inset_0_1px_0_rgba(255,255,255,0.08)]'
+    ? 'z-10 scale-[1.06] -translate-y-3 border-primary/35 bg-gradient-to-b from-white/[0.08] to-black/40 shadow-[0_0_60px_rgba(108,123,255,0.3),inset_0_1px_0_rgba(255,255,255,0.08)]'
     : isSecond
       ? 'scale-[0.98] border-white/[0.1] bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.35)]'
       : 'translate-y-2 scale-[0.95] border-white/[0.08] bg-white/[0.03] shadow-[0_12px_40px_rgba(0,0,0,0.3)]';
@@ -205,10 +205,10 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
             <div
               className={`absolute -bottom-3 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full text-[13px] font-bold text-white shadow-lg ${
                 isFirst
-                  ? 'border-2 border-amber-200/40 bg-gradient-to-br from-amber-300 to-amber-600 text-black'
+                  ? 'border-2 border-primary/40 bg-gradient-to-br from-primary to-primary/80 text-white'
                   : isSecond
                     ? 'border border-white/20 bg-gradient-to-br from-zinc-300 to-zinc-500 text-zinc-950'
-                    : 'border border-orange-200/20 bg-gradient-to-br from-amber-800 to-amber-950'
+                    : 'border border-primary/20 bg-gradient-to-br from-primary/30 to-primary/10'
               }`}
             >
               {rank}

@@ -15,6 +15,8 @@
   --text-3xl: 30px;
   --text-4xl: 36px;
   --text-5xl: 48px;
+  --text-6xl: 60px;
+  --text-7xl: 72px;
 
   /* Line Height */
   --leading-none: 1;
@@ -40,6 +42,8 @@
   --weight-extrabold: 800;
 
   /* Semantic text styles (compose scale + leading + tracking) */
+  --text-hero: var(--text-7xl) / var(--leading-tight);
+  --text-display: var(--text-6xl) / var(--leading-tight);
   --text-heading-lg: var(--text-3xl) / var(--leading-tight);
   --text-heading-md: var(--text-2xl) / var(--leading-tight);
   --text-heading-sm: var(--text-xl) / var(--leading-tight);
