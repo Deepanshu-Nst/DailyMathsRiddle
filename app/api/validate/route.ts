@@ -4,7 +4,7 @@ import { getOfficialDailyDate } from '@/lib/timezone';
 import { getActiveRiddleForServer } from '@/lib/riddles/daily';
 import { validateAnswer } from '@/lib/answer-validator';
 import { createClient } from '@/utils/supabase/server';
-import { insertAttempt, hasUserSolvedRiddle } from '@/lib/riddles/queries';
+import { insertAttempt, hasUserSolvedRiddle, getRiddleById } from '@/lib/riddles/queries';
 import { processSolve } from '@/lib/gamification';
 import type { Difficulty } from '@/types';
 
@@ -18,6 +18,7 @@ const schema = z.object({
   /** Total submissions including this final correct one. */
   attemptCount:    z.number().int().min(1).optional().default(1),
   hintsUsed:       z.number().int().min(0).optional().default(0),
+  isPractice:      z.boolean().optional().default(false),
 });
 
 /**
@@ -34,18 +35,28 @@ export async function POST(req: NextRequest) {
     const parsed = schema.parse(body);
     const {
       userAnswer, difficulty, riddleId,
-      solveStartedAt, attemptCount, hintsUsed,
+      solveStartedAt, attemptCount, hintsUsed, isPractice
     } = parsed;
     const date = parsed.date ?? getOfficialDailyDate();
 
     // Fetch riddle with answer server-side
-    const riddle = await getActiveRiddleForServer(date, difficulty);
-    const isCorrect = validateAnswer(userAnswer, riddle.answer, riddle.answerVariants);
+    let riddle;
+    if (isPractice && riddleId) {
+      riddle = await getRiddleById(riddleId);
+      if (!riddle) {
+        return NextResponse.json({ error: 'Riddle not found' }, { status: 404 });
+      }
+    } else {
+      riddle = await getActiveRiddleForServer(date, difficulty);
+    }
+    
+    const answerVariants = (riddle as any).answer_variants || (riddle as any).answerVariants || [];
+    const isCorrect = validateAnswer(userAnswer, riddle.answer, answerVariants);
 
     // Get authenticated user
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    const resolvedRiddleId = riddleId ?? riddle.riddleId ?? null;
+    const resolvedRiddleId = riddleId ?? (riddle as any).riddleId ?? riddle.id ?? null;
 
     let alreadyCompleted = false;
     if (isCorrect && user && resolvedRiddleId) {
