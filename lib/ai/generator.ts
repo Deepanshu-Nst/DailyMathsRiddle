@@ -1,6 +1,6 @@
 import { AIRiddle } from '@/types/ai';
 import { z } from 'zod';
-import { TEMPLATE_REGISTRY, getRandomTemplate, getTemplate } from './templates/registry';
+import { getRandomTemplate } from './templates/registry';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
@@ -84,7 +84,8 @@ STRICT CONSTRAINTS:
 2. "params" MUST be a JSON object containing the required numerical parameters for the template. Make sure they are integers and reasonable.
 3. "wording" MUST be the actual riddle question text.
 4. "hint1" and "hint2" MUST be concise hints (2-5 sentences max).
-${avoidCategories.length > 0 ? `5. TOPIC DIVERSITY: Do NOT generate riddles related to these recent categories: ${avoidCategories.join(', ')}. Use a DIFFERENT mathematical domain.` : ''}
+5. IMPORTANT: Use DIFFERENT parameter values than typical examples. Be creative with the numbers.
+${avoidCategories.length > 0 ? `6. TOPIC DIVERSITY: Do NOT generate riddles related to these recent categories: ${avoidCategories.join(', ')}. Use a DIFFERENT mathematical domain.` : ''}
 
 Return ONLY valid JSON in this exact schema. No markdown, no prose outside JSON.
 {
@@ -106,7 +107,7 @@ Return ONLY valid JSON in this exact schema. No markdown, no prose outside JSON.
       body: JSON.stringify({
         model,
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.8,
+        temperature: 0.9, // Increased from 0.8 for more diversity
         max_tokens: 600,
         response_format: { type: 'json_object' },
       }),
@@ -146,13 +147,34 @@ Return ONLY valid JSON in this exact schema. No markdown, no prose outside JSON.
 
   const paramsValidation = template.paramsSchema.safeParse(parsed.params);
   if (!paramsValidation.success) {
-    // BULLETPROOF FALLBACK: Instead of failing the entire generation attempt because the AI hallucinated a parameter,
-    // we intercept the failure and swap in the curated fallback parameters for the template it selected.
+    // BULLETPROOF FALLBACK: Use randomized params instead of static fallback
+    const randomParams = generateRandomParams(template);
+    if (randomParams) {
+      const { answer, explanation } = template.solve(randomParams.params);
+      return {
+        success: true,
+        rawResponse: rawContent + '\n\n[NOTE: AI params failed validation. Generated random valid parameters.]',
+        generationMode: 'deterministic_fallback',
+        templateFamily: template.id,
+        riddle: {
+          question: randomParams.wording,
+          answer,
+          explanation,
+          hint1: randomParams.hint1,
+          hint2: randomParams.hint2,
+          difficulty: difficulty as 'easy' | 'medium' | 'hard',
+          category: template.category,
+          version: 'v2_param_fallback',
+          generator_model: model,
+        }
+      };
+    }
+    // If random params generation fails, use static fallback
     const fallback = template.generateFallback();
     const { answer, explanation } = template.solve(fallback.params);
     return {
       success: true,
-      rawResponse: rawContent + '\n\n[NOTE: AI params failed validation. Overrode with deterministic fallback parameters for chosen template.]',
+      rawResponse: rawContent + '\n\n[NOTE: AI params failed validation. Used static fallback.]',
       generationMode: 'deterministic_fallback',
       templateFamily: template.id,
       riddle: {
@@ -190,14 +212,159 @@ Return ONLY valid JSON in this exact schema. No markdown, no prose outside JSON.
   };
 }
 
-export function generateDeterministicFallback(difficulty: string): GenerateResponse {
-  const template = getRandomTemplate();
+// ── Randomized deterministic fallback ────────────────────────────
+
+/**
+ * Generates random valid parameters for a template by inspecting its Zod schema.
+ * Returns randomized wording to avoid content-identical output.
+ */
+function generateRandomParams(template: { id: string; paramsSchema: z.ZodType<Record<string, number>>; solve: (p: Record<string, number>) => { answer: string; explanation: string }; generateFallback: () => { params: Record<string, number>; wording: string; hint1: string; hint2: string } }): { params: Record<string, number>; wording: string; hint1: string; hint2: string } | null {
+  try {
+    const fallback = template.generateFallback();
+    const shape = (template.paramsSchema as z.ZodObject<z.ZodRawShape>).shape;
+    if (!shape) return null;
+
+    const params: Record<string, number> = {};
+    
+    for (const [key, schema] of Object.entries(shape)) {
+      const zodNum = schema as z.ZodNumber;
+      // Try to extract min/max from Zod checks
+      let min = 1, max = 100, multipleOf = 1;
+      
+      if ('_def' in zodNum && zodNum._def && 'checks' in zodNum._def) {
+        for (const check of (zodNum._def as any).checks ?? []) {
+          if (check.kind === 'min') min = check.value;
+          if (check.kind === 'max') max = check.value;
+          if (check.kind === 'multipleOf') multipleOf = check.value;
+        }
+      }
+
+      // Generate random value within range, respecting multipleOf
+      const range = Math.floor((max - min) / multipleOf);
+      const randomIndex = Math.floor(Math.random() * (range + 1));
+      params[key] = min + randomIndex * multipleOf;
+    }
+
+    // Validate the random params
+    const validation = template.paramsSchema.safeParse(params);
+    if (!validation.success) {
+      // If random params fail validation (e.g. refinement like v1 !== v2), 
+      // try tweaking one parameter
+      for (const [key] of Object.entries(shape)) {
+        const tweaked = { ...params, [key]: params[key] + 5 };
+        const retry = template.paramsSchema.safeParse(tweaked);
+        if (retry.success) {
+          const { answer } = template.solve(retry.data);
+          return {
+            params: retry.data,
+            wording: generateDynamicWording(template.id, retry.data),
+            hint1: fallback.hint1,
+            hint2: fallback.hint2,
+          };
+        }
+      }
+      return null; // All tweaks failed
+    }
+
+    const { answer } = template.solve(validation.data);
+    return {
+      params: validation.data,
+      wording: generateDynamicWording(template.id, validation.data),
+      hint1: fallback.hint1,
+      hint2: fallback.hint2,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Generates dynamic wording for common template types based on their params.
+ * This avoids the static "A car travels 60 miles..." repetition.
+ */
+function generateDynamicWording(templateId: string, params: Record<string, number>): string {
+  switch (templateId) {
+    case 'medium_average_speed':
+      return `A car drives to a destination ${params.distance} miles away at ${params.v1} mph, and returns at ${params.v2} mph. What is the average speed for the entire round trip?`;
+    case 'medium_age_problem':
+      return `A person is exactly ${params.diff} years older than another. At what age will the older person be exactly ${params.ratio} times as old as the younger?`;
+    case 'hard_set_intersection': {
+      const a = params.setA ?? params.a;
+      const b = params.setB ?? params.b;
+      const both = params.both ?? params.intersection;
+      return `In a group of people, ${a} enjoy activity A and ${b} enjoy activity B. If ${both} enjoy both, how many enjoy at least one?`;
+    }
+    case 'hard_arithmetic_progression': {
+      const first = params.first ?? params.a;
+      const diff = params.diff ?? params.d;
+      const n = params.n ?? params.terms;
+      return `An arithmetic sequence starts at ${first} with a common difference of ${diff}. What is the sum of the first ${n} terms?`;
+    }
+    default: {
+      // Generic fallback: construct from params
+      const paramStr = Object.entries(params).map(([k, v]) => `${k}=${v}`).join(', ');
+      return `Given ${paramStr}, solve this ${templateId.replace(/_/g, ' ')} problem.`;
+    }
+  }
+}
+
+/**
+ * Deterministic fallback with randomized params and cross-difficulty borrowing.
+ * If the pool for the requested difficulty is exhausted (all templates excluded),
+ * borrows from adjacent difficulties to avoid repetition.
+ */
+export function generateDeterministicFallback(difficulty: string, avoidTemplateIds: string[] = []): GenerateResponse {
+  // Try primary difficulty first
+  let template = getRandomTemplate(difficulty, avoidTemplateIds);
+  
+  // If the selected template is in the avoid list (pool exhausted), try cross-difficulty
+  if (avoidTemplateIds.includes(template.id)) {
+    const adjacentDifficulties = difficulty === 'medium' 
+      ? ['easy', 'hard'] 
+      : difficulty === 'easy' 
+        ? ['medium', 'hard'] 
+        : ['medium', 'easy'];
+    
+    for (const altDiff of adjacentDifficulties) {
+      const altTemplate = getRandomTemplate(altDiff, avoidTemplateIds);
+      if (!avoidTemplateIds.includes(altTemplate.id)) {
+        template = altTemplate;
+        console.log(`[deterministic_fallback] Cross-difficulty borrow: ${altDiff} template ${altTemplate.id} for ${difficulty}`);
+        break;
+      }
+    }
+  }
+
+  // Try randomized params first
+  const randomResult = generateRandomParams(template);
+  if (randomResult) {
+    const { answer, explanation } = template.solve(randomResult.params);
+    return {
+      success: true,
+      rawResponse: JSON.stringify({ note: 'deterministic_fallback_randomized', params: randomResult.params }),
+      generationMode: 'deterministic_fallback',
+      templateFamily: template.id,
+      riddle: {
+        question: randomResult.wording,
+        answer,
+        explanation,
+        hint1: randomResult.hint1,
+        hint2: randomResult.hint2,
+        difficulty: difficulty as 'easy' | 'medium' | 'hard',
+        category: template.category,
+        version: 'v2_fallback_random',
+        generator_model: 'deterministic_fallback',
+      }
+    };
+  }
+
+  // Ultimate fallback: static params
   const fallback = template.generateFallback();
   const { answer, explanation } = template.solve(fallback.params);
 
   return {
     success: true,
-    rawResponse: JSON.stringify({ note: 'deterministic_fallback' }),
+    rawResponse: JSON.stringify({ note: 'deterministic_fallback_static' }),
     generationMode: 'deterministic_fallback',
     templateFamily: template.id,
     riddle: {

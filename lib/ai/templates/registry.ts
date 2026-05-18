@@ -15,12 +15,17 @@ export function getTemplate(id: string): RiddleTemplate<Record<string, number>> 
   return TEMPLATE_REGISTRY[id] || null;
 }
 
-export function getRandomTemplate(difficulty?: string): RiddleTemplate<Record<string, number>> {
+export function getRandomTemplate(difficulty?: string, avoidIds: string[] = []): RiddleTemplate<Record<string, number>> {
   let pool = ALL_TEMPLATES;
   if (difficulty) {
     pool = ALL_TEMPLATES.filter(t => t.difficulty.includes(difficulty as 'easy' | 'medium' | 'hard'));
   }
-  if (pool.length === 0) pool = ALL_TEMPLATES; // fallback
+  // Exclude recently used templates for diversity
+  if (avoidIds.length > 0) {
+    const filtered = pool.filter(t => !avoidIds.includes(t.id));
+    if (filtered.length > 0) pool = filtered; // Only apply if we still have options
+  }
+  if (pool.length === 0) pool = ALL_TEMPLATES; // ultimate fallback
   return pool[Math.floor(Math.random() * pool.length)];
 }
 

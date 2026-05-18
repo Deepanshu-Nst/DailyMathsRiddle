@@ -1,4 +1,5 @@
 import { createServiceClient } from '@/utils/supabase/server';
+import { getDailyKeyIST, getNextISTMidnight } from '@/lib/timezone';
 import type { PipelineEventType, PipelineStats } from '@/types/analytics';
 
 export interface AdminCounts {
@@ -7,19 +8,48 @@ export interface AdminCounts {
   solvedAttempts: number;
 }
 
+export interface OperationalHealth {
+  currentISTDate: string;
+  nextRolloverISO: string;
+  activeDailyRiddles: Array<{
+    difficulty: string;
+    riddleId: string;
+    slug: string;
+    category: string;
+    publishedAt: string | null;
+  }>;
+  missingDifficulties: string[];
+  queueHealth: {
+    pending: number;
+    published: number;
+    failed: number;
+  };
+  generationSuccess24h: number | null;
+  generationTotal24h: number;
+  fallbackActivations24h: number;
+  duplicateRejections24h: number;
+  lastPublishTimestamp: string | null;
+}
+
 export interface AdminOverview {
   counts: AdminCounts;
   pipeline: PipelineStats | null;
   pipelineError: string | null;
+  operationalHealth: OperationalHealth;
 }
 
 /**
  * Aggregated admin metrics from Supabase (service role).
  * Used by the admin dashboard and /api/admin/stats.
+ *
+ * All data comes from REAL DB/API state — no synthetic metrics.
  */
 export async function getAdminOverview(days: number): Promise<AdminOverview> {
   const supabase = (await createServiceClient()) as any;
+  const today = getDailyKeyIST();
+  const nextMidnight = getNextISTMidnight();
 
+  // ── Core counts ──
   const [profilesRes, riddlesRes, attemptsRes] = await Promise.all([
     supabase.from('profiles').select('*', { head: true, count: 'exact' }),
     supabase.from('riddles').select('*', { head: true, count: 'exact' }).eq('status', 'published'),
@@ -32,6 +62,84 @@ export async function getAdminOverview(days: number): Promise<AdminOverview> {
     solvedAttempts: attemptsRes.count ?? 0,
   };
 
+  // ── Operational Health ──
+  const allDifficulties = ['easy', 'medium', 'hard'];
+
+  // Active daily riddles for today
+  const { data: dailyRiddles } = await supabase
+    .from('riddles')
+    .select('id, difficulty, slug, category, created_at')
+    .eq('daily_date', today)
+    .eq('is_daily', true)
+    .eq('status', 'published');
+
+  const activeDailyRiddles = (dailyRiddles ?? []).map((r: any) => ({
+    difficulty: r.difficulty,
+    riddleId: r.id,
+    slug: r.slug,
+    category: r.category,
+    publishedAt: r.created_at,
+  }));
+
+  const activeDifficulties = activeDailyRiddles.map((r: any) => r.difficulty);
+  const missingDifficulties = allDifficulties.filter(d => !activeDifficulties.includes(d));
+
+  // Queue health
+  const { count: pendingCount } = await supabase
+    .from('daily_riddle_queue')
+    .select('*', { head: true, count: 'exact' })
+    .eq('status', 'pending');
+
+  const { count: publishedQueueCount } = await supabase
+    .from('daily_riddle_queue')
+    .select('*', { head: true, count: 'exact' })
+    .eq('status', 'published');
+
+  const { count: failedJobCount } = await supabase
+    .from('generation_jobs')
+    .select('*', { head: true, count: 'exact' })
+    .eq('status', 'failed');
+
+  // 24h generation stats
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 3600000).toISOString();
+
+  const { data: recent24h } = await supabase
+    .from('pipeline_events')
+    .select('event_type, generation_mode')
+    .gte('created_at', twentyFourHoursAgo);
+
+  const total24h = (recent24h ?? []).length;
+  const success24h = (recent24h ?? []).filter((r: any) => r.event_type === 'success').length;
+  const fallback24h = (recent24h ?? []).filter((r: any) => r.generation_mode === 'deterministic_fallback').length;
+  const dupeReject24h = (recent24h ?? []).filter((r: any) => r.event_type === 'duplicate_rejected').length;
+
+  // Last publish timestamp
+  const { data: lastPublish } = await supabase
+    .from('admin_audit_logs')
+    .select('created_at')
+    .in('action', ['publish', 'manual_publish'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const operationalHealth: OperationalHealth = {
+    currentISTDate: today,
+    nextRolloverISO: nextMidnight.toISOString(),
+    activeDailyRiddles,
+    missingDifficulties,
+    queueHealth: {
+      pending: pendingCount ?? 0,
+      published: publishedQueueCount ?? 0,
+      failed: failedJobCount ?? 0,
+    },
+    generationSuccess24h: total24h > 0 ? Math.round((success24h / total24h) * 100) : null,
+    generationTotal24h: total24h,
+    fallbackActivations24h: fallback24h,
+    duplicateRejections24h: dupeReject24h,
+    lastPublishTimestamp: lastPublish?.created_at ?? null,
+  };
+
+  // ── Pipeline Stats (7-day) ──
   const from = new Date(Date.now() - days * 86_400_000).toISOString();
   const to = new Date().toISOString();
 
@@ -43,7 +151,7 @@ export async function getAdminOverview(days: number): Promise<AdminOverview> {
     .limit(500);
 
   if (error) {
-    return { counts, pipeline: null, pipelineError: error.message };
+    return { counts, pipeline: null, pipelineError: error.message, operationalHealth };
   }
 
   const rows = (events ?? []) as Array<{
@@ -113,5 +221,5 @@ export async function getAdminOverview(days: number): Promise<AdminOverview> {
     })),
   };
 
-  return { counts, pipeline, pipelineError: null };
+  return { counts, pipeline, pipelineError: null, operationalHealth };
 }

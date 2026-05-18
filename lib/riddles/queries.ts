@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
+import { getISTDayBoundaryRange } from '@/lib/timezone';
 import type { Database, DbRiddle, DbRiddleInsert } from '@/types/supabase';
 
 /**
@@ -197,12 +198,13 @@ export async function countTodayGenerations(
   userId: string | null
 ): Promise<number> {
   const supabase = await createClient();
-  const today = new Date().toISOString().slice(0, 10);
+  const { start, end } = getISTDayBoundaryRange();
 
   let query = supabase
     .from('generation_logs')
     .select('id', { count: 'exact', head: true })
-    .gte('created_at', `${today}T00:00:00Z`);
+    .gte('created_at', start)
+    .lt('created_at', end);
 
   if (userId) {
     query = query.eq('user_id', userId);
@@ -415,3 +417,67 @@ export async function getAIConfig(): Promise<{ is_enabled: boolean; safe_mode: b
     return { is_enabled: true, safe_mode: false, max_retries: 3, mode: 'standard' };
   }
 }
+
+// ── PRACTICE EXCLUSION ────────────────────────────────────────────
+
+/**
+ * Fetches today's daily riddle IDs, slugs, template families, and questions
+ * for ALL difficulties. Used by practice generation to build the exclusion list.
+ */
+export async function getTodayDailyRiddleExclusions(
+  date: string
+): Promise<Array<{ id: string; slug: string; template_family: string | null; question: string }>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('riddles')
+    .select('id, slug, template_family, question')
+    .eq('daily_date', date)
+    .eq('is_daily', true)
+    .eq('status', 'published')
+    .returns<Array<{ id: string; slug: string; template_family: string | null; question: string }>>();
+
+  if (error || !data) return [];
+  return data;
+}
+
+/**
+ * Fetches the IDs and template families of riddles recently generated
+ * for this session/user. Used to prevent consecutive practice repeats.
+ */
+export async function getRecentPracticeRiddleIds(
+  sessionId: string,
+  userId: string | null,
+  limit = 10
+): Promise<Array<{ id: string; slug: string; template_family: string | null; question: string }>> {
+  const supabase = await createClient();
+
+  // Get recent generation log entries for this session/user
+  let logQuery = supabase
+    .from('generation_logs')
+    .select('generated_riddle_id')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (userId) {
+    logQuery = logQuery.eq('user_id', userId);
+  } else {
+    logQuery = logQuery.eq('session_id', sessionId);
+  }
+
+  const { data: logs } = await logQuery
+    .returns<Array<{ generated_riddle_id: string | null }>>();
+
+  if (!logs || logs.length === 0) return [];
+
+  const ids = logs.map(l => l.generated_riddle_id).filter(Boolean) as string[];
+  if (ids.length === 0) return [];
+
+  const { data: riddles } = await supabase
+    .from('riddles')
+    .select('id, slug, template_family, question')
+    .in('id', ids)
+    .returns<Array<{ id: string; slug: string; template_family: string | null; question: string }>>();
+
+  return riddles ?? [];
+}
+

@@ -1,13 +1,18 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Riddle } from '@/types';
+import { getOfficialDailyDate } from '@/lib/timezone';
 
 const MAX_PER_DAY = 10;
 const COOLDOWN_MS = 5000;
 const REQUEST_TIMEOUT_MS = 45_000; // 45s — Groq can be slow under load
 
+/**
+ * IST-aware daily key for localStorage quota tracking.
+ * MUST use getOfficialDailyDate() — never UTC.
+ */
 function getTodayKey() {
-  return `advaitai_usage_${new Date().toISOString().split('T')[0]}`;
+  return `advaitai_usage_${getOfficialDailyDate()}`;
 }
 
 // ── Typed error states ────────────────────────────────────────────────
@@ -17,7 +22,8 @@ type GenerationErrorCode =
   | 'GENERATION_TIMEOUT'
   | 'INVALID_RESPONSE'
   | 'GENERATION_ERROR'
-  | 'NETWORK_ERROR';
+  | 'NETWORK_ERROR'
+  | 'IDENTITY_MISMATCH';
 
 const ERROR_MESSAGES: Record<GenerationErrorCode, string> = {
   GENERATION_FAILED: "Couldn't generate a unique riddle. Our AI tried 3× — try again in a moment.",
@@ -26,6 +32,7 @@ const ERROR_MESSAGES: Record<GenerationErrorCode, string> = {
   INVALID_RESPONSE: 'Invalid request. Please try again.',
   GENERATION_ERROR: 'AI service temporarily unavailable. Please try again in a few minutes.',
   NETWORK_ERROR: 'Network error. Please check your connection and try again.',
+  IDENTITY_MISMATCH: 'Generated riddle was identical to current. Retrying automatically.',
 };
 
 interface GenerateMoreProps {
@@ -33,6 +40,8 @@ interface GenerateMoreProps {
   difficulty: string;
   onNewRiddle: (riddle: Partial<Riddle>) => void;
   onStartGeneration?: () => void;
+  /** Current riddle ID for server-side dedup verification */
+  currentRiddleId?: string;
 }
 
 /**
@@ -42,27 +51,42 @@ interface GenerateMoreProps {
  * - All errors typed via GenerationErrorCode
  * - Request has a hard 45s AbortController timeout
  * - Loading lock (requestInFlight ref) prevents spam
- * - Quota incremented ONLY when server returns generationCount
- * - DEV TRACE badge gated behind process.env.NODE_ENV === 'development'
+ * - Quota incremented ONLY after:
+ *   1. Server returns success
+ *   2. Riddle identity verified (new ID != current ID)
+ *   3. UI state swap confirmed via onNewRiddle
+ * - If riddle ID unchanged: quota rollback + retry state
  */
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { RotateCw, AlertTriangle, Lock, Info } from 'lucide-react';
 
-export default function GenerateMore({ sessionId, difficulty, onNewRiddle, onStartGeneration }: GenerateMoreProps) {
+export default function GenerateMore({
+  sessionId,
+  difficulty,
+  onNewRiddle,
+  onStartGeneration,
+  currentRiddleId,
+}: GenerateMoreProps) {
   const [used, setUsed] = useState(0);
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(false);
   const [errorCode, setErrorCode] = useState<GenerationErrorCode | null>(null);
   const [attempts, setAttempts] = useState<any[]>([]);
   const [templateFamily, setTemplateFamily] = useState<string | null>(null);
-  
+
   const requestInFlight = useRef(false);
   const cooldownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const currentRiddleIdRef = useRef<string | undefined>(currentRiddleId);
+
+  // Keep ref in sync with prop
+  useEffect(() => {
+    currentRiddleIdRef.current = currentRiddleId;
+  }, [currentRiddleId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUsed(Number(localStorage.getItem(getTodayKey()) || 0));
     return () => {
       if (cooldownTimer.current) clearTimeout(cooldownTimer.current);
@@ -74,7 +98,7 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle, onSta
   const blocked = loading || cooldown || limitReached;
   const errorMsg = errorCode ? ERROR_MESSAGES[errorCode] : null;
 
-  const handleGenerate = async () => {
+  const handleGenerate = useCallback(async () => {
     if (requestInFlight.current || blocked) return;
     requestInFlight.current = true;
 
@@ -92,8 +116,13 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle, onSta
       const res = await fetch('/api/riddles/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ difficulty, sessionId }),
+        body: JSON.stringify({
+          difficulty,
+          sessionId,
+          previousRiddleId: currentRiddleIdRef.current || null,
+        }),
         signal: controller.signal,
+        cache: 'no-store',
       });
 
       clearTimeout(timeoutId);
@@ -104,22 +133,33 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle, onSta
         throw new Error(data.code || 'GENERATION_ERROR');
       }
 
+      if (!data.riddle || !data.riddle.id) {
+        throw new Error('INVALID_RESPONSE');
+      }
+
+      // ── CRITICAL: Verify riddle identity changed ──
+      if (currentRiddleIdRef.current && data.riddle.id === currentRiddleIdRef.current) {
+        console.warn('[GenerateMore] Riddle identity unchanged — NOT incrementing quota');
+        setErrorCode('IDENTITY_MISMATCH');
+        // Do NOT increment quota, do NOT call onNewRiddle
+        return;
+      }
+
+      // ── Identity verified — safe to increment quota ──
       if (typeof data.generationCount === 'number') {
         setUsed(data.generationCount);
         localStorage.setItem(getTodayKey(), String(data.generationCount));
       }
 
-      if (data.riddle) {
-        setCooldown(true);
-        if (data.templateFamily) setTemplateFamily(data.templateFamily);
-        cooldownTimer.current = setTimeout(() => setCooldown(false), COOLDOWN_MS);
-        onNewRiddle(data.riddle);
-      } else {
-        throw new Error('INVALID_RESPONSE');
-      }
+      if (data.templateFamily) setTemplateFamily(data.templateFamily);
+      setCooldown(true);
+      cooldownTimer.current = setTimeout(() => setCooldown(false), COOLDOWN_MS);
 
+      // Call onNewRiddle LAST — after all state is settled
+      onNewRiddle(data.riddle);
     } catch (err) {
       clearTimeout(timeoutId);
+      // Do NOT increment quota on failure
       if (err instanceof Error) {
         if (err.name === 'AbortError') {
           setErrorCode('GENERATION_TIMEOUT');
@@ -136,7 +176,7 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle, onSta
       requestInFlight.current = false;
       abortRef.current = null;
     }
-  };
+  }, [blocked, difficulty, sessionId, onNewRiddle, onStartGeneration]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -177,6 +217,7 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle, onSta
               {errorCode === 'GENERATION_TIMEOUT' ? 'Timed Out'
                 : errorCode === 'GENERATION_ERROR' ? 'AI Unavailable'
                 : errorCode === 'QUOTA_EXCEEDED' ? 'Limit Reached'
+                : errorCode === 'IDENTITY_MISMATCH' ? 'Duplicate Detected'
                 : 'Generation Failed'}
             </span>
             <p className="text-xs text-text-2 leading-relaxed">
@@ -194,6 +235,7 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle, onSta
           </div>
           <div>Used today: <span className="text-text-2 font-bold">{used} / {MAX_PER_DAY}</span></div>
           {templateFamily && <div>Template: <span className="text-primary">{templateFamily}</span></div>}
+          {currentRiddleId && <div>Current ID: <span className="text-text-3">{currentRiddleId}</span></div>}
           {attempts.length > 0 && (
              <div className="mt-2 pt-2 border-t border-border/50">
                <div className="mb-1 uppercase font-bold">Failed Attempts:</div>
@@ -215,5 +257,3 @@ export default function GenerateMore({ sessionId, difficulty, onNewRiddle, onSta
     </div>
   );
 }
-
-

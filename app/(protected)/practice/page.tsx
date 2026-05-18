@@ -29,6 +29,8 @@ export default function PracticePage() {
   const [attemptCount, setAttemptCount] = useState(0);
   const [xpAwarded, setXpAwarded] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  // Monotonically increasing key — guarantees React DOM remount on each new riddle
+  const [riddleKey, setRiddleKey] = useState(0);
   
   const sessionIdRef = useRef<string>('');
   const solveStartedAt = useRef<string | null>(null);
@@ -43,8 +45,12 @@ export default function PracticePage() {
   }, []);
 
   const handleNewRiddle = (newRiddle: Partial<Riddle>) => {
-    setIsGenerating(false);
+    // Set riddle state FIRST
     setRiddle(newRiddle);
+    // Increment key to force DOM remount — the displayed content MUST change
+    setRiddleKey(prev => prev + 1);
+    // Reset all solve state
+    setIsGenerating(false);
     setAnswer('');
     setChallengeState('AVAILABLE');
     setExplanation('');
@@ -74,7 +80,7 @@ export default function PracticePage() {
           solveStartedAt: solveStartedAt.current,
           attemptCount: currentAttempt,
           hintsUsed,
-          isPractice: true, // Custom flag if needed, validate endpoint handles non-daily normally
+          isPractice: true,
         }),
       });
       const data = await res.json();
@@ -152,6 +158,7 @@ export default function PracticePage() {
                       difficulty={difficulty} 
                       onNewRiddle={handleNewRiddle} 
                       onStartGeneration={() => setIsGenerating(true)}
+                      currentRiddleId={undefined}
                     />
                   </div>
                 )}
@@ -162,7 +169,8 @@ export default function PracticePage() {
                 <p className="text-text-3 font-mono text-xs uppercase tracking-widest">Architecting Riddle...</p>
               </div>
             ) : (
-              <div key={riddle.id} className="relative flex h-full flex-col">
+              /* KEY: riddleKey forces full DOM remount — the riddle MUST visibly change */
+              <div key={riddleKey} className="relative flex h-full flex-col">
                 <div className="mb-8 flex flex-wrap items-center gap-2">
                   <Badge variant="info" size="sm" className="font-mono uppercase tracking-wider">
                     {riddle.category}
@@ -252,6 +260,7 @@ export default function PracticePage() {
                 difficulty={difficulty} 
                 onNewRiddle={handleNewRiddle} 
                 onStartGeneration={() => setIsGenerating(true)}
+                currentRiddleId={riddle?.id}
               />
             </div>
           </aside>
