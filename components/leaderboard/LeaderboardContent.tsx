@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
-type LeaderboardType = 'xp' | 'streak' | 'accuracy' | 'hard';
+type LeaderboardType = 'xp' | 'accuracy' | 'hard';
 
 interface LeaderboardUser {
   user_id: string;
@@ -44,7 +44,6 @@ export default function LeaderboardContent() {
 
   const tabs: { id: LeaderboardType; label: string }[] = [
     { id: 'xp', label: 'All-Time XP' },
-    { id: 'streak', label: 'Streak' },
     { id: 'hard', label: 'Hard Solves' },
     { id: 'accuracy', label: 'Accuracy' },
   ];
@@ -133,7 +132,6 @@ function RankRow({ user, rank, type, onClick }: { user: LeaderboardUser; rank: n
   const getValue = () => {
     switch (type) {
       case 'xp': return `${user.total_xp} XP`;
-      case 'streak': return `${user.current_streak} days`;
       case 'hard': return `${user.hard_solved} hard`;
       case 'accuracy': return `${Math.round(user.accuracy * 100)}%`;
     }

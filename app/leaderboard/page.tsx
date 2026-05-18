@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Feedback';
 import { staggerContainer, fadeUp, hoverLift } from '@/lib/motion';
 
-type Tab = 'global' | 'weekly' | 'monthly' | 'streaks';
+type Tab = 'global' | 'weekly' | 'monthly';
 
 interface LeaderboardEntry {
   id: string;
@@ -53,7 +53,6 @@ export default function LeaderboardsPage() {
     { id: 'global', label: 'Global XP', icon: <Globe size={14} /> },
     { id: 'weekly', label: 'Weekly XP', icon: <Calendar size={14} /> },
     { id: 'monthly', label: 'Monthly XP', icon: <Medal size={14} /> },
-    { id: 'streaks', label: 'Streaks', icon: <Flame size={14} /> },
   ];
 
   const top3 = entries.slice(0, 3);
@@ -72,7 +71,7 @@ export default function LeaderboardsPage() {
           Global rankings
         </motion.h1>
         <motion.p variants={fadeUp} className="mt-4 max-w-xl text-[15px] leading-relaxed text-text-2">
-          The most disciplined minds on AdvaitAI — ranked by XP, weekly cadence, monthly surges, and streak heat.
+          The most disciplined minds on AdvaitAI — ranked by XP, weekly cadence, and monthly surges.
         </motion.p>
       </motion.header>
 
@@ -134,7 +133,7 @@ export default function LeaderboardsPage() {
                     <TableHead className="w-16">Rank</TableHead>
                     <TableHead>User</TableHead>
                     <TableHead className="text-right">
-                      {activeTab === 'streaks' ? 'Streak' : 'XP'}
+                      XP
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -170,8 +169,7 @@ export default function LeaderboardsPage() {
 function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: number; tab: Tab }) {
   const isAnonymous = entry.username === 'Anonymous Seeker';
   let score = 0;
-  if (tab === 'streaks') score = entry.current_streak || 0;
-  else if (tab === 'global') score = entry.total_xp || 0;
+  if (tab === 'global') score = entry.total_xp || 0;
   else if (tab === 'weekly') score = entry.weekly_xp || 0;
   else if (tab === 'monthly') score = entry.monthly_xp || 0;
   
@@ -229,7 +227,7 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
               </Link>
             )}
             <Badge variant={isFirst ? 'warning' : 'secondary'} size="sm" className={isFirst ? 'font-bold' : ''}>
-              {score.toLocaleString()} {tab === 'streaks' ? 'Days' : 'XP'}
+              {score.toLocaleString()} XP
             </Badge>
           </div>
         </div>
@@ -241,8 +239,7 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
 function LeaderboardRow({ entry, tab, index }: { entry: LeaderboardEntry; tab: Tab; index: number }) {
   const isAnonymous = entry.username === 'Anonymous Seeker';
   let score = 0;
-  if (tab === 'streaks') score = entry.current_streak || 0;
-  else if (tab === 'global') score = entry.total_xp || 0;
+  if (tab === 'global') score = entry.total_xp || 0;
   else if (tab === 'weekly') score = entry.weekly_xp || 0;
   else if (tab === 'monthly') score = entry.monthly_xp || 0;
 
@@ -276,7 +273,7 @@ function LeaderboardRow({ entry, tab, index }: { entry: LeaderboardEntry; tab: T
         <div className="flex items-center justify-end gap-3">
           <span className="font-semibold text-text-1">{score.toLocaleString()}</span>
           <span className="text-[10px] uppercase text-text-4 font-bold tracking-widest w-6 text-left">
-            {tab === 'streaks' ? 'DAY' : 'XP'}
+            XP
           </span>
         </div>
       </TableCell>
