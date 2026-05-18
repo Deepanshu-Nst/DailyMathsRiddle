@@ -256,7 +256,7 @@ export async function runGenerationPipeline(
       difficulty,
       category: riddle.category ?? '',
       source_type: 'ai',
-      is_daily: isDaily,
+      is_daily: false, // Legacy flag, bypassed by slots
       daily_date: dailyDate,
       status: 'published',
       created_by: createdBy,

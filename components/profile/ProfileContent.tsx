@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Calendar, Award, Target, Flame } from 'lucide-react';
 import Link from 'next/link';
+import { getOfficialDailyDate } from '@/lib/timezone';
 
 interface SolveHistoryEntry {
   id: string;
@@ -108,7 +109,7 @@ export default function ProfileContent({ profile, stats, activity, achievements,
           <h2 className="text-sm font-semibold text-text-1">Activity (90 days)</h2>
           <p className="mt-1 text-xs text-text-3">One cell per day · color encodes hardest difficulty solved.</p>
           <Card padding="md" className="mt-4">
-            <ProgressCalendar solvedDates={activity} />
+            <ProgressCalendar solvedDates={activity} todayIST={getOfficialDailyDate()} />
           </Card>
         </section>
 

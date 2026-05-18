@@ -5,6 +5,7 @@ import { Plus, Calendar, CheckCircle2, Clock, AlertCircle, Trash2, Edit3, Eye } 
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { getOfficialDailyDate, addOfficialCalendarDays } from '@/lib/timezone';
 
 type RiddleStatus = 'draft' | 'scheduled' | 'published' | 'archived';
 type Difficulty = 'easy' | 'medium' | 'hard';
@@ -26,13 +27,18 @@ export default function ScheduledRiddlesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
-    publish_date: new Date().toISOString().split('T')[0],
+    publish_date: getOfficialDailyDate(),
     difficulty: 'medium' as Difficulty,
+    category: 'Editorial',
     question: '',
     answer: '',
     explanation: '',
+    hint1: '',
+    hint2: '',
     status: 'scheduled' as RiddleStatus,
   });
+
+  const [submitAction, setSubmitAction] = useState<'schedule' | 'publish_now'>('schedule');
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +71,7 @@ export default function ScheduledRiddlesPage() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, action: submitAction }),
       });
       const data = await res.json();
 
@@ -75,11 +81,14 @@ export default function ScheduledRiddlesPage() {
         setIsFormOpen(false);
         setEditingId(null);
         setForm({
-          publish_date: new Date().toISOString().split('T')[0],
+          publish_date: getOfficialDailyDate(),
           difficulty: 'medium',
+          category: 'Editorial',
           question: '',
           answer: '',
           explanation: '',
+          hint1: '',
+          hint2: '',
           status: 'scheduled',
         });
         fetchRiddles();
@@ -106,9 +115,12 @@ export default function ScheduledRiddlesPage() {
     setForm({
       publish_date: riddle.publish_date,
       difficulty: riddle.difficulty,
+      category: 'Editorial',
       question: riddle.question,
       answer: riddle.answer,
       explanation: riddle.explanation,
+      hint1: '',
+      hint2: '',
       status: riddle.status,
     });
     setIsFormOpen(true);
@@ -136,11 +148,14 @@ export default function ScheduledRiddlesPage() {
           onClick={() => {
             setEditingId(null);
             setForm({
-              publish_date: new Date().toISOString().split('T')[0],
+              publish_date: getOfficialDailyDate(),
               difficulty: 'medium',
+              category: 'Editorial',
               question: '',
               answer: '',
               explanation: '',
+              hint1: '',
+              hint2: '',
               status: 'scheduled',
             });
             setIsFormOpen(!isFormOpen);
@@ -244,6 +259,46 @@ export default function ScheduledRiddlesPage() {
                 />
               </div>
             </div>
+            <div className="grid grid-cols-[1fr_2fr] gap-4">
+              <div>
+                <label className="text-[11px] font-medium uppercase tracking-wide text-text-3 mb-2 block">
+                  Category
+                </label>
+                <input
+                  type="text"
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  placeholder="e.g. Algebra"
+                  className="input"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] font-medium uppercase tracking-wide text-text-3 mb-2 block">
+                    Hint 1
+                  </label>
+                  <input
+                    type="text"
+                    value={form.hint1}
+                    onChange={(e) => setForm({ ...form, hint1: e.target.value })}
+                    placeholder="First hint"
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium uppercase tracking-wide text-text-3 mb-2 block">
+                    Hint 2
+                  </label>
+                  <input
+                    type="text"
+                    value={form.hint2}
+                    onChange={(e) => setForm({ ...form, hint2: e.target.value })}
+                    placeholder="Second hint"
+                    className="input"
+                  />
+                </div>
+              </div>
+            </div>
 
             {error && (
               <div className="flex items-center gap-2 text-sm text-error">
@@ -251,9 +306,16 @@ export default function ScheduledRiddlesPage() {
               </div>
             )}
 
-            <Button type="submit" disabled={saving}>
-              {saving ? 'Saving…' : editingId ? 'Update riddle' : 'Schedule riddle'}
-            </Button>
+            <div className="flex items-center gap-3 mt-2">
+              <Button type="submit" disabled={saving} onClick={() => setSubmitAction('schedule')} variant={editingId ? 'primary' : 'secondary'}>
+                {saving && submitAction === 'schedule' ? 'Saving…' : editingId ? 'Update scheduled' : 'Schedule for date'}
+              </Button>
+              {!editingId && (
+                <Button type="submit" disabled={saving} onClick={() => setSubmitAction('publish_now')} variant="primary">
+                  {saving && submitAction === 'publish_now' ? 'Publishing…' : 'Publish NOW'}
+                </Button>
+              )}
+            </div>
           </form>
 
           {/* Preview */}

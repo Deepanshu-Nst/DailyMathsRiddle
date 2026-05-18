@@ -19,7 +19,10 @@ export async function logAdminAction(opts: {
     | 'approve'
     | 'reject'
     | 'config_change'
-    | 'manual_publish';
+    | 'manual_publish'
+    | 'slot_publish'
+    | 'slot_override'
+    | 'slot_schedule';
   targetType: 'riddle' | 'queue_entry' | 'generation_job' | 'config' | 'scheduled_riddle';
   targetId: string;
   metadata?: Record<string, unknown>;

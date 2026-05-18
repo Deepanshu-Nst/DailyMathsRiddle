@@ -11,12 +11,14 @@ import { getOfficialDailyDate } from '@/lib/timezone';
 export default function StreakContent({
   userStats,
   solvedDates,
+  todayIST,
 }: {
   userStats: UserStats | null;
   solvedDates: string[];
+  todayIST: string;
 }) {
   const router = useRouter();
-  const today = getOfficialDailyDate();
+  const today = todayIST;
 
   const currentStreak = userStats?.current_streak ?? 0;
   const bestStreak = userStats?.best_streak ?? 0;
@@ -182,7 +184,7 @@ export default function StreakContent({
               Consistency is the foundation of mastery.
             </p>
           </div>
-          <ProgressCalendar solvedDates={solvedDates.map(date => ({ date, difficulty: 'medium' as const, hintsUsed: 0 }))} />
+          <ProgressCalendar solvedDates={solvedDates.map(date => ({ date, difficulty: 'medium' as const, hintsUsed: 0 }))} todayIST={todayIST} />
         </motion.div>
       </main>
     </div>

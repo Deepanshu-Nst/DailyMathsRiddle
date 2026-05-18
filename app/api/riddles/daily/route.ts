@@ -58,8 +58,22 @@ export async function GET(req: NextRequest) {
     }
 
     // Verify we're not accidentally serving a stale riddle
-    if (dbRiddle.daily_date !== date) {
-      console.error(`[GET /api/riddles/daily] STALE RIDDLE DETECTED: requested=${date} got=${dbRiddle.daily_date}. Regenerating.`);
+    // The riddle's internal daily_date might differ if it was re-used in a slot
+    // (e.g. rollback or override), but getDailyRiddleOrGenerate ensures the slot is correct.
+    const expectedSlot = await (async () => {
+      const { createServiceClient } = await import('@/utils/supabase/server');
+      const supabase = await createServiceClient() as any;
+      const { data } = await supabase
+        .from('daily_riddle_slots')
+        .select('riddle_id')
+        .eq('official_date', date)
+        .eq('difficulty', difficulty)
+        .maybeSingle();
+      return data;
+    })();
+
+    if (expectedSlot && dbRiddle.id !== expectedSlot.riddle_id) {
+      console.error(`[GET /api/riddles/daily] STALE RIDDLE DETECTED: requested=${date} got=${dbRiddle.id} expected=${expectedSlot.riddle_id}. Regenerating.`);
       return NextResponse.json(
         { error: 'Stale riddle detected. Please refresh.' },
         { status: 503, headers: NO_CACHE_HEADERS }

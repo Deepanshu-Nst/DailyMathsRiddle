@@ -2,6 +2,8 @@ import StreakContent from '@/components/streak/StreakContent';
 import { createClient } from '@/utils/supabase/server';
 import type { UserStats } from '@/types/gamification';
 import { redirect } from 'next/navigation';
+import { computeStreakFromDates } from '@/lib/gamification/computeStreak';
+import { toOfficialDateFromInstant, getOfficialDailyDate } from '@/lib/timezone';
 
 export default async function StreakPage() {
   const supabase = await createClient();
@@ -12,28 +14,64 @@ export default async function StreakPage() {
   }
 
   let userStats: UserStats | null = null;
-  let solvedDates: string[] = [];
 
-  // Fetch stats
+  // Fetch stats (used for XP, accuracy, etc. — NOT for streak truth)
   const { data: stats } = await supabase
     .from('user_stats')
     .select('*')
     .eq('user_id', user.id)
     .single();
-    
+
   if (stats) userStats = stats;
 
-  // Fetch solved dates for calendar
-  const { data: events } = await supabase
-    .from('streak_events')
-    .select('solved_date')
+  // ── Derive solved dates from user_attempts (source of truth) ──
+  // Fetch all solved attempts (up to 365 for best-streak calculation)
+  const { data: attempts } = await supabase
+    .from('user_attempts')
+    .select('attempted_at')
     .eq('user_id', user.id)
-    .order('solved_date', { ascending: false })
-    .limit(30);
-    
-  if (events) {
-    solvedDates = (events as Array<{ solved_date: string }>).map(e => e.solved_date);
-  }
+    .eq('status', 'solved')
+    .order('attempted_at', { ascending: false })
+    .limit(365);
 
-  return <StreakContent userStats={userStats} solvedDates={solvedDates} />;
+  // Extract timestamps
+  const solvedTimestamps = (attempts ?? []).map(
+    (a: { attempted_at: string }) => a.attempted_at
+  );
+
+  // Recompute streak dynamically from actual solved IST dates
+  const computed = computeStreakFromDates(solvedTimestamps);
+
+  // Deduplicate solved dates for calendar display
+  const solvedDatesSet = new Set<string>();
+  for (const ts of solvedTimestamps) {
+    solvedDatesSet.add(toOfficialDateFromInstant(ts));
+  }
+  const solvedDates = Array.from(solvedDatesSet).sort().reverse();
+
+  // Override cached stats with recomputed values
+  const finalUserStats: UserStats = userStats ? {
+    ...(userStats as any),
+    current_streak: computed.currentStreak,
+    best_streak: Math.max(computed.bestStreak, (userStats as any).best_streak ?? 0),
+  } : {
+    user_id: user.id,
+    total_xp: 0,
+    riddles_solved: 0,
+    current_streak: computed.currentStreak,
+    best_streak: computed.bestStreak,
+    total_attempts: 0,
+    correct_attempts: 0,
+    hints_used: 0,
+    last_solved_date: null,
+    easy_solved: 0,
+    medium_solved: 0,
+    hard_solved: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  const todayIST = getOfficialDailyDate();
+
+  return <StreakContent userStats={finalUserStats} solvedDates={solvedDates} todayIST={todayIST} />;
 }

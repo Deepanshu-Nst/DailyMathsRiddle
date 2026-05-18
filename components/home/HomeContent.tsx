@@ -180,7 +180,7 @@ export default function HomeContent() {
                 <span className="label text-text-4">Activity</span>
                 <span className="font-mono text-[10px] text-text-4">30d</span>
               </div>
-              <ProgressCalendar solvedDates={activityMap} />
+              <ProgressCalendar solvedDates={activityMap} todayIST={getOfficialDailyDate()} />
             </div>
 
             <motion.div whileHover={{ y: -2 }} transition={spring}>

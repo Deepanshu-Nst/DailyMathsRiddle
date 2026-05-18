@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { runGenerationPipeline, ExclusionContext } from '@/lib/generation/pipeline';
 import { withLock } from '@/lib/generation/concurrency';
-import { countTodayGenerations, getTodayDailyRiddleExclusions, getRecentPracticeRiddleIds } from '@/lib/riddles/queries';
+import { countTodayGenerations, getRecentPracticeRiddleIds } from '@/lib/riddles/queries';
+import { getSlotsForDate } from '@/lib/riddles/slots';
 import { toClientRiddle } from '@/lib/riddles/toClientRiddle';
 import { createClient } from '@/utils/supabase/server';
 import { getRiddleShareUrl } from '@/lib/share/getCanonicalUrl';
@@ -69,15 +70,31 @@ export async function POST(req: NextRequest) {
     // ── BUILD EXCLUSION CONTEXT ──────────────────────────────────
     const today = getDailyKeyIST();
 
-    // 1. Today's daily riddles (ALL difficulties)
-    const dailyExclusions = await getTodayDailyRiddleExclusions(today);
+    // 1. Today's active slots (from authoritative daily_riddle_slots table)
+    const dailySlots = await getSlotsForDate(today);
+    const dailySlotRiddleIds = dailySlots.map(s => s.riddle_id);
 
-    // 2. Recent practice riddles for this session/user
+    // 2. Fetch full riddle info for slot riddles to get questions/templates
+    const slotRiddleDetails = dailySlotRiddleIds.length > 0
+      ? await (async () => {
+          const supabaseRead = await createClient();
+          const { data } = await supabaseRead
+            .from('riddles')
+            .select('id, slug, template_family, question')
+            .in('id', dailySlotRiddleIds);
+          return data ?? [];
+        })()
+      : [];
+
+    // 3. Recent practice riddles for this session/user
     const recentPractice = await getRecentPracticeRiddleIds(sessionId, userId, 10);
 
-    // 3. Merge into ExclusionContext
-    const allExcluded = [...dailyExclusions, ...recentPractice];
-    const excludeIds = Array.from(new Set(allExcluded.map(r => r.id).filter(Boolean)));
+    // 4. Merge into ExclusionContext
+    const allExcluded = [...slotRiddleDetails, ...recentPractice];
+    const excludeIds = Array.from(new Set([
+      ...allExcluded.map(r => r.id).filter(Boolean),
+      ...dailySlotRiddleIds,
+    ]));
     const excludeSlugs = Array.from(new Set(allExcluded.map(r => r.slug).filter(Boolean)));
     const excludeTemplateFamilies = Array.from(new Set(allExcluded.map(r => r.template_family).filter(Boolean) as string[]));
     const excludeQuestions = Array.from(new Set(allExcluded.map(r => r.question).filter(Boolean)));
@@ -95,7 +112,7 @@ export async function POST(req: NextRequest) {
     };
 
     console.log(`[POST /api/riddles/generate] ── EXCLUSION CONTEXT ──`);
-    console.log(`[POST /api/riddles/generate] dailyRiddles=${dailyExclusions.length} recentPractice=${recentPractice.length}`);
+    console.log(`[POST /api/riddles/generate] dailySlots=${dailySlots.length} recentPractice=${recentPractice.length}`);
     console.log(`[POST /api/riddles/generate] excludeIds=[${excludeIds.length}] excludeTemplates=[${excludeTemplateFamilies.join(', ')}]`);
 
     // ── GENERATE WITH EXCLUSION ──────────────────────────────────

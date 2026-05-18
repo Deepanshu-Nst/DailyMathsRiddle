@@ -6,6 +6,7 @@ import type { DailySolvedEntry, Difficulty } from '@/types';
 interface Props {
   solvedDates: DailySolvedEntry[];
   days?: number;
+  todayIST: string;
 }
 
 const DAY_LABELS = ['', 'M', '', 'W', '', 'F', ''];
@@ -28,11 +29,14 @@ function getDifficultyColor(diff: Difficulty): string {
  * - Subtle opacity-based heat mapping by difficulty
  * - Hover tooltip showing date, difficulty, streak
  */
-export default function ProgressCalendar({ solvedDates, days = 90 }: Props) {
+export default function ProgressCalendar({ solvedDates, days = 90, todayIST }: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
 
   const { grid, monthLabels } = useMemo(() => {
-    const today = new Date();
+    // Parse the server-provided IST date string (YYYY-MM-DD) as local midnight
+    // to avoid any timezone shifting during date math.
+    const [y, m, d] = todayIST.split('-').map(Number);
+    const today = new Date(y, m - 1, d);
     const start = new Date(today);
     start.setDate(start.getDate() - days + 1);
 
@@ -55,10 +59,15 @@ export default function ProgressCalendar({ solvedDates, days = 90 }: Props) {
       inRange: boolean;
     }>> = [];
 
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = todayIST;
     const rangeStart = new Date(today);
     rangeStart.setDate(rangeStart.getDate() - days + 1);
-    const rangeStartStr = rangeStart.toISOString().split('T')[0];
+    
+    // Format rangeStart back to YYYY-MM-DD
+    const ry = rangeStart.getFullYear();
+    const rm = String(rangeStart.getMonth() + 1).padStart(2, '0');
+    const rd = String(rangeStart.getDate()).padStart(2, '0');
+    const rangeStartStr = `${ry}-${rm}-${rd}`;
 
     const cursor = new Date(start);
     let currentWeek: typeof weeks[0] = [];
@@ -66,7 +75,10 @@ export default function ProgressCalendar({ solvedDates, days = 90 }: Props) {
     let lastMonth = -1;
 
     while (cursor <= today || currentWeek.length > 0) {
-      const dateStr = cursor.toISOString().split('T')[0];
+      const cy = cursor.getFullYear();
+      const cm = String(cursor.getMonth() + 1).padStart(2, '0');
+      const cd = String(cursor.getDate()).padStart(2, '0');
+      const dateStr = `${cy}-${cm}-${cd}`;
       const dow = cursor.getDay();
 
       if (dow === 0 && currentWeek.length > 0) {
@@ -99,7 +111,7 @@ export default function ProgressCalendar({ solvedDates, days = 90 }: Props) {
     if (currentWeek.length > 0) weeks.push(currentWeek);
 
     return { grid: weeks, monthLabels: mLabels };
-  }, [solvedDates, days]);
+  }, [solvedDates, days, todayIST]);
 
   // Find hovered entry details
   const hoveredEntry = hovered ? solvedDates.find((e) => e.date === hovered) : null;
