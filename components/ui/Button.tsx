@@ -5,24 +5,25 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   loading?: boolean;
+  iconOnly?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', fullWidth, loading, children, disabled, ...props }, ref) => {
+  ({ className, variant = 'primary', size = 'md', fullWidth, loading, iconOnly, children, disabled, ...props }, ref) => {
     const baseStyles = 'btn';
 
     const variantStyles = {
-      primary: 'bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-[0_1px_0_rgba(255,255,255,0.12)_inset,0_12px_40px_rgba(108,123,255,0.25)] hover:shadow-[0_1px_0_rgba(255,255,255,0.12)_inset,0_12px_40px_rgba(108,123,255,0.45)] hover:scale-[1.01]',
-      secondary: 'bg-white/[0.05] text-text-1 border border-white/[0.1] hover:bg-white/[0.08] active:bg-white/[0.06] hover:scale-[1.01]',
+      primary: 'bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-[0_1px_0_rgba(255,255,255,0.12)_inset,0_12px_40px_rgba(108,123,255,0.25)] hover:shadow-[0_1px_0_rgba(255,255,255,0.15)_inset,0_16px_48px_rgba(108,123,255,0.4)] hover:scale-[1.02]',
+      secondary: 'bg-white/[0.05] text-text-1 border border-white/[0.1] hover:bg-white/[0.08] active:bg-white/[0.06] hover:border-white/[0.15] hover:scale-[1.01]',
       ghost: 'bg-transparent text-text-2 hover:text-text-1 hover:bg-white/[0.04]',
-      danger: 'bg-error text-white hover:bg-red-600 shadow-[0_1px_2px_rgba(0,0,0,0.06)]',
-      success: 'bg-success text-white hover:bg-green-600 shadow-[0_1px_2px_rgba(0,0,0,0.06)]',
+      danger: 'bg-error text-white hover:bg-red-600 shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_rgba(248,113,113,0.2)]',
+      success: 'bg-success text-white hover:bg-green-600 shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_rgba(52,211,153,0.2)]',
     };
 
     const sizeStyles = {
-      sm: 'px-3 py-1.5 text-[13px]',
-      md: 'px-4 py-2 text-[14px]',
-      lg: 'px-7 py-3 text-[16px]',
+      sm: iconOnly ? 'p-2 text-[13px]' : 'px-3.5 py-1.5 text-[13px]',
+      md: iconOnly ? 'p-2.5 text-[14px]' : 'px-5 py-2.5 text-[14px]',
+      lg: iconOnly ? 'p-3 text-[16px]' : 'px-7 py-3 text-[16px]',
     };
 
     const styles = [
@@ -30,6 +31,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       variantStyles[variant],
       sizeStyles[size],
       fullWidth ? 'w-full' : '',
+      iconOnly ? 'rounded-xl' : '',
       className,
     ].filter(Boolean).join(' ');
 

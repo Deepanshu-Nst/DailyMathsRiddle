@@ -17,6 +17,8 @@
   --text-5xl: 48px;
   --text-6xl: 60px;
   --text-7xl: 72px;
+  --text-hero-xl: 84px;
+  --text-hero-2xl: 96px;
 
   /* Line Height */
   --leading-none: 1;
@@ -33,6 +35,8 @@
   --tracking-wide: 0.02em;
   --tracking-wider: 0.05em;
   --tracking-widest: 0.1em;
+  --tracking-display: -0.035em;
+  --tracking-hero: -0.04em;
 
   /* Font Weight */
   --weight-normal: 400;

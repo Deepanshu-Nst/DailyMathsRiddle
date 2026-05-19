@@ -33,9 +33,13 @@ export default function HintLadder({ hint1, hint2, disabled, onLevelChange }: Pr
           disabled={disabled}
           className="gap-2 rounded-full"
         >
-          <Lightbulb size={14} className={level >= 1 ? 'text-primary' : 'text-text-4'} />
+          <motion.span animate={{ rotate: level >= 1 ? 12 : 0 }} transition={{ duration: 0.3 }}>
+            <Lightbulb size={14} className={level >= 1 ? 'text-primary' : 'text-text-4'} />
+          </motion.span>
           Hint 1
-          {level === 1 ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          <motion.span animate={{ rotate: level === 1 ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronDown size={14} />
+          </motion.span>
         </Button>
 
         {hint2 && (
@@ -46,9 +50,13 @@ export default function HintLadder({ hint1, hint2, disabled, onLevelChange }: Pr
             disabled={disabled || level < 1}
             className="gap-2 rounded-full"
           >
-            <Lightbulb size={14} className={level === 2 ? 'text-primary' : 'text-text-4'} />
+            <motion.span animate={{ rotate: level === 2 ? 12 : 0 }} transition={{ duration: 0.3 }}>
+              <Lightbulb size={14} className={level === 2 ? 'text-primary' : 'text-text-4'} />
+            </motion.span>
             Hint 2
-            {level === 2 ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            <motion.span animate={{ rotate: level === 2 ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown size={14} />
+            </motion.span>
           </Button>
         )}
       </div>
@@ -58,23 +66,26 @@ export default function HintLadder({ hint1, hint2, disabled, onLevelChange }: Pr
         {level > 0 && (
           <motion.div
             key={level}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.2 }}
-            className="flex flex-col gap-3 rounded-xl border border-white/[0.08] bg-surface-soft p-5 shadow-sm"
+            initial={{ opacity: 0, y: 6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -4, height: 0 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+            className="overflow-hidden"
           >
-            <div className="flex items-center gap-2">
-              <Badge variant="warning" size="sm">Level {level} Hint</Badge>
-              <div className="h-px flex-1 bg-border/50" />
+            <div className="flex flex-col gap-3 rounded-xl border border-white/[0.08] bg-surface-soft p-5 shadow-sm relative">
+              {/* Gradient top border accent */}
+              <div className="absolute top-0 left-4 right-4 h-[2px] rounded-full bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+              <div className="flex items-center gap-2 pt-1">
+                <Badge variant="warning" size="sm">Level {level} Hint</Badge>
+                <div className="h-px flex-1 bg-white/[0.04]" />
+              </div>
+              <p className="text-sm text-text-2 leading-relaxed italic pr-4">
+                &ldquo;{level === 1 ? hint1 : hint2}&rdquo;
+              </p>
             </div>
-            <p className="text-sm text-text-2 leading-relaxed italic pr-4">
-              "{level === 1 ? hint1 : hint2}"
-            </p>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
 }
-

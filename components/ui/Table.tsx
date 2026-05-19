@@ -2,12 +2,13 @@ import React from 'react';
 
 interface TableProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
+  striped?: boolean;
 }
 
-export const Table: React.FC<TableProps> = ({ children, className, ...props }) => {
+export const Table: React.FC<TableProps> = ({ children, className, striped, ...props }) => {
   return (
     <div className={['w-full overflow-x-auto', className].filter(Boolean).join(' ')} {...props}>
-      <table className="w-full text-left border-collapse">
+      <table className={['w-full text-left border-collapse', striped ? 'table-striped' : ''].filter(Boolean).join(' ')}>
         {children}
       </table>
     </div>
@@ -15,19 +16,19 @@ export const Table: React.FC<TableProps> = ({ children, className, ...props }) =
 };
 
 export const TableHeader: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({ children, className, ...props }) => (
-  <thead className={['border-b border-white/[0.08] bg-white/[0.03]', className].filter(Boolean).join(' ')} {...props}>
+  <thead className={['border-b border-white/[0.08] bg-white/[0.02]', className].filter(Boolean).join(' ')} {...props}>
     {children}
   </thead>
 );
 
 export const TableBody: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({ children, className, ...props }) => (
-  <tbody className={['divide-y divide-white/[0.06]', className].filter(Boolean).join(' ')} {...props}>{children}</tbody>
+  <tbody className={['divide-y divide-white/[0.05]', className].filter(Boolean).join(' ')} {...props}>{children}</tbody>
 );
 
 export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement> & { hover?: boolean }> = ({ children, className, hover = true, ...props }) => (
   <tr className={[
-    'transition-colors relative',
-    hover ? 'hover:bg-white/[0.03] hover:shadow-[inset_2px_0_0_var(--color-primary)]' : '',
+    'transition-all duration-200 relative',
+    hover ? 'hover:bg-white/[0.03] hover:shadow-[inset_3px_0_0_var(--color-primary)]' : '',
     className,
   ].filter(Boolean).join(' ')} {...props}>
     {children}

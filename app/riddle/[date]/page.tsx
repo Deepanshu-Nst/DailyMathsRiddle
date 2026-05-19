@@ -17,14 +17,15 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/Feedback';
-import { ChevronLeft, Share2, Flag, Clock, Target, Hash, Sparkles, Trophy } from 'lucide-react';
-import { spring } from '@/lib/motion';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import { ChevronLeft, Share2, Flag, Clock, Target, Hash, Sparkles, Trophy, Flame } from 'lucide-react';
+import { spring, fadeUp, staggerContainer } from '@/lib/motion';
 import { useChallengeSession } from '@/components/providers/ChallengeSessionProvider';
 
 function activityCellClass(difficulty: Difficulty) {
   if (difficulty === 'easy') return 'bg-emerald-400/90 shadow-[0_0_12px_rgba(52,211,153,0.35)]';
   if (difficulty === 'hard') return 'bg-rose-400/90 shadow-[0_0_12px_rgba(251,113,133,0.35)]';
-  return 'bg-primary/90 shadow-[0_0_14px_rgba(244,162,58,0.4)]';
+  return 'bg-primary/90 shadow-[0_0_14px_rgba(108,123,255,0.4)]';
 }
 
 function SolvePage() {
@@ -223,9 +224,12 @@ function SolvePage() {
         <main className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_340px]">
           {/* LEFT — classified workspace */}
           <motion.div layout className="min-w-0 space-y-6">
-            <div className="content-panel relative min-h-[480px] px-8 py-10 sm:px-10 sm:py-12 bg-bg-muted/80 backdrop-blur-xl border border-white/[0.08] shadow-[0_24px_80px_rgba(0,0,0,0.4)] lg:min-h-[520px]">
+            <div className="content-panel relative min-h-[480px] px-8 py-10 sm:px-10 sm:py-12 lg:min-h-[520px]">
+              {/* Subtle animated gradient */}
+              <div className="absolute inset-0 rounded-[inherit] bg-gradient-to-br from-primary/[0.03] via-transparent to-transparent pointer-events-none" />
+              
               {loading ? (
-                <div className="flex w-full flex-col gap-5">
+                <div className="flex w-full flex-col gap-5 relative z-10">
                   <Skeleton className="h-6 w-28 rounded-md" />
                   <Skeleton className="mt-4 h-8 w-full rounded-md" />
                   <Skeleton className="h-8 w-[92%] rounded-md" />
@@ -235,14 +239,14 @@ function SolvePage() {
                   </div>
                 </div>
               ) : error ? (
-                <div className="flex h-full min-h-[320px] flex-col items-center justify-center rounded-xl border border-error/20 bg-error-bg p-8 text-center text-error">
+                <div className="flex h-full min-h-[320px] flex-col items-center justify-center rounded-xl border border-error/20 bg-error/[0.05] p-8 text-center text-error relative z-10">
                   <p className="font-semibold">{error}</p>
                   <Button variant="secondary" size="sm" className="mt-4" onClick={() => window.location.reload()}>
                     Reload
                   </Button>
                 </div>
               ) : riddle ? (
-                <div className="relative flex h-full flex-col">
+                <div className="relative flex h-full flex-col z-10">
                   <div className="mb-8 flex flex-wrap items-center gap-2">
                     <Badge variant="info" size="sm" className="font-mono uppercase tracking-wider">
                       {riddle.category}
@@ -301,7 +305,7 @@ function SolvePage() {
                         <div className="flex items-start gap-4 rounded-xl border border-white/[0.08] bg-black/35 p-4 sm:items-center">
                           <div
                             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white ${
-                              challengeState === 'SOLVED' ? 'bg-success' : 'bg-text-4'
+                              challengeState === 'SOLVED' ? 'bg-success shadow-[0_0_16px_rgba(52,211,153,0.3)]' : 'bg-text-4'
                             }`}
                           >
                             {challengeState === 'SOLVED' ? <Target size={18} /> : <Hash size={18} />}
@@ -343,6 +347,9 @@ function SolvePage() {
           {/* RIGHT — sticky operations rail */}
           <motion.aside
             layout
+            initial={{ opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ ...spring, delay: 0.1 }}
             className="glass-panel flex flex-col gap-6 p-6 lg:sticky lg:top-20 lg:self-start"
           >
             <div>
@@ -362,21 +369,23 @@ function SolvePage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-xl border border-white/[0.06] bg-surface-soft p-4 shadow-sm transition-colors hover:bg-surface-2">
+              <div className="card-metric rounded-xl p-4">
                 <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Streak</span>
-                <p className="mt-1 font-display text-3xl tabular-nums text-text-1">{session?.streak.currentStreak ?? 0}</p>
+                <p className="mt-1.5 font-display text-3xl tabular-nums text-text-1">
+                  <AnimatedNumber value={session?.streak.currentStreak ?? 0} />
+                </p>
                 <p className="mt-0.5 text-[10px] text-text-3">consecutive dailies</p>
               </div>
-              <div className="rounded-xl border border-white/[0.06] bg-surface-soft p-4 shadow-sm transition-colors hover:bg-surface-2">
+              <div className="card-metric rounded-xl p-4">
                 <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Total XP</span>
-                <p className="mt-1 font-display text-3xl tabular-nums text-text-1">
-                  {(session?.streak.totalXP ?? 0).toLocaleString()}
+                <p className="mt-1.5 font-display text-3xl tabular-nums text-text-1">
+                  <AnimatedNumber value={session?.streak.totalXP ?? 0} />
                 </p>
                 <p className="mt-0.5 text-[10px] text-text-3">lifetime</p>
               </div>
             </div>
 
-            <div className="rounded-xl border border-white/[0.06] bg-surface-soft p-4 shadow-sm transition-colors hover:bg-surface-2">
+            <div className="card-metric rounded-xl p-4">
               <div className="flex items-center gap-2 text-text-3">
                 <Trophy size={14} />
                 <span className="text-[11px] font-semibold text-text-2">Global rank (XP)</span>
@@ -443,8 +452,8 @@ function SolvePage() {
                   <motion.div
                     key={entry.date}
                     title={entry.date}
-                    whileHover={{ scale: 1.12 }}
-                    className={`h-3 w-3 rounded-sm ${activityCellClass(entry.difficulty)}`}
+                    whileHover={{ scale: 1.2 }}
+                    className={`h-3 w-3 rounded-sm transition-shadow ${activityCellClass(entry.difficulty)}`}
                   />
                 ))}
                 {recentActivity.length === 0 && <span className="text-[12px] text-text-4">No solves in window</span>}
@@ -457,15 +466,15 @@ function SolvePage() {
       <Modal isOpen={showGiveUpModal} onClose={() => setShowGiveUpModal(false)} title="Show answer?" size="sm">
         <div className="flex flex-col gap-6">
           <p className="text-[14px] leading-relaxed text-text-2">
-            This ends the run in <span className="text-text-1">no XP</span> mode. Your daily streak will{' '}
-            <span className="text-text-1">not advance</span> from this path.
+            This ends the run in <span className="text-text-1 font-semibold">no XP</span> mode. Your daily streak will{' '}
+            <span className="text-text-1 font-semibold">not advance</span> from this path.
           </p>
           <div className="flex gap-3">
             <Button variant="secondary" fullWidth onClick={() => setShowGiveUpModal(false)} disabled={isGivingUp}>
               Keep trying
             </Button>
-            <Button variant="primary" fullWidth onClick={handleGiveUp} disabled={isGivingUp}>
-              {isGivingUp ? 'Opening…' : 'Reveal'}
+            <Button variant="primary" fullWidth onClick={handleGiveUp} disabled={isGivingUp} loading={isGivingUp}>
+              Reveal
             </Button>
           </div>
         </div>

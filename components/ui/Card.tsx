@@ -6,7 +6,7 @@ interface CardProps {
   padding?: 'none' | 'sm' | 'md' | 'lg';
   bordered?: boolean;
   title?: string;
-  variant?: 'default' | 'elevated' | 'sunken' | 'ghost' | 'glow' | 'glass';
+  variant?: 'default' | 'elevated' | 'sunken' | 'ghost' | 'glow' | 'glass' | 'spotlight' | 'metric' | 'interactive';
   hoverable?: boolean;
 }
 
@@ -33,11 +33,14 @@ export const Card: React.FC<CardProps> = ({
     ghost: 'bg-transparent border border-dashed border-border',
     glow: 'card relative z-0',
     glass: 'glass-panel',
+    spotlight: 'card-spotlight',
+    metric: 'card-metric',
+    interactive: 'card card-hoverable cursor-pointer',
   };
 
   const styles = [
     variantStyles[variant],
-    hoverable ? 'card-hoverable cursor-pointer' : '',
+    hoverable && variant !== 'interactive' ? 'card-hoverable cursor-pointer' : '',
     bordered ? '' : 'border-none',
     title ? '' : paddingMap[padding],
     'overflow-hidden',

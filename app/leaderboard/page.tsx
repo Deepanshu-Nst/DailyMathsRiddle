@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Trophy, Flame, Calendar, Globe, Medal, ChevronRight } from 'lucide-react';
-import { Container, Section } from '@/components/ui/Layout';
+import { Trophy, Flame, Calendar, Globe, Medal, Crown } from 'lucide-react';
+import { Container } from '@/components/ui/Layout';
 import { Card } from '@/components/ui/Card';
 import { Tabs } from '@/components/ui/Tabs';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
-import { Skeleton } from '@/components/ui/Feedback';
-import { staggerContainer, fadeUp, hoverLift } from '@/lib/motion';
+import { Skeleton, SkeletonGroup } from '@/components/ui/Feedback';
+import { GlowOrb } from '@/components/ui/GlowOrb';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import { staggerContainer, staggerContainerSlow, fadeUp, fadeUpLarge, heroReveal, hoverLift, spring } from '@/lib/motion';
 
 type Tab = 'global' | 'weekly' | 'monthly';
 
@@ -62,55 +64,69 @@ export default function LeaderboardsPage() {
   const podiumTop3 = top3.length === 3 ? [top3[1], top3[0], top3[2]] : top3;
 
   return (
-    <Container wide className="py-12 lg:py-16">
-      <motion.header variants={staggerContainer} initial="hidden" animate="visible" className="mb-12">
-        <motion.p variants={fadeUp} className="font-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-text-4">
-          Prestige ladder
-        </motion.p>
-        <motion.h1 variants={fadeUp} className="font-display mt-3 text-balance text-[clamp(2rem,4vw,3rem)] leading-[1.05] text-text-1">
-          Global rankings
-        </motion.h1>
-        <motion.p variants={fadeUp} className="mt-4 max-w-xl text-[15px] leading-relaxed text-text-2">
-          The most disciplined minds on AdvaitAI — ranked by XP, weekly cadence, and monthly surges.
-        </motion.p>
+    <Container wide className="py-12 lg:py-20 relative overflow-hidden">
+      <GlowOrb color="rgba(108, 123, 255, 1)" size={700} position="top-center" intensity={0.08} />
+
+      {/* Header */}
+      <motion.header variants={staggerContainer} initial="hidden" animate="visible" className="mb-14 relative z-10">
+        <motion.div variants={heroReveal} className="text-center max-w-2xl mx-auto">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-[0_0_24px_rgba(108,123,255,0.2)]">
+              <Trophy size={20} />
+            </div>
+          </div>
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-text-4">
+            Prestige ladder
+          </p>
+          <h1 className="font-display mt-3 text-balance text-[clamp(2.5rem,5vw,4rem)] leading-[1.02] text-text-1">
+            Global rankings
+          </h1>
+          <p className="mt-4 text-[15px] leading-relaxed text-text-2">
+            The most disciplined minds on AdvaitAI — ranked by XP, weekly cadence, and monthly surges.
+          </p>
+        </motion.div>
       </motion.header>
 
-      <div className="mb-10 flex items-center justify-between border-b border-white/[0.08]">
+      {/* Tabs */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, ...spring }}
+        className="mb-10 flex justify-center"
+      >
         <Tabs 
           tabs={tabs} 
           activeTab={activeTab} 
           onChange={(id) => setActiveTab(id as Tab)} 
-          variant="underline"
+          variant="contained"
         />
-      </div>
+      </motion.div>
 
       {loading ? (
-        <div className="flex flex-col gap-4">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
-          ))}
+        <div className="max-w-3xl mx-auto">
+          <SkeletonGroup count={6} itemClassName="h-16 w-full" gap="gap-3" />
         </div>
       ) : error ? (
-        <Card className="text-center py-12 text-error bg-error-bg border-error/20">
+        <Card className="text-center py-12 text-error max-w-xl mx-auto">
           {error}
         </Card>
       ) : (
         <motion.div 
-          variants={staggerContainer} 
+          variants={staggerContainerSlow} 
           initial="hidden" 
           animate="visible" 
-          className="flex flex-col gap-10"
+          className="flex flex-col gap-12"
         >
           {/* Spotlight Top 3 (Podium) */}
           {podiumTop3.length > 0 && (
-            <div className="grid items-end gap-5 md:grid-cols-3 md:gap-6">
+            <div className="grid items-end gap-5 md:grid-cols-3 md:gap-6 max-w-3xl mx-auto w-full">
               {podiumTop3.map((entry, i) => {
                 const rank = top3.length === 3 ? (i === 0 ? 2 : i === 1 ? 1 : 3) : i + 1;
                 return (
                   <motion.div
                     key={entry.id}
-                    variants={fadeUp}
-                    whileHover={{ y: -4 }}
+                    variants={fadeUpLarge}
+                    whileHover={{ y: -6 }}
                     transition={{ type: 'spring', stiffness: 320, damping: 22 }}
                   >
                     <SpotlightCard 
@@ -125,7 +141,7 @@ export default function LeaderboardsPage() {
           )}
 
           {/* List View */}
-          <motion.div variants={fadeUp}>
+          <motion.div variants={fadeUp} className="max-w-3xl mx-auto w-full">
             <Card padding="none" className="overflow-hidden">
               <Table>
                 <TableHeader>
@@ -176,13 +192,19 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
   const isFirst = rank === 1;
   const isSecond = rank === 2;
 
-  const cardClasses = isFirst
-    ? 'z-10 scale-[1.06] -translate-y-3 border-primary/35 bg-gradient-to-b from-white/[0.08] to-black/40 shadow-[0_0_60px_rgba(108,123,255,0.3),inset_0_1px_0_rgba(255,255,255,0.08)]'
+  const glowColor = isFirst
+    ? 'rgba(108, 123, 255, 0.35)'
     : isSecond
-      ? 'scale-[0.98] border-white/[0.1] bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.35)]'
-      : 'translate-y-2 scale-[0.95] border-white/[0.08] bg-white/[0.03] shadow-[0_12px_40px_rgba(0,0,0,0.3)]';
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(108, 123, 255, 0.1)';
 
-  const avatarSize = isFirst ? 'w-24 h-24' : isSecond ? 'w-16 h-16' : 'w-14 h-14';
+  const cardClasses = isFirst
+    ? 'z-10 md:scale-[1.06] md:-translate-y-4 border-primary/30 bg-gradient-to-b from-white/[0.08] to-black/40'
+    : isSecond
+      ? 'md:scale-[0.98] border-white/[0.1] bg-white/[0.04]'
+      : 'md:translate-y-2 md:scale-[0.95] border-white/[0.08] bg-white/[0.03]';
+
+  const avatarSize = isFirst ? 'w-20 h-20 sm:w-24 sm:h-24' : isSecond ? 'w-16 h-16' : 'w-14 h-14';
   
   return (
     <div className="h-full transition-transform duration-300">
@@ -190,9 +212,28 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
         className={`relative flex flex-col items-center justify-between h-full pt-8 pb-6 px-6 ${cardClasses}`}
         padding="none"
       >
-        <div className="flex flex-col items-center text-center gap-4 w-full">
+        {/* Glow effect for #1 */}
+        {isFirst && (
+          <div className="absolute inset-0 rounded-[inherit] pointer-events-none" style={{
+            boxShadow: `0 0 60px ${glowColor}, inset 0 1px 0 rgba(255,255,255,0.08)`,
+          }} />
+        )}
+
+        <div className="flex flex-col items-center text-center gap-4 w-full relative">
           <div className="relative mb-2">
-            <div className={`${avatarSize} overflow-hidden rounded-full border-2 border-white/15 bg-black/40 shadow-[0_0_24px_rgba(0,0,0,0.4)]`}>
+            {/* Crown for #1 */}
+            {isFirst && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.8 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: 0.3, type: 'spring', damping: 15 }}
+                className="absolute -top-7 left-1/2 -translate-x-1/2 text-warning"
+              >
+                <Crown size={24} fill="currentColor" />
+              </motion.div>
+            )}
+
+            <div className={`${avatarSize} overflow-hidden rounded-full border-2 ${isFirst ? 'border-primary/30' : 'border-white/10'} bg-black/40 shadow-[0_0_24px_rgba(0,0,0,0.4)]`}>
               {entry.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={entry.avatar_url} alt={entry.username} className="w-full h-full object-cover" />
@@ -203,12 +244,12 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
               )}
             </div>
             <div
-              className={`absolute -bottom-3 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full text-[13px] font-bold text-white shadow-lg ${
+              className={`absolute -bottom-3 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full text-[13px] font-bold shadow-lg ${
                 isFirst
-                  ? 'border-2 border-primary/40 bg-gradient-to-br from-primary to-primary/80 text-white'
+                  ? 'border-2 border-primary/40 bg-gradient-to-br from-primary to-primary/80 text-white shadow-[0_0_16px_rgba(108,123,255,0.4)]'
                   : isSecond
                     ? 'border border-white/20 bg-gradient-to-br from-zinc-300 to-zinc-500 text-zinc-950'
-                    : 'border border-primary/20 bg-gradient-to-br from-primary/30 to-primary/10'
+                    : 'border border-primary/20 bg-gradient-to-br from-primary/30 to-primary/10 text-primary'
               }`}
             >
               {rank}
@@ -226,8 +267,8 @@ function SpotlightCard({ entry, rank, tab }: { entry: LeaderboardEntry; rank: nu
                 {entry.username}
               </Link>
             )}
-            <Badge variant={isFirst ? 'warning' : 'secondary'} size="sm" className={isFirst ? 'font-bold' : ''}>
-              {score.toLocaleString()} XP
+            <Badge variant={isFirst ? 'glow' : 'secondary'} size="sm" className={isFirst ? 'font-bold' : ''}>
+              <AnimatedNumber value={score} className="tabular-nums" /> XP
             </Badge>
           </div>
         </div>
@@ -243,10 +284,6 @@ function LeaderboardRow({ entry, tab, index }: { entry: LeaderboardEntry; tab: T
   else if (tab === 'weekly') score = entry.weekly_xp || 0;
   else if (tab === 'monthly') score = entry.monthly_xp || 0;
 
-  // Max score for bar width calculation. Realistically this should be passed from parent, but simplified here.
-  // Using a visual trick where width is just a relative mapping
-  const widthPct = Math.min(100, Math.max(5, (score / 1000) * 100)); // Just a placeholder visual effect
-
   return (
     <TableRow>
       <TableCell className="font-mono text-text-4 font-semibold text-[12px]">
@@ -254,10 +291,12 @@ function LeaderboardRow({ entry, tab, index }: { entry: LeaderboardEntry; tab: T
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-bg-muted border border-border-subtle overflow-hidden shrink-0">
-            {entry.avatar_url && (
+          <div className="w-8 h-8 rounded-full bg-bg-muted border border-white/[0.06] overflow-hidden shrink-0 flex items-center justify-center">
+            {entry.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={entry.avatar_url} alt={entry.username} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-text-3 text-xs font-bold">{entry.username[0].toUpperCase()}</span>
             )}
           </div>
           {isAnonymous ? (
@@ -270,8 +309,8 @@ function LeaderboardRow({ entry, tab, index }: { entry: LeaderboardEntry; tab: T
         </div>
       </TableCell>
       <TableCell className="text-right">
-        <div className="flex items-center justify-end gap-3">
-          <span className="font-semibold text-text-1">{score.toLocaleString()}</span>
+        <div className="flex items-center justify-end gap-2.5">
+          <span className="font-semibold tabular-nums text-text-1">{score.toLocaleString()}</span>
           <span className="text-[10px] uppercase text-text-4 font-bold tracking-widest w-6 text-left">
             XP
           </span>

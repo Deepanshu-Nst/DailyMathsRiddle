@@ -2,15 +2,23 @@ import React from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
+  inputSize?: 'sm' | 'md' | 'lg';
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, error, ...props }, ref) => {
+  ({ className, error, inputSize = 'md', ...props }, ref) => {
+    const sizeStyles = {
+      sm: 'text-[13px] py-2 px-3',
+      md: '',
+      lg: 'input-lg',
+    };
+
     const styles = [
       'input',
+      sizeStyles[inputSize],
       error ? 'border-error ring-1 ring-error/20' : '',
       className,
-    ].join(' ');
+    ].filter(Boolean).join(' ');
 
     return <input ref={ref} className={styles} {...props} />;
   }

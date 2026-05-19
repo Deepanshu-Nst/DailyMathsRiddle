@@ -4,9 +4,15 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import ProgressCalendar from '@/components/ProgressCalendar';
 import CountdownTimer from '@/components/CountdownTimer';
-import StreakChip from '@/components/StreakChip';
 import type { UserStats } from '@/types/gamification';
-import { getOfficialDailyDate } from '@/lib/timezone';
+import { Container, PageHeader } from '@/components/ui/Layout';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import { GlowOrb } from '@/components/ui/GlowOrb';
+import { staggerContainer, fadeUp, heroReveal, slideUp, viewReveal, spring } from '@/lib/motion';
+import { Flame, Target, Clock, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function StreakContent({
   userStats,
@@ -28,165 +34,145 @@ export default function StreakContent({
     ? Math.min(100, Math.round((currentStreak / bestStreak) * 100))
     : 0;
 
-  return (
-    <div style={{ minHeight: '100vh', padding: '0 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <nav style={{
-        width: '100%', maxWidth: 860,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '28px 0 0',
-      }}>
-        <button className="nav-back" onClick={() => router.push('/')}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Home
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 6,
-            background: 'var(--text-1)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--bg)', fontSize: 13, fontWeight: 800,
-            fontFamily: "'Bricolage Grotesque', sans-serif",
-          }}>∑</div>
-          <span className="font-display" style={{ fontSize: 15, fontWeight: 700 }}>AdvaitAI</span>
-        </div>
-        {currentStreak > 0 && <StreakChip current={currentStreak} />}
-      </nav>
+  const accuracy = userStats 
+    ? (userStats.total_attempts > 0 ? Math.round((userStats.correct_attempts / userStats.total_attempts) * 100) : null)
+    : null;
 
-      <main style={{ width: '100%', maxWidth: 860, padding: 'clamp(48px, 8vh, 96px) 0 80px', display: 'flex', flexDirection: 'column', gap: 64 }}>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}
-        >
-          <div>
-            <h1 className="font-display" style={{ fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 800, marginBottom: 10 }}>
-              Your progress
-            </h1>
-            <p style={{ fontSize: 16, color: 'var(--text-3)', lineHeight: 1.6 }}>
-              Tracking your daily intelligence ritual.
-            </p>
-          </div>
+  return (
+    <Container wide className="pt-12 pb-24 lg:pt-16 lg:pb-32 relative overflow-hidden">
+      <GlowOrb color="rgba(108, 123, 255, 1)" size={600} position="top-center" intensity={0.08} />
+
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 max-w-[860px] mx-auto flex flex-col gap-12 lg:gap-16"
+      >
+        {/* Header */}
+        <motion.div variants={heroReveal} className="flex items-end justify-between flex-wrap gap-6">
+          <PageHeader
+            eyebrow="Intelligence ritual"
+            title="Your progress"
+            description="Tracking your daily intelligence ritual. Consistency is the foundation of mastery."
+          />
           {!isSolved && (
-            <button className="btn btn-primary" onClick={() => router.push('/')} style={{ fontSize: 14 }}>
-              Today's ritual →
-            </button>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} transition={spring}>
+              <Button variant="primary" onClick={() => router.push('/')} className="gap-2">
+                Today&apos;s ritual
+                <ArrowRight size={14} />
+              </Button>
+            </motion.div>
           )}
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          <div style={{
-            padding: '24px 28px',
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 12,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 48,
-            flexWrap: 'wrap', gap: 20,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: '50%',
-                border: '1px solid var(--border)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                {isSolved ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path d="M5 12l5 5 9-9" stroke="var(--text-1)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="9" stroke="var(--text-3)" strokeWidth="1.8"/>
-                    <path d="M12 7v5l3 3" stroke="var(--text-3)" strokeWidth="1.8" strokeLinecap="round"/>
-                  </svg>
-                )}
+        {/* Today Status Card */}
+        <motion.div variants={fadeUp}>
+          <Card variant="interactive" padding="lg" className="flex items-center justify-between flex-wrap gap-5">
+            <div className="flex items-center gap-4">
+              <div className={`flex h-11 w-11 items-center justify-center rounded-xl border ${
+                isSolved 
+                  ? 'border-success/30 bg-success/10 text-success' 
+                  : 'border-white/[0.08] bg-white/[0.04] text-text-3'
+              }`}>
+                {isSolved ? <CheckCircle2 size={20} /> : <Clock size={20} />}
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-1)', marginBottom: 2 }}>
+                <p className="text-[15px] font-semibold text-text-1">
                   {isSolved ? "Today's ritual complete" : "Today's ritual pending"}
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--text-3)' }}>
-                  {isSolved
-                    ? `Solved today`
-                    : "You haven't solved today's challenge yet."}
-                </div>
+                </p>
+                <p className="text-[13px] text-text-3 mt-0.5">
+                  {isSolved ? 'Solved today' : "You haven't solved today's challenge yet."}
+                </p>
               </div>
             </div>
             {isSolved ? <CountdownTimer /> : (
-              <button className="btn btn-primary" style={{ fontSize: 13, padding: '11px 20px' }} onClick={() => router.push('/')}>
-                Solve now →
-              </button>
+              <Button variant="primary" size="sm" onClick={() => router.push('/')} className="gap-2">
+                Solve now
+                <ArrowRight size={14} />
+              </Button>
             )}
-          </div>
+          </Card>
+        </motion.div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'clamp(20px, 4vw, 48px)', marginBottom: 48 }}>
-            <div>
-              <span className="label" style={{ display: 'block', marginBottom: 10 }}>Current streak</span>
-              <span className="stat-num">{currentStreak}</span>
-            </div>
-            <div>
-              <span className="label" style={{ display: 'block', marginBottom: 10 }}>Best streak</span>
-              <span className="stat-num muted">{bestStreak}</span>
-            </div>
-            <div>
-              <span className="label" style={{ display: 'block', marginBottom: 10 }}>Total XP</span>
-              <span className="stat-num muted">{userStats?.total_xp ?? 0}</span>
-            </div>
-            <div>
-              <span className="label" style={{ display: 'block', marginBottom: 10 }}>Accuracy</span>
-              <span className="stat-num muted">
-                {userStats 
-                  ? (userStats.total_attempts > 0 ? `${Math.round((userStats.correct_attempts / userStats.total_attempts) * 100)}%` : '—')
-                  : '—'}
+        {/* Stats Grid */}
+        <motion.div variants={fadeUp}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <Card variant="metric" padding="md" className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Flame size={14} className="text-primary" />
+                <span className="label text-text-4">Current streak</span>
+              </div>
+              <AnimatedNumber value={currentStreak} className="font-display text-[clamp(28px,4vw,38px)] tabular-nums text-text-1" />
+              <span className="text-[10px] text-text-3 font-mono">days</span>
+            </Card>
+            <Card variant="metric" padding="md" className="flex flex-col gap-2">
+              <span className="label text-text-4">Best streak</span>
+              <AnimatedNumber value={bestStreak} className="font-display text-[clamp(28px,4vw,38px)] tabular-nums text-text-2" />
+              <span className="text-[10px] text-text-3 font-mono">days</span>
+            </Card>
+            <Card variant="metric" padding="md" className="flex flex-col gap-2">
+              <span className="label text-text-4">Total XP</span>
+              <AnimatedNumber value={userStats?.total_xp ?? 0} className="font-display text-[clamp(28px,4vw,38px)] tabular-nums text-text-2" />
+            </Card>
+            <Card variant="metric" padding="md" className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Target size={14} className="text-text-3" />
+                <span className="label text-text-4">Accuracy</span>
+              </div>
+              <span className="font-display text-[clamp(28px,4vw,38px)] tabular-nums text-text-2">
+                {accuracy !== null ? `${accuracy}%` : '—'}
               </span>
-            </div>
+            </Card>
           </div>
+        </motion.div>
 
-          {bestStreak > 0 && (
-            <div style={{ marginBottom: 48 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                <span className="label">Streak progress</span>
-                <span className="label mono" style={{ color: 'var(--text-2)' }}>
+        {/* Streak Progress Bar */}
+        {bestStreak > 0 && (
+          <motion.div variants={fadeUp}>
+            <Card padding="lg" className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <span className="label text-text-4">Streak progress</span>
+                <span className="font-mono text-[12px] text-text-2">
                   {currentStreak} / {bestStreak} days
                 </span>
               </div>
               <div className="progress-track">
-                <div className="progress-fill" style={{ width: `${pct}%` }} />
+                <motion.div
+                  className="progress-fill"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+                />
               </div>
               {currentStreak >= bestStreak && bestStreak > 0 && (
-                <p style={{ marginTop: 12, fontSize: 13, color: 'var(--text-2)' }}>
-                  Matching your personal best.
-                </p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="glow" size="sm" dot>Matching personal best</Badge>
+                </div>
               )}
-            </div>
-          )}
-        </motion.div>
+            </Card>
+          </motion.div>
+        )}
 
+        {/* Activity Calendar */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 48 }}
+          {...viewReveal}
+          variants={slideUp}
+          className="flex flex-col gap-6"
         >
-          <div style={{ marginBottom: 24 }}>
-            <h2 className="font-display" style={{ fontSize: 22, fontWeight: 700, marginBottom: 6 }}>
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+          <div>
+            <h2 className="font-display text-[22px] tracking-tight text-text-1 mb-2">
               The last 30 days
             </h2>
-            <p style={{ fontSize: 14, color: 'var(--text-3)' }}>
+            <p className="text-[14px] text-text-3">
               Consistency is the foundation of mastery.
             </p>
           </div>
-          <ProgressCalendar solvedDates={solvedDates.map(date => ({ date, difficulty: 'medium' as const, hintsUsed: 0 }))} todayIST={todayIST} />
+          <Card padding="lg" variant="glass">
+            <ProgressCalendar solvedDates={solvedDates.map(date => ({ date, difficulty: 'medium' as const, hintsUsed: 0 }))} todayIST={todayIST} />
+          </Card>
         </motion.div>
-      </main>
-    </div>
+      </motion.div>
+    </Container>
   );
 }

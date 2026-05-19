@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Flame, Sparkles } from 'lucide-react';
+import { Flame, Sparkles, Zap } from 'lucide-react';
 import CountdownTimer from '@/components/CountdownTimer';
 import { springSnappy } from '@/lib/motion';
 
@@ -43,6 +43,51 @@ function useAnimatedInt(target: number, active: boolean, durationMs = 900) {
   return v;
 }
 
+// Simple confetti particle system
+function ConfettiParticles() {
+  const colors = ['#6C7BFF', '#A78BFA', '#34d399', '#fbbf24', '#f87171', '#60a5fa'];
+  
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
+      {Array.from({ length: 24 }).map((_, i) => {
+        const left = Math.random() * 100;
+        const delay = Math.random() * 0.6;
+        const duration = 2.5 + Math.random() * 2;
+        const size = 4 + Math.random() * 5;
+        const color = colors[i % colors.length];
+        const rotation = Math.random() * 360;
+        
+        return (
+          <motion.div
+            key={i}
+            initial={{ y: -20, x: 0, opacity: 1, rotate: rotation }}
+            animate={{
+              y: 400,
+              x: (Math.random() - 0.5) * 120,
+              opacity: 0,
+              rotate: rotation + 360 + Math.random() * 360,
+            }}
+            transition={{
+              duration,
+              delay,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            style={{
+              position: 'absolute',
+              left: `${left}%`,
+              top: -10,
+              width: size,
+              height: size * (0.6 + Math.random() * 0.8),
+              backgroundColor: color,
+              borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export default function CelebrationModal({ explanation, answer, streak, onClose, xpAwarded, bonuses }: Props) {
   const xpTarget = typeof xpAwarded === 'number' && xpAwarded > 0 ? xpAwarded : 0;
   const xpDisplay = useAnimatedInt(xpTarget, xpTarget > 0, 1000);
@@ -72,85 +117,99 @@ export default function CelebrationModal({ explanation, answer, streak, onClose,
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 12 }}
         transition={springSnappy}
-        className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-white/[0.1] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_40px_120px_rgba(0,0,0,0.75)]"
+        className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-white/[0.1] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_40px_120px_rgba(0,0,0,0.75),0_0_80px_rgba(108,123,255,0.1)]"
         onClick={(e) => e.stopPropagation()}
       >
-          <div className="relative space-y-8 px-6 py-8 sm:px-10 sm:py-10">
-            <div className="text-center">
-              <motion.div
-                initial={{ scale: 0.92, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', damping: 18, stiffness: 260 }}
-                className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-xl border border-border-dark bg-bg-muted text-primary"
-              >
-                <Sparkles size={28} strokeWidth={1.5} />
-              </motion.div>
-              <p className="font-mono text-[10px] font-medium text-text-3">Correct</p>
-              <h2 className="mt-2 font-display text-[2.25rem] leading-tight text-text-1 sm:text-[2.5rem]">Saved to your record</h2>
-              <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-text-2">
-                XP and streak below reflect what was written to the database for this solve.
-              </p>
-            </div>
+        {/* Celebration gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.06] via-transparent to-transparent pointer-events-none z-0" />
+        
+        {/* Confetti */}
+        <ConfettiParticles />
 
-            <div className="grid grid-cols-2 gap-3">
-              <motion.div layout className="rounded-xl border border-white/[0.08] bg-black/40 p-4 text-left">
-                <div className="flex items-center gap-2 text-text-2">
-                  <Flame size={14} />
-                  <span className="font-mono text-[9px] font-medium uppercase tracking-wide text-text-4">Streak</span>
-                </div>
-                <p className="mt-2 font-display text-3xl tabular-nums text-text-1">{streak}</p>
-                <p className="text-[10px] text-text-3">consecutive dailies</p>
-              </motion.div>
-              <motion.div layout className="rounded-xl border border-white/[0.08] bg-black/40 p-4 text-left">
+        <div className="relative space-y-8 px-6 py-8 sm:px-10 sm:py-10 z-10">
+          <div className="text-center">
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', damping: 18, stiffness: 260 }}
+              className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-primary shadow-[0_0_32px_rgba(108,123,255,0.25)]"
+            >
+              <Sparkles size={28} strokeWidth={1.5} />
+            </motion.div>
+            <p className="font-mono text-[10px] font-medium text-text-3">Correct</p>
+            <h2 className="mt-2 font-display text-[2.25rem] leading-tight text-text-1 sm:text-[2.5rem]">Saved to your record</h2>
+            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-text-2">
+              XP and streak below reflect what was written to the database for this solve.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <motion.div layout className="card-metric rounded-xl p-4 text-left">
+              <div className="flex items-center gap-2 text-text-2">
+                <Flame size={14} />
+                <span className="font-mono text-[9px] font-medium uppercase tracking-wide text-text-4">Streak</span>
+              </div>
+              <p className="mt-2 font-display text-3xl tabular-nums text-text-1">{streak}</p>
+              <p className="text-[10px] text-text-3">consecutive dailies</p>
+            </motion.div>
+            <motion.div layout className="card-metric rounded-xl p-4 text-left border-l-primary">
+              <div className="flex items-center gap-2 text-text-2">
+                <Zap size={14} />
                 <span className="font-mono text-[9px] font-medium uppercase tracking-wide text-text-4">XP this solve</span>
-                <p className="mt-2 font-display text-3xl tabular-nums text-primary">+{xpDisplay}</p>
-                <p className="text-[10px] text-text-3">XP awarded</p>
-              </motion.div>
+              </div>
+              <p className="mt-2 font-display text-3xl tabular-nums gradient-text-accent">+{xpDisplay}</p>
+              <p className="text-[10px] text-text-3">XP awarded</p>
+            </motion.div>
+          </div>
+
+          {(bonuses ?? []).length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-wrap justify-center gap-2"
+            >
+              {(bonuses ?? []).map((b, i) => (
+                <Badge key={i} variant="glow" size="sm" className="font-mono uppercase tracking-wide" dot>
+                  {b.reason === 'first_try_bonus'
+                    ? 'First strike'
+                    : b.reason === 'fast_solve_bonus'
+                      ? 'Velocity'
+                      : b.reason.startsWith('streak_milestone')
+                        ? 'Milestone'
+                        : b.reason}{' '}
+                  +{b.amount}
+                </Badge>
+              ))}
+            </motion.div>
+          )}
+
+          <div className="space-y-4 rounded-xl border border-white/[0.06] bg-black/30 p-5">
+            <div>
+              <span className="text-[11px] font-medium text-text-3">Explanation</span>
+              <p className="mt-2 text-sm italic leading-relaxed text-text-2">&ldquo;{explanation}&rdquo;</p>
             </div>
-
-            {(bonuses ?? []).length > 0 && (
-              <div className="flex flex-wrap justify-center gap-2">
-                {(bonuses ?? []).map((b, i) => (
-                  <Badge key={i} variant="secondary" size="sm" className="font-mono uppercase tracking-wide">
-                    {b.reason === 'first_try_bonus'
-                      ? 'First strike'
-                      : b.reason === 'fast_solve_bonus'
-                        ? 'Velocity'
-                        : b.reason.startsWith('streak_milestone')
-                          ? 'Milestone'
-                          : b.reason}{' '}
-                    +{b.amount}
-                  </Badge>
-                ))}
-              </div>
-            )}
-
-            <div className="space-y-4 rounded-xl border border-white/[0.06] bg-black/30 p-5">
-              <div>
-                <span className="text-[11px] font-medium text-text-3">Explanation</span>
-                <p className="mt-2 text-sm italic leading-relaxed text-text-2">&ldquo;{explanation}&rdquo;</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-3 border-t border-white/[0.06] pt-4">
-                <span className="font-mono text-[9px] font-medium text-text-4">Answer</span>
-                <span className="rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 font-mono text-sm font-semibold text-text-1">
-                  {answer}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <span className="font-mono text-[9px] font-medium text-text-4">Next daily reset</span>
-                <div className="mt-1">
-                  <CountdownTimer />
-                </div>
-              </div>
-              <Button size="lg" variant="primary" onClick={onClose} className="px-8">
-                Close
-              </Button>
+            <div className="flex flex-wrap items-center gap-3 border-t border-white/[0.06] pt-4">
+              <span className="font-mono text-[9px] font-medium text-text-4">Answer</span>
+              <span className="rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 font-mono text-sm font-semibold text-text-1">
+                {answer}
+              </span>
             </div>
           </div>
-        </motion.div>
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <span className="font-mono text-[9px] font-medium text-text-4">Next daily reset</span>
+              <div className="mt-1">
+                <CountdownTimer />
+              </div>
+            </div>
+            <Button size="lg" variant="primary" onClick={onClose} className="px-8">
+              Close
+            </Button>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

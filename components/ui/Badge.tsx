@@ -2,7 +2,7 @@ import React from 'react';
 
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info';
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'glow';
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   dot?: boolean;
@@ -22,16 +22,17 @@ export const Badge: React.FC<BadgeProps> = ({
     danger: 'bg-error/10 text-error ring-error/20',
     warning: 'bg-warning/10 text-warning ring-warning/20',
     info: 'bg-info/10 text-info ring-info/20',
+    glow: 'bg-primary/20 text-primary ring-primary/30 shadow-[0_0_20px_rgba(108,123,255,0.25)]',
   };
 
   const sizeStyles = {
-    sm: 'px-1.5 py-0.5 text-[10px]',
-    md: 'px-2 py-0.5 text-[11px]',
+    sm: 'px-2 py-0.5 text-[10px]',
+    md: 'px-2.5 py-0.5 text-[11px]',
     lg: 'px-3 py-1 text-[13px]',
   };
 
   const styles = [
-    'inline-flex items-center gap-1.5 rounded-lg font-semibold ring-1 ring-inset',
+    'inline-flex items-center gap-1.5 rounded-full font-semibold ring-1 ring-inset',
     variantStyles[variant],
     sizeStyles[size],
     className,
@@ -40,7 +41,7 @@ export const Badge: React.FC<BadgeProps> = ({
   return (
     <span className={styles}>
       {dot && (
-        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+        <span className={`w-1.5 h-1.5 rounded-full bg-current ${variant === 'glow' ? 'anim-pulse-soft' : 'opacity-70'}`} />
       )}
       {children}
     </span>

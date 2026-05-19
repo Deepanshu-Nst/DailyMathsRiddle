@@ -182,7 +182,7 @@ export default function ProgressCalendar({ solvedDates, days = 90, todayIST }: P
 
                     {/* Tooltip */}
                     {hovered === cell.date && cell.inRange && (
-                      <div className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-white/[0.08] bg-[#111111]/95 px-3 py-2 text-[11px] shadow-xl backdrop-blur-md transition-all">
+                      <div className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/[0.1] bg-[#111111]/97 px-3 py-2 text-[11px] shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04)] backdrop-blur-xl anim-fade-up" style={{ animationDuration: '0.15s' }}>
                         <span className="font-semibold text-text-1">
                           {new Date(cell.date + 'T00:00:00').toLocaleDateString('en-US', {
                             weekday: 'short',
