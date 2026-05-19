@@ -155,9 +155,22 @@ body {
       var(--elevation-3);
   }
 
+  .card-static {
+    background: var(--gradient-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--elevation-1);
+  }
+
   .card-sunken {
     background-color: rgba(0, 0, 0, 0.35);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  .card-inset {
+    background-color: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
   }
 
   /* Premium spotlight card — animated gradient border, used for podium/featured */
@@ -171,6 +184,27 @@ body {
       var(--elevation-3),
       0 0 40px rgba(108, 123, 255, 0.12);
     overflow: hidden;
+  }
+
+  .card-interactive {
+    background: var(--gradient-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--elevation-1);
+    cursor: pointer;
+    transition:
+      box-shadow 0.2s var(--ease-out-expo),
+      border-color 0.2s ease,
+      transform 0.2s var(--ease-out-expo);
+  }
+
+  .card-interactive:hover {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      var(--elevation-2),
+      0 0 0 1px var(--color-accent-glow-subtle);
+    border-color: var(--color-border-dark);
+    transform: translateY(-2px);
   }
 
   .card-spotlight::before {
@@ -408,21 +442,6 @@ body {
     border-radius: var(--radius-full);
     background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
     transition: width 0.8s var(--ease-out-expo);
-    box-shadow: 0 0 16px rgba(108, 123, 255, 0.3);
-    position: relative;
-  }
-
-  .progress-fill::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--color-primary-hover);
-    box-shadow: 0 0 12px rgba(108, 123, 255, 0.5);
   }
 
   /* Stat number — large display numbers */
@@ -610,12 +629,28 @@ body {
     background-clip: text;
   }
 
+  .text-highlight {
+    color: var(--color-primary);
+  }
+
+  .text-accent {
+    color: var(--color-primary-hover);
+  }
+
   .gradient-text-hero {
     background: linear-gradient(135deg, var(--color-text-1) 0%, #A8B1FF 50%, var(--color-text-1) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     background-size: 200% 100%;
+  }
+
+  .transition-standard {
+    transition: all 0.2s var(--ease-smooth);
+  }
+
+  .transition-color {
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
   }
 
   .surface-grain {

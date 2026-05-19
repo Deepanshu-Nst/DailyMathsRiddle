@@ -2,7 +2,7 @@ import React from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
-  inputSize?: 'sm' | 'md' | 'lg';
+  inputSize?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -11,6 +11,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       sm: 'text-[13px] py-2 px-3',
       md: '',
       lg: 'input-lg',
+      xl: 'text-[18px] py-4 px-5 rounded-[var(--radius-xl)]',
     };
 
     const styles = [

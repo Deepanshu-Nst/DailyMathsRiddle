@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import StreakChip from '@/components/StreakChip';
@@ -23,6 +23,7 @@ export interface HeaderProps {
 
 export default function Header({ user, profile }: HeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { session } = useChallengeSession();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [showUsernameModal, setShowUsernameModal] = useState(!!user && !profile?.username);
@@ -57,6 +58,8 @@ export default function Header({ user, profile }: HeaderProps) {
     { href: '/streak', label: 'Progress' },
   ];
 
+  const isActive = (href: string) => pathname?.startsWith(href);
+
   return (
     <>
       <Topbar>
@@ -70,22 +73,31 @@ export default function Header({ user, profile }: HeaderProps) {
               <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_24px_rgba(108,123,255,0.5)] group-hover:rotate-[-3deg]">
                 ∑
               </div>
-              <span className="font-display text-xl tracking-tight text-text-1">
+              <span className="text-xl font-semibold tracking-tight text-text-1">
                 AdvaitAI
               </span>
             </div>
 
             <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <Link 
-                  key={link.href}
-                  href={link.href} 
-                  className="relative px-3.5 py-2 text-[13px] font-medium text-text-2 rounded-lg hover:text-text-1 hover:bg-white/[0.04] transition-all group"
-                >
-                  {link.label}
-                  <span className="absolute bottom-0.5 left-3.5 right-3.5 h-[2px] origin-left scale-x-0 bg-primary rounded-full transition-transform duration-300 group-hover:scale-x-100" />
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const active = isActive(link.href);
+                return (
+                  <Link 
+                    key={link.href}
+                    href={link.href} 
+                    className={`relative px-3.5 py-2 text-[13px] font-medium rounded-lg transition-all ${
+                      active 
+                        ? 'text-text-1 bg-white/[0.06]' 
+                        : 'text-text-2 hover:text-text-1 hover:bg-white/[0.04]'
+                    }`}
+                  >
+                    {link.label}
+                    {active && (
+                      <span className="absolute bottom-0.5 left-3.5 right-3.5 h-[2px] bg-primary rounded-full" />
+                    )}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
 
@@ -167,16 +179,23 @@ export default function Header({ user, profile }: HeaderProps) {
               className="fixed top-16 left-0 right-0 z-30 border-b border-white/[0.06] bg-[rgba(8,8,12,0.97)] backdrop-blur-2xl md:hidden"
             >
               <Container className="py-4 flex flex-col gap-1">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center px-4 py-3 text-[15px] font-medium text-text-2 hover:text-text-1 hover:bg-white/[0.04] rounded-xl transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+                {navLinks.map((link) => {
+                  const active = isActive(link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center px-4 py-3 text-[15px] font-medium rounded-xl transition-colors ${
+                        active 
+                          ? 'text-text-1 bg-white/[0.06]' 
+                          : 'text-text-2 hover:text-text-1 hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
                 <div className="mt-2 pt-3 border-t border-white/[0.06] flex flex-col gap-2">
                   {user ? (
                     <>

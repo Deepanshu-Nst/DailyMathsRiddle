@@ -2,7 +2,7 @@ import React from 'react';
 
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'glow';
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'glow' | 'outline';
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   dot?: boolean;
@@ -16,13 +16,14 @@ export const Badge: React.FC<BadgeProps> = ({
   dot = false,
 }) => {
   const variantStyles = {
-    primary: 'bg-primary/15 text-primary ring-primary/20 shadow-[0_0_12px_rgba(108,123,255,0.15)]',
+    primary: 'bg-primary/15 text-primary ring-primary/20',
     secondary: 'bg-bg-muted text-text-2 ring-border',
     success: 'bg-success/10 text-success ring-success/20',
     danger: 'bg-error/10 text-error ring-error/20',
     warning: 'bg-warning/10 text-warning ring-warning/20',
     info: 'bg-info/10 text-info ring-info/20',
-    glow: 'bg-primary/20 text-primary ring-primary/30 shadow-[0_0_20px_rgba(108,123,255,0.25)]',
+    glow: 'bg-primary/20 text-primary ring-primary/30 shadow-[0_0_16px_rgba(108,123,255,0.15)]',
+    outline: 'bg-transparent text-text-2 ring-border/[0.6]',
   };
 
   const sizeStyles = {
@@ -32,7 +33,7 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const styles = [
-    'inline-flex items-center gap-1.5 rounded-full font-semibold ring-1 ring-inset',
+    'inline-flex items-center gap-1.5 rounded-full font-semibold ring-1 ring-inset transition-standard',
     variantStyles[variant],
     sizeStyles[size],
     className,
@@ -41,7 +42,7 @@ export const Badge: React.FC<BadgeProps> = ({
   return (
     <span className={styles}>
       {dot && (
-        <span className={`w-1.5 h-1.5 rounded-full bg-current ${variant === 'glow' ? 'anim-pulse-soft' : 'opacity-70'}`} />
+        <span className={`w-1.5 h-1.5 rounded-full bg-current ${variant === 'glow' ? 'opacity-80' : 'opacity-70'}`} />
       )}
       {children}
     </span>

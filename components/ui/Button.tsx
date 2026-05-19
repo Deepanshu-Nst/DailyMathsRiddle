@@ -13,11 +13,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = 'btn';
 
     const variantStyles = {
-      primary: 'bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-[0_1px_0_rgba(255,255,255,0.12)_inset,0_12px_40px_rgba(108,123,255,0.25)] hover:shadow-[0_1px_0_rgba(255,255,255,0.15)_inset,0_16px_48px_rgba(108,123,255,0.4)] hover:scale-[1.02]',
-      secondary: 'bg-white/[0.05] text-text-1 border border-white/[0.1] hover:bg-white/[0.08] active:bg-white/[0.06] hover:border-white/[0.15] hover:scale-[1.01]',
+      primary: 'bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-[0_1px_0_rgba(255,255,255,0.12)_inset,0_8px_24px_rgba(108,123,255,0.2)] hover:shadow-[0_1px_0_rgba(255,255,255,0.15)_inset,0_12px_32px_rgba(108,123,255,0.3)]',
+      secondary: 'bg-white/[0.05] text-text-1 border border-white/[0.1] hover:bg-white/[0.08] active:bg-white/[0.06] hover:border-white/[0.15]',
       ghost: 'bg-transparent text-text-2 hover:text-text-1 hover:bg-white/[0.04]',
-      danger: 'bg-error text-white hover:bg-red-600 shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_rgba(248,113,113,0.2)]',
-      success: 'bg-success text-white hover:bg-green-600 shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_rgba(52,211,153,0.2)]',
+      danger: 'bg-error text-white hover:bg-red-600 shadow-[0_1px_0_rgba(255,255,255,0.1)_inset,0_8px_24px_rgba(248,113,113,0.15)]',
+      success: 'bg-success text-white hover:bg-green-600 shadow-[0_1px_0_rgba(255,255,255,0.1)_inset,0_8px_24px_rgba(52,211,153,0.15)]',
     };
 
     const sizeStyles = {

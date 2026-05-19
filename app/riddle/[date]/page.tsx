@@ -12,20 +12,20 @@ import Link from 'next/link';
 import { ChallengeModal } from '@/components/riddles/ChallengeModal';
 import { Difficulty, Riddle, ChallengeState } from '@/types';
 import { getOfficialDailyDate } from '@/lib/timezone';
-import { Container } from '@/components/ui/Layout';
+import { Container, Divider } from '@/components/ui/Layout';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
-import { Skeleton } from '@/components/ui/Feedback';
+import { Skeleton, SkeletonText, EmptyState } from '@/components/ui/Feedback';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
-import { ChevronLeft, Share2, Flag, Clock, Target, Hash, Sparkles, Trophy, Flame } from 'lucide-react';
-import { spring, fadeUp, staggerContainer } from '@/lib/motion';
+import { ChevronLeft, Share2, Flag, Clock, Trophy, Sparkles, Target, Hash } from 'lucide-react';
+import { spring } from '@/lib/motion';
 import { useChallengeSession } from '@/components/providers/ChallengeSessionProvider';
 
 function activityCellClass(difficulty: Difficulty) {
-  if (difficulty === 'easy') return 'bg-emerald-400/90 shadow-[0_0_12px_rgba(52,211,153,0.35)]';
-  if (difficulty === 'hard') return 'bg-rose-400/90 shadow-[0_0_12px_rgba(251,113,133,0.35)]';
-  return 'bg-primary/90 shadow-[0_0_14px_rgba(108,123,255,0.4)]';
+  if (difficulty === 'easy') return 'bg-emerald-400/90';
+  if (difficulty === 'hard') return 'bg-rose-400/90';
+  return 'bg-primary/90';
 }
 
 function SolvePage() {
@@ -50,7 +50,15 @@ function SolvePage() {
   const [explanation, setExplanation] = useState('');
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
-  const sessionIdRef = useRef<string>('');
+  const [sessionId] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    let sid = localStorage.getItem('advaitai_session_id');
+    if (!sid) {
+      sid = crypto.randomUUID();
+      localStorage.setItem('advaitai_session_id', sid);
+    }
+    return sid;
+  });
   const [mode] = useState<'daily' | 'extra'>('daily');
 
   const [xpAwarded, setXpAwarded] = useState<number | null>(null);
@@ -87,13 +95,6 @@ function SolvePage() {
   }, [difficulty, dateParam]);
 
   useEffect(() => {
-    let sid = localStorage.getItem('advaitai_session_id');
-    if (!sid) {
-      sid = crypto.randomUUID();
-      localStorage.setItem('advaitai_session_id', sid);
-    }
-    sessionIdRef.current = sid;
-
     fetchRiddle();
     solveStartedAt.current = new Date().toISOString();
   }, [fetchRiddle]);
@@ -185,10 +186,9 @@ function SolvePage() {
     }
   };
 
-
   const isCompleted = challengeState === 'SOLVED' || challengeState === 'ABANDONED';
-
   const recentActivity = session?.activityMap?.slice(0, 14) ?? [];
+  const solveStep = isCompleted ? 3 : challengeState === 'SUBMITTING' ? 2 : attemptCount > 0 ? 2 : 1;
 
   return (
     <Container wide className="pb-24 pt-6 lg:pt-10">
@@ -204,7 +204,7 @@ function SolvePage() {
             <button
               type="button"
               onClick={() => router.push('/')}
-              className="group flex items-center font-mono text-[12px] font-medium text-text-3 transition-colors hover:text-text-1"
+              className="group flex items-center font-mono text-[12px] font-medium text-text-3 transition-color hover:text-text-1"
             >
               <ChevronLeft size={16} className="mr-1 transition-transform group-hover:-translate-x-0.5" />
               Back
@@ -225,25 +225,44 @@ function SolvePage() {
           {/* LEFT — classified workspace */}
           <motion.div layout className="min-w-0 space-y-6">
             <div className="content-panel relative min-h-[480px] px-8 py-10 sm:px-10 sm:py-12 lg:min-h-[520px]">
-              {/* Subtle animated gradient */}
               <div className="absolute inset-0 rounded-[inherit] bg-gradient-to-br from-primary/[0.03] via-transparent to-transparent pointer-events-none" />
               
+              {/* Step indicator */}
+              {!loading && riddle && (
+                <div className="flex items-center gap-2 mb-8 relative z-10">
+                  {[1, 2, 3].map((step) => (
+                    <div key={step} className="flex items-center gap-2">
+                      <div className={`h-1.5 w-1.5 rounded-full transition-colors ${
+                        solveStep >= step ? 'bg-primary' : 'bg-white/[0.1]'
+                      }`} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {loading ? (
                 <div className="flex w-full flex-col gap-5 relative z-10">
-                  <Skeleton className="h-6 w-28 rounded-md" />
-                  <Skeleton className="mt-4 h-8 w-full rounded-md" />
-                  <Skeleton className="h-8 w-[92%] rounded-md" />
-                  <Skeleton className="h-8 w-[68%] rounded-md" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-5 w-16 rounded-md" />
+                    <Skeleton className="h-5 w-20 rounded-md" />
+                  </div>
+                  <SkeletonText lines={4} className="mt-4" />
                   <div className="mt-auto pt-12">
                     <Skeleton className="h-14 w-full rounded-xl" />
                   </div>
                 </div>
               ) : error ? (
-                <div className="flex h-full min-h-[320px] flex-col items-center justify-center rounded-xl border border-error/20 bg-error/[0.05] p-8 text-center text-error relative z-10">
-                  <p className="font-semibold">{error}</p>
-                  <Button variant="secondary" size="sm" className="mt-4" onClick={() => window.location.reload()}>
-                    Reload
-                  </Button>
+                <div className="flex h-full min-h-[320px] flex-col items-center justify-center relative z-10">
+                  <EmptyState
+                    title="Failed to load riddle"
+                    description={error}
+                    variant="inline"
+                    action={
+                      <Button variant="secondary" size="sm" onClick={() => window.location.reload()}>
+                        Reload
+                      </Button>
+                    }
+                  />
                 </div>
               ) : riddle ? (
                 <div className="relative flex h-full flex-col z-10">
@@ -263,7 +282,7 @@ function SolvePage() {
                     </span>
                   </div>
 
-                  <h2 className="font-display text-balance text-[clamp(1.75rem,4vw,2.5rem)] leading-snug text-text-1">
+                  <h2 className="text-balance text-[clamp(1.65rem,4vw,2.35rem)] font-semibold leading-snug tracking-tight text-text-1">
                     {riddle.question}
                   </h2>
 
@@ -288,7 +307,7 @@ function SolvePage() {
                           <button
                             type="button"
                             onClick={() => setShowGiveUpModal(true)}
-                            className="shrink-0 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-text-4 transition-colors hover:text-text-2"
+                            className="shrink-0 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-text-4 transition-color hover:text-text-2"
                           >
                             Show answer
                           </button>
@@ -305,7 +324,7 @@ function SolvePage() {
                         <div className="flex items-start gap-4 rounded-xl border border-white/[0.08] bg-black/35 p-4 sm:items-center">
                           <div
                             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white ${
-                              challengeState === 'SOLVED' ? 'bg-success shadow-[0_0_16px_rgba(52,211,153,0.3)]' : 'bg-text-4'
+                              challengeState === 'SOLVED' ? 'bg-success' : 'bg-text-4'
                             }`}
                           >
                             {challengeState === 'SOLVED' ? <Target size={18} /> : <Hash size={18} />}
@@ -318,7 +337,7 @@ function SolvePage() {
                           </div>
                         </div>
 
-                        <div className="rounded-xl border border-white/[0.06] bg-black/25 p-5 text-sm leading-relaxed">
+                        <div className="card-inset p-5 text-sm leading-relaxed">
                           <span className="font-mono text-[10px] font-medium text-text-4">Explanation</span>
                           <p className="mt-3 whitespace-pre-wrap text-text-2">{explanation}</p>
                         </div>
@@ -368,17 +387,19 @@ function SolvePage() {
               </div>
             </div>
 
+            <Divider />
+
             <div className="grid grid-cols-2 gap-4">
               <div className="card-metric rounded-xl p-4">
                 <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Streak</span>
-                <p className="mt-1.5 font-display text-3xl tabular-nums text-text-1">
+                <p className="mt-1.5 text-[clamp(1.5rem,3vw,2rem)] font-semibold tabular-nums text-text-1">
                   <AnimatedNumber value={session?.streak.currentStreak ?? 0} />
                 </p>
                 <p className="mt-0.5 text-[10px] text-text-3">consecutive dailies</p>
               </div>
               <div className="card-metric rounded-xl p-4">
                 <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Total XP</span>
-                <p className="mt-1.5 font-display text-3xl tabular-nums text-text-1">
+                <p className="mt-1.5 text-[clamp(1.5rem,3vw,2rem)] font-semibold tabular-nums text-text-1">
                   <AnimatedNumber value={session?.streak.totalXP ?? 0} />
                 </p>
                 <p className="mt-0.5 text-[10px] text-text-3">lifetime</p>
@@ -390,16 +411,22 @@ function SolvePage() {
                 <Trophy size={14} />
                 <span className="text-[11px] font-semibold text-text-2">Global rank (XP)</span>
               </div>
-              <p className="mt-2 font-display text-4xl text-text-1">{rank != null ? `#${rank}` : '—'}</p>
+              <p className="mt-2 text-[clamp(1.75rem,3vw,2.25rem)] font-semibold tabular-nums text-text-1">
+                {rank != null ? `#${rank}` : '—'}
+              </p>
             </div>
 
-            <div className="flex items-center justify-between gap-3 border-y border-white/[0.06] py-4">
+            <Divider />
+
+            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-text-3">
                 <Clock size={14} />
                 <span className="text-[12px] font-medium text-text-2">Next daily reset</span>
               </div>
               <CountdownTimer minimal />
             </div>
+
+            <Divider />
 
             <div className="flex flex-col gap-2">
               <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Quick actions</span>
@@ -427,38 +454,46 @@ function SolvePage() {
               </div>
             </div>
 
-            {riddle && !loading && !error && sessionIdRef.current && (
-              <div className="border-t border-white/[0.06] pt-2">
-                <div className="mb-3 flex items-center gap-2 text-text-4">
-                  <Sparkles size={12} />
-                  <span className="font-mono text-[9px] uppercase tracking-[0.14em]">Practice Mode</span>
+            {riddle && !loading && !error && sessionId && (
+              <>
+                <Divider />
+                <div>
+                  <div className="mb-3 flex items-center gap-2 text-text-4">
+                    <Sparkles size={12} />
+                    <span className="font-mono text-[9px] uppercase tracking-[0.14em]">Practice Mode</span>
+                  </div>
+                  <Link href="/practice">
+                    <Button variant="primary" size="sm" className="w-full gap-2">
+                      <Target size={14} />
+                      Continue to Practice
+                    </Button>
+                  </Link>
+                  <p className="mt-3 text-center text-[10px] text-text-4 leading-relaxed">
+                    Earn XP without affecting your daily streak.
+                  </p>
                 </div>
-                <Link href="/practice">
-                  <Button variant="primary" size="sm" className="w-full gap-2">
-                    <Target size={14} />
-                    Continue to Practice
-                  </Button>
-                </Link>
-                <p className="mt-3 text-center text-[10px] text-text-4 leading-relaxed">
-                  Earn XP without affecting your daily streak.
-                </p>
-              </div>
+              </>
             )}
 
-            <div>
-              <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Activity</span>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {recentActivity.map((entry) => (
-                  <motion.div
-                    key={entry.date}
-                    title={entry.date}
-                    whileHover={{ scale: 1.2 }}
-                    className={`h-3 w-3 rounded-sm transition-shadow ${activityCellClass(entry.difficulty)}`}
-                  />
-                ))}
-                {recentActivity.length === 0 && <span className="text-[12px] text-text-4">No solves in window</span>}
-              </div>
-            </div>
+            {session && (
+              <>
+                <Divider />
+                <div>
+                  <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Activity</span>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {recentActivity.map((entry) => (
+                      <motion.div
+                        key={entry.date}
+                        title={entry.date}
+                        whileHover={{ scale: 1.2 }}
+                        className={`h-3 w-3 rounded-sm transition-shadow ${activityCellClass(entry.difficulty)}`}
+                      />
+                    ))}
+                    {recentActivity.length === 0 && <span className="text-[12px] text-text-4">No solves in window</span>}
+                  </div>
+                </div>
+              </>
+            )}
           </motion.aside>
         </main>
       </LayoutGroup>

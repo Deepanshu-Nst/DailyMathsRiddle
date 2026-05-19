@@ -3,12 +3,13 @@ import React from 'react';
 interface TableProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   striped?: boolean;
+  compact?: boolean;
 }
 
-export const Table: React.FC<TableProps> = ({ children, className, striped, ...props }) => {
+export const Table: React.FC<TableProps> = ({ children, className, striped, compact, ...props }) => {
   return (
     <div className={['w-full overflow-x-auto', className].filter(Boolean).join(' ')} {...props}>
-      <table className={['w-full text-left border-collapse', striped ? 'table-striped' : ''].filter(Boolean).join(' ')}>
+      <table className={['w-full text-left border-collapse', striped ? 'table-striped' : '', compact ? 'text-[12px]' : ''].filter(Boolean).join(' ')}>
         {children}
       </table>
     </div>
@@ -27,7 +28,7 @@ export const TableBody: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> 
 
 export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement> & { hover?: boolean }> = ({ children, className, hover = true, ...props }) => (
   <tr className={[
-    'transition-all duration-200 relative',
+    'transition-standard',
     hover ? 'hover:bg-white/[0.03] hover:shadow-[inset_3px_0_0_var(--color-primary)]' : '',
     className,
   ].filter(Boolean).join(' ')} {...props}>

@@ -5,14 +5,14 @@ import { motion } from 'framer-motion';
 import ProgressCalendar from '@/components/ProgressCalendar';
 import CountdownTimer from '@/components/CountdownTimer';
 import type { UserStats } from '@/types/gamification';
-import { Container, PageHeader } from '@/components/ui/Layout';
+import { Container, PageHeader, Divider } from '@/components/ui/Layout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { GlowOrb } from '@/components/ui/GlowOrb';
 import { staggerContainer, fadeUp, heroReveal, slideUp, viewReveal, spring } from '@/lib/motion';
-import { Flame, Target, Clock, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Flame, Target, Clock, CheckCircle2, ArrowRight, Trophy, Zap } from 'lucide-react';
 
 export default function StreakContent({
   userStats,
@@ -28,7 +28,7 @@ export default function StreakContent({
 
   const currentStreak = userStats?.current_streak ?? 0;
   const bestStreak = userStats?.best_streak ?? 0;
-  const totalSolved = userStats?.riddles_solved ?? 0;
+  const totalXP = userStats?.total_xp ?? 0;
   const isSolved = String(userStats?.last_solved_date ?? '').slice(0, 10) === today;
   const pct = bestStreak > 0
     ? Math.min(100, Math.round((currentStreak / bestStreak) * 100))
@@ -38,9 +38,14 @@ export default function StreakContent({
     ? (userStats.total_attempts > 0 ? Math.round((userStats.correct_attempts / userStats.total_attempts) * 100) : null)
     : null;
 
+  const hasData = currentStreak > 0 || totalXP > 0;
+
+  const circumference = 2 * Math.PI * 54;
+  const offset = circumference - (pct / 100) * circumference;
+
   return (
     <Container wide className="pt-12 pb-24 lg:pt-16 lg:pb-32 relative overflow-hidden">
-      <GlowOrb color="rgba(108, 123, 255, 1)" size={600} position="top-center" intensity={0.08} />
+      <GlowOrb color="rgba(108, 123, 255, 1)" size={600} position="top-center" intensity={0.06} />
 
       <motion.div
         variants={staggerContainer}
@@ -94,84 +99,108 @@ export default function StreakContent({
           </Card>
         </motion.div>
 
-        {/* Stats Grid */}
-        <motion.div variants={fadeUp}>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Card variant="metric" padding="md" className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Flame size={14} className="text-primary" />
-                <span className="label text-text-4">Current streak</span>
+        {hasData ? (
+          <>
+            {/* Stats Grid with Circle Progress */}
+            <motion.div variants={fadeUp}>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <Card variant="metric" padding="md" className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Flame size={14} className="text-primary" />
+                    <span className="label text-text-4">Current streak</span>
+                  </div>
+                  <AnimatedNumber value={currentStreak} className="text-[clamp(28px,4vw,38px)] font-semibold tabular-nums text-text-1" />
+                  <span className="text-[10px] text-text-3 font-mono">days</span>
+                </Card>
+                <Card variant="metric" padding="md" className="flex flex-col gap-2">
+                  <span className="label text-text-4">Best streak</span>
+                  <AnimatedNumber value={bestStreak} className="text-[clamp(28px,4vw,38px)] font-semibold tabular-nums text-text-2" />
+                  <span className="text-[10px] text-text-3 font-mono">days</span>
+                </Card>
+                <Card variant="metric" padding="md" className="flex flex-col gap-2">
+                  <span className="label text-text-4">Total XP</span>
+                  <AnimatedNumber value={totalXP} className="text-[clamp(28px,4vw,38px)] font-semibold tabular-nums text-text-2" />
+                </Card>
+                <Card variant="metric" padding="md" className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Target size={14} className="text-text-3" />
+                    <span className="label text-text-4">Accuracy</span>
+                  </div>
+                  <span className="text-[clamp(28px,4vw,38px)] font-semibold tabular-nums text-text-2">
+                    {accuracy !== null ? `${accuracy}%` : '—'}
+                  </span>
+                </Card>
               </div>
-              <AnimatedNumber value={currentStreak} className="font-display text-[clamp(28px,4vw,38px)] tabular-nums text-text-1" />
-              <span className="text-[10px] text-text-3 font-mono">days</span>
-            </Card>
-            <Card variant="metric" padding="md" className="flex flex-col gap-2">
-              <span className="label text-text-4">Best streak</span>
-              <AnimatedNumber value={bestStreak} className="font-display text-[clamp(28px,4vw,38px)] tabular-nums text-text-2" />
-              <span className="text-[10px] text-text-3 font-mono">days</span>
-            </Card>
-            <Card variant="metric" padding="md" className="flex flex-col gap-2">
-              <span className="label text-text-4">Total XP</span>
-              <AnimatedNumber value={userStats?.total_xp ?? 0} className="font-display text-[clamp(28px,4vw,38px)] tabular-nums text-text-2" />
-            </Card>
-            <Card variant="metric" padding="md" className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Target size={14} className="text-text-3" />
-                <span className="label text-text-4">Accuracy</span>
-              </div>
-              <span className="font-display text-[clamp(28px,4vw,38px)] tabular-nums text-text-2">
-                {accuracy !== null ? `${accuracy}%` : '—'}
-              </span>
-            </Card>
-          </div>
-        </motion.div>
+            </motion.div>
 
-        {/* Streak Progress Bar */}
-        {bestStreak > 0 && (
+            {/* Streak Progress Bar */}
+            {bestStreak > 0 && (
+              <motion.div variants={fadeUp}>
+                <Card padding="lg" variant="default" className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <span className="label text-text-4">Streak progress</span>
+                    <span className="font-mono text-[12px] text-text-2">
+                      {currentStreak} / {bestStreak} days
+                    </span>
+                  </div>
+                  <div className="progress-track">
+                    <motion.div
+                      className="progress-fill"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+                    />
+                  </div>
+                  {currentStreak >= bestStreak && bestStreak > 0 && (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="glow" size="sm" dot>Matching personal best</Badge>
+                    </div>
+                  )}
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Activity Calendar */}
+            <motion.div
+              {...viewReveal}
+              variants={slideUp}
+              className="flex flex-col gap-6"
+            >
+              <Divider />
+              <div>
+                <h2 className="text-[22px] font-semibold tracking-tight text-text-1 mb-2">
+                  The last 30 days
+                </h2>
+                <p className="text-[14px] text-text-3">
+                  Consistency is the foundation of mastery.
+                </p>
+              </div>
+              <Card padding="lg" variant="glass">
+                <ProgressCalendar solvedDates={solvedDates.map(date => ({ date, difficulty: 'medium' as const, hintsUsed: 0 }))} todayIST={todayIST} />
+              </Card>
+            </motion.div>
+          </>
+        ) : (
+          /* Empty state for new users */
           <motion.div variants={fadeUp}>
-            <Card padding="lg" className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <span className="label text-text-4">Streak progress</span>
-                <span className="font-mono text-[12px] text-text-2">
-                  {currentStreak} / {bestStreak} days
-                </span>
-              </div>
-              <div className="progress-track">
-                <motion.div
-                  className="progress-fill"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${pct}%` }}
-                  transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-                />
-              </div>
-              {currentStreak >= bestStreak && bestStreak > 0 && (
-                <div className="flex items-center gap-2">
-                  <Badge variant="glow" size="sm" dot>Matching personal best</Badge>
-                </div>
-              )}
+            <Card variant="inset" padding="lg" className="text-center py-16">
+              <Trophy size={48} className="mx-auto mb-5 text-text-4" />
+              <h2 className="text-xl font-semibold text-text-1">No progress yet</h2>
+              <p className="mt-2 text-sm text-text-3 max-w-sm mx-auto">
+                Your streak, XP, and activity chart will appear here once you start solving challenges.
+              </p>
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => router.push('/')}
+                className="mt-6 gap-2"
+              >
+                Solve your first challenge
+                <Zap size={14} />
+              </Button>
             </Card>
           </motion.div>
         )}
-
-        {/* Activity Calendar */}
-        <motion.div
-          {...viewReveal}
-          variants={slideUp}
-          className="flex flex-col gap-6"
-        >
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-          <div>
-            <h2 className="font-display text-[22px] tracking-tight text-text-1 mb-2">
-              The last 30 days
-            </h2>
-            <p className="text-[14px] text-text-3">
-              Consistency is the foundation of mastery.
-            </p>
-          </div>
-          <Card padding="lg" variant="glass">
-            <ProgressCalendar solvedDates={solvedDates.map(date => ({ date, difficulty: 'medium' as const, hintsUsed: 0 }))} todayIST={todayIST} />
-          </Card>
-        </motion.div>
       </motion.div>
     </Container>
   );

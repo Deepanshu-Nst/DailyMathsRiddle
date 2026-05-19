@@ -8,14 +8,16 @@ interface TabsProps {
   activeTab: string;
   onChange: (id: string) => void;
   className?: string;
-  variant?: 'pills' | 'underline' | 'contained';
+  variant?: 'pills' | 'underline' | 'contained' | 'segmented';
 }
 
 export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className, variant = 'pills' }) => {
-  if (variant === 'contained') {
+  if (variant === 'contained' || variant === 'segmented') {
+    const isSegmented = variant === 'segmented';
     return (
       <div className={[
         'inline-flex items-center gap-1 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-1.5',
+        isSegmented ? 'w-full' : '',
         className,
       ].filter(Boolean).join(' ')}>
         {tabs.map((tab) => {
@@ -25,7 +27,8 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className
               key={tab.id}
               onClick={() => onChange(tab.id)}
               className={[
-                'relative flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-xl transition-colors',
+                'relative flex items-center justify-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-xl transition-colors',
+                isSegmented ? 'flex-1' : '',
                 isActive
                   ? 'text-bg'
                   : 'text-text-3 hover:text-text-2',
@@ -33,7 +36,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className
             >
               {isActive && (
                 <motion.div
-                  layoutId="tab-contained"
+                  layoutId={`tab-${variant}-${tab.id}`}
                   className="absolute inset-0 rounded-xl bg-text-1 shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
                   transition={{ type: 'spring', damping: 28, stiffness: 320 }}
                 />

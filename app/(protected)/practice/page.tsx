@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnswerInput from '@/components/AnswerInput';
@@ -8,11 +8,12 @@ import HintLadder from '@/components/HintLadder';
 import CelebrationModal from '@/components/CelebrationModal';
 import GenerateMore from '@/components/riddle/GenerateMore';
 import { Riddle, ChallengeState } from '@/types';
-import { Container } from '@/components/ui/Layout';
-import { Button } from '@/components/ui/Button';
+import { Container, Divider } from '@/components/ui/Layout';
 import { Badge } from '@/components/ui/Badge';
-import { ChevronLeft, Target, Hash, RotateCw } from 'lucide-react';
+import { Tabs } from '@/components/ui/Tabs';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { useChallengeSession } from '@/components/providers/ChallengeSessionProvider';
+import { ChevronLeft, Target, RotateCw } from 'lucide-react';
 
 export default function PracticePage() {
   const router = useRouter();
@@ -29,27 +30,23 @@ export default function PracticePage() {
   const [attemptCount, setAttemptCount] = useState(0);
   const [xpAwarded, setXpAwarded] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  // Monotonically increasing key — guarantees React DOM remount on each new riddle
   const [riddleKey, setRiddleKey] = useState(0);
   
-  const sessionIdRef = useRef<string>('');
   const solveStartedAt = useRef<string | null>(null);
 
-  useEffect(() => {
+  const [sessionId] = useState(() => {
+    if (typeof window === 'undefined') return '';
     let sid = localStorage.getItem('advaitai_session_id');
     if (!sid) {
       sid = crypto.randomUUID();
       localStorage.setItem('advaitai_session_id', sid);
     }
-    sessionIdRef.current = sid;
-  }, []);
+    return sid;
+  });
 
   const handleNewRiddle = (newRiddle: Partial<Riddle>) => {
-    // Set riddle state FIRST
     setRiddle(newRiddle);
-    // Increment key to force DOM remount — the displayed content MUST change
     setRiddleKey(prev => prev + 1);
-    // Reset all solve state
     setIsGenerating(false);
     setAnswer('');
     setChallengeState('AVAILABLE');
@@ -105,6 +102,8 @@ export default function PracticePage() {
     }
   };
 
+  const isCompleted = challengeState === 'SOLVED';
+
   return (
     <Container wide className="pb-24 pt-6 lg:pt-10">
       <header className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-center sm:justify-between">
@@ -112,7 +111,7 @@ export default function PracticePage() {
           <button
             type="button"
             onClick={() => router.push('/')}
-            className="group flex items-center font-mono text-[12px] font-medium text-text-3 transition-colors hover:text-text-1"
+            className="group flex items-center font-mono text-[12px] font-medium text-text-3 transition-color hover:text-text-1"
           >
             <ChevronLeft size={16} className="mr-1 transition-transform group-hover:-translate-x-0.5" />
             Back
@@ -128,33 +127,31 @@ export default function PracticePage() {
       <main className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
         {/* LEFT — Workspace */}
         <div className="min-w-0 space-y-6">
-          <div className="content-panel relative min-h-[480px] px-8 py-10 sm:px-10 sm:py-12 bg-bg-muted/80 backdrop-blur-xl border border-white/[0.08] shadow-[0_24px_80px_rgba(0,0,0,0.4)]">
+          <div className="content-panel relative min-h-[480px] px-8 py-10 sm:px-10 sm:py-12">
             {!riddle ? (
-              <div className="flex flex-col items-center justify-center h-full text-center py-20">
-                <Target size={48} className="text-text-4 mb-6 opacity-50" />
-                <h2 className="text-2xl font-display font-semibold mb-2">Practice Challenges</h2>
-                <p className="text-text-3 mb-8 max-w-sm">
+              <div className="flex flex-col items-center justify-center h-full text-center py-16">
+                <Target size={40} className="text-text-4 mb-4 opacity-50" />
+                <h2 className="text-xl font-semibold text-text-1 mb-2">Practice Challenges</h2>
+                <p className="text-text-3 mb-6 max-w-sm text-sm leading-relaxed">
                   Generate unlimited practice riddles to hone your skills and earn extra XP without affecting your daily streak.
                 </p>
-                <div className="flex items-center gap-2 mb-8 bg-black/20 p-2 rounded-lg border border-white/5">
-                  {(['easy', 'medium', 'hard'] as const).map(diff => (
-                    <button
-                      key={diff}
-                      onClick={() => setDifficulty(diff)}
-                      className={`px-4 py-1.5 rounded-md font-mono text-xs uppercase tracking-wider transition-all ${
-                        difficulty === diff
-                          ? 'bg-primary text-black font-bold shadow-sm'
-                          : 'text-text-4 hover:text-text-2 hover:bg-white/5'
-                      }`}
-                    >
-                      {diff}
-                    </button>
-                  ))}
+                <div className="mb-6 w-full max-w-xs">
+                  <label className="label mb-2 block text-text-4">Difficulty</label>
+                  <Tabs
+                    tabs={[
+                      { id: 'easy', label: 'Easy' },
+                      { id: 'medium', label: 'Medium' },
+                      { id: 'hard', label: 'Hard' },
+                    ]}
+                    activeTab={difficulty}
+                    onChange={(id) => setDifficulty(id as 'easy' | 'medium' | 'hard')}
+                    variant="segmented"
+                  />
                 </div>
-                {sessionIdRef.current && (
+                {sessionId && (
                   <div className="w-full max-w-xs">
                     <GenerateMore 
-                      sessionId={sessionIdRef.current} 
+                      sessionId={sessionId} 
                       difficulty={difficulty} 
                       onNewRiddle={handleNewRiddle} 
                       onStartGeneration={() => setIsGenerating(true)}
@@ -164,12 +161,11 @@ export default function PracticePage() {
                 )}
               </div>
             ) : isGenerating ? (
-              <div className="flex flex-col items-center justify-center h-full py-20">
-                <RotateCw size={32} className="text-primary animate-spin mb-4" />
+              <div className="flex flex-col items-center justify-center h-full py-16">
+                <RotateCw size={28} className="text-primary animate-spin mb-4" />
                 <p className="text-text-3 font-mono text-xs uppercase tracking-widest">Architecting Riddle...</p>
               </div>
             ) : (
-              /* KEY: riddleKey forces full DOM remount — the riddle MUST visibly change */
               <div key={riddleKey} className="relative flex h-full flex-col">
                 <div className="mb-8 flex flex-wrap items-center gap-2">
                   <Badge variant="info" size="sm" className="font-mono uppercase tracking-wider">
@@ -184,12 +180,12 @@ export default function PracticePage() {
                   </Badge>
                 </div>
 
-                <h2 className="font-display text-balance text-[clamp(1.75rem,4vw,2.5rem)] leading-snug text-text-1">
+                <h2 className="text-balance text-[clamp(1.65rem,4vw,2.35rem)] font-semibold leading-snug tracking-tight text-text-1">
                   {riddle.question}
                 </h2>
 
                 <div className="mt-auto border-t border-white/[0.06] pt-8">
-                  {challengeState !== 'SOLVED' ? (
+                  {!isCompleted ? (
                     <div className="flex flex-col gap-6">
                       <AnswerInput
                         value={answer}
@@ -220,7 +216,7 @@ export default function PracticePage() {
                           <p className="mt-1 font-mono text-lg font-semibold tracking-tight text-text-1">{correctAnswer}</p>
                         </div>
                       </div>
-                      <div className="rounded-xl border border-white/[0.06] bg-black/25 p-5 text-sm leading-relaxed">
+                      <div className="card-inset p-5 text-sm leading-relaxed">
                         <span className="font-mono text-[10px] font-medium text-text-4">Explanation</span>
                         <p className="mt-3 whitespace-pre-wrap text-text-2">{explanation}</p>
                       </div>
@@ -232,37 +228,52 @@ export default function PracticePage() {
           </div>
         </div>
 
-        {/* RIGHT — Next action */}
+        {/* RIGHT — Sidebar */}
         {riddle && (
           <aside className="glass-panel flex flex-col gap-6 p-6 sticky top-20 self-start">
-            <div className="flex flex-col gap-2 mb-4">
+            <div className="flex flex-col gap-2">
               <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Settings</span>
-              <div className="flex items-center gap-2 mt-2 bg-black/20 p-1.5 rounded-lg border border-white/5">
-                {(['easy', 'medium', 'hard'] as const).map(diff => (
-                  <button
-                    key={diff}
-                    onClick={() => setDifficulty(diff)}
-                    className={`flex-1 py-1.5 rounded-md font-mono text-[10px] uppercase tracking-wider transition-all ${
-                      difficulty === diff
-                        ? 'bg-primary text-black font-bold shadow-sm'
-                        : 'text-text-4 hover:text-text-2 hover:bg-white/5'
-                    }`}
-                  >
-                    {diff}
-                  </button>
-                ))}
+              <div className="mt-2">
+                <Tabs
+                  tabs={[
+                    { id: 'easy', label: 'Easy' },
+                    { id: 'medium', label: 'Medium' },
+                    { id: 'hard', label: 'Hard' },
+                  ]}
+                  activeTab={difficulty}
+                  onChange={(id) => setDifficulty(id as 'easy' | 'medium' | 'hard')}
+                  variant="segmented"
+                />
               </div>
             </div>
 
-            <div className="border-t border-white/[0.06] pt-4">
-              <GenerateMore 
-                sessionId={sessionIdRef.current} 
-                difficulty={difficulty} 
-                onNewRiddle={handleNewRiddle} 
-                onStartGeneration={() => setIsGenerating(true)}
-                currentRiddleId={riddle?.id}
-              />
+            <Divider />
+
+            {/* Session stats */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="card-metric rounded-xl p-3">
+                <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Streak</span>
+                <p className="mt-1 text-xl font-semibold tabular-nums text-text-1">
+                  <AnimatedNumber value={session?.streak.currentStreak ?? 0} />
+                </p>
+              </div>
+              <div className="card-metric rounded-xl p-3">
+                <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-text-4">Total XP</span>
+                <p className="mt-1 text-xl font-semibold tabular-nums text-text-1">
+                  <AnimatedNumber value={session?.streak.totalXP ?? 0} />
+                </p>
+              </div>
             </div>
+
+            <Divider />
+
+            <GenerateMore 
+              sessionId={sessionId} 
+              difficulty={difficulty} 
+              onNewRiddle={handleNewRiddle} 
+              onStartGeneration={() => setIsGenerating(true)}
+              currentRiddleId={riddle?.id}
+            />
           </aside>
         )}
       </main>

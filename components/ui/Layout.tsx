@@ -42,6 +42,10 @@ export const Section: React.FC<{ children: React.ReactNode; title?: string; subt
   </section>
 );
 
+export const Divider: React.FC<{ className?: string }> = ({ className }) => (
+  <div className={['h-px w-full bg-gradient-to-r from-transparent via-white/[0.08] to-transparent', className].filter(Boolean).join(' ')} />
+);
+
 /** Page wrapper with fade-in transition */
 export const PageWrapper: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
   <motion.div
@@ -70,7 +74,7 @@ export const PageHeader: React.FC<{
             {eyebrow}
           </p>
         )}
-        <h1 className="font-display text-balance text-[clamp(2rem,4vw,3rem)] leading-[1.05] text-text-1">
+        <h1 className="text-balance text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.05] tracking-tight text-text-1">
           {title}
         </h1>
         {description && (

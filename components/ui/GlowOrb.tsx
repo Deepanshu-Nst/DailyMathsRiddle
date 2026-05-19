@@ -1,15 +1,10 @@
 import React from 'react';
 
 interface GlowOrbProps {
-  /** Color of the orb glow. Default: primary accent */
   color?: string;
-  /** Size in pixels. Default: 600 */
   size?: number;
-  /** CSS position. Default: centered top */
   position?: 'top-center' | 'top-left' | 'top-right' | 'center' | 'bottom-center';
-  /** Opacity. Default: 0.15 */
   intensity?: number;
-  /** Enable floating animation */
   animated?: boolean;
   className?: string;
 }
@@ -22,16 +17,12 @@ const positionStyles: Record<string, string> = {
   'bottom-center': 'bottom-[-20%] left-1/2 -translate-x-1/2',
 };
 
-/**
- * Decorative animated gradient orb for hero backgrounds and section accents.
- * Pure CSS — no JavaScript overhead.
- */
 export function GlowOrb({
   color = 'rgba(108, 123, 255, 1)',
   size = 600,
   position = 'top-center',
   intensity = 0.15,
-  animated = true,
+  animated = false,
   className,
 }: GlowOrbProps) {
   return (

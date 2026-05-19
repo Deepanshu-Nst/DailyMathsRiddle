@@ -1,18 +1,18 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { ArrowRight, User, Shield, Mail } from 'lucide-react';
 import { createClient } from '@/utils/supabase/server';
 import type { Database } from '@/types/supabase';
+import { Container } from '@/components/ui/Layout';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 
 export const metadata: Metadata = {
   title: 'Dashboard — AdvaitAI',
   description: 'Your AdvaitAI intelligence dashboard.',
 };
 
-/**
- * /dashboard — Authenticated user home.
- * Shows: profile info, role badge, streak summary, CTA to start riddle.
- */
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -25,7 +25,6 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single<Profile>();
 
-  // Display name: prefer profile full_name → user metadata → email prefix
   const displayName =
     profile?.full_name ??
     (user.user_metadata?.full_name as string | undefined) ??
@@ -46,260 +45,84 @@ export default async function DashboardPage() {
     : null;
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        padding: '0 24px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
-      {/* Nav */}
-      <nav
-        style={{
-          width: '100%',
-          maxWidth: 1100,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '28px 0 0',
-        }}
-      >
-        <Link
-          href="/"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            textDecoration: 'none',
-            color: 'inherit',
-          }}
-        >
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 7,
-              background: 'var(--text-1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--bg)',
-              fontSize: 15,
-              fontWeight: 800,
-              fontFamily: "'Bricolage Grotesque', sans-serif",
-            }}
-          >
-            ∑
-          </div>
-          <span
-            className="font-display"
-            style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em' }}
-          >
-            AdvaitAI
-          </span>
-        </Link>
-
-        {/* Sign out */}
-        <form action="/api/auth/signout" method="POST">
-          <button
-            type="submit"
-            id="signout-btn"
-            className="btn btn-ghost"
-            style={{ fontSize: 13 }}
-          >
-            Sign out
-          </button>
-        </form>
-      </nav>
-
-      {/* Main */}
-      <main
-        style={{
-          width: '100%',
-          maxWidth: 640,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 32,
-          padding: 'clamp(48px, 8vh, 80px) 0 80px',
-        }}
-      >
+    <Container className="min-h-screen flex flex-col items-center py-12 lg:py-20">
+      <main className="w-full max-w-lg flex flex-col gap-8">
         {/* Profile card */}
-        <div
-          style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 16,
-            padding: '28px 28px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 20,
-          }}
-        >
-          {/* Avatar */}
+        <Card padding="lg" variant="default" className="flex flex-col sm:flex-row sm:items-center gap-5">
           {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={avatarUrl}
               alt={displayName}
-              width={56}
-              height={56}
-              style={{ borderRadius: '50%', border: '1px solid var(--border)', flexShrink: 0 }}
+              className="w-14 h-14 rounded-full border border-border object-cover shrink-0"
             />
           ) : (
-            <div
-              aria-hidden="true"
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                background: 'var(--surface-2)',
-                border: '1px solid var(--border)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 22,
-                fontWeight: 700,
-                color: 'var(--text-2)',
-                fontFamily: "'Bricolage Grotesque', sans-serif",
-                flexShrink: 0,
-              }}
-            >
+            <div className="w-14 h-14 rounded-full bg-surface-2 border border-border flex items-center justify-center text-xl font-bold text-text-3 shrink-0">
               {displayName.charAt(0).toUpperCase()}
             </div>
           )}
 
-          {/* Info */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                marginBottom: 4,
-                flexWrap: 'wrap',
-              }}
-            >
-              <span
-                className="font-display"
-                style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-lg font-semibold tracking-tight text-text-1 truncate">
                 {displayName}
-              </span>
-
-              {/* Role badge */}
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  padding: '2px 8px',
-                  borderRadius: 4,
-                  background: role === 'admin' ? 'rgba(250,250,250,0.12)' : 'var(--surface-2)',
-                  border: '1px solid var(--border)',
-                  color: role === 'admin' ? 'var(--text-1)' : 'var(--text-3)',
-                  flexShrink: 0,
-                }}
+              </h1>
+              <Badge
+                variant={role === 'admin' ? 'glow' : 'secondary'}
+                size="sm"
+                className="shrink-0"
               >
                 {role}
-              </span>
+              </Badge>
             </div>
-
-            <p style={{ fontSize: 13, color: 'var(--text-3)', margin: 0 }}>
+            <p className="mt-1 text-[13px] text-text-3">
               {user.email}
-              {memberSince && (
-                <span style={{ color: 'var(--text-4)' }}> · Member since {memberSince}</span>
-              )}
+              {memberSince && <span className="text-text-4"> · Member since {memberSince}</span>}
             </p>
           </div>
-        </div>
+        </Card>
 
-        {/* Section: Quick actions */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
-          }}
-        >
-          <span className="label">Quick actions</span>
+        {/* Quick actions */}
+        <section className="flex flex-col gap-3">
+          <span className="label text-text-4">Quick actions</span>
 
           <Link
             href="/"
-            id="start-riddle-cta"
-            className="btn btn-primary"
-            style={{ fontSize: 15, padding: '14px 24px', textDecoration: 'none', width: 'fit-content' }}
+            className="btn btn-primary w-fit text-[15px] py-3.5 px-6 gap-2.5 no-underline"
           >
             Begin today&apos;s ritual
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M5 12h14M13 6l6 6-6 6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <ArrowRight size={16} />
           </Link>
 
           <Link
             href="/streak"
-            className="btn btn-ghost"
-            style={{ fontSize: 14, width: 'fit-content', textDecoration: 'none' }}
+            className="btn btn-ghost w-fit text-[14px] no-underline"
           >
             View streak history →
           </Link>
-        </div>
+        </section>
 
-        {/* Section: Account info */}
-        <div
-          style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 12,
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
-            <span className="label">Account</span>
-          </div>
-          <div style={{ padding: '0' }}>
+        {/* Account details */}
+        <Card variant="default" padding="none" title="Account">
+          <div className="divide-y divide-border-subtle">
             {[
-              { label: 'User ID', value: user.id, mono: true },
-              { label: 'Auth provider', value: 'Google', mono: false },
-              { label: 'Role', value: role, mono: false },
-              { label: 'Email verified', value: user.email_confirmed_at ? 'Yes' : 'No', mono: false },
-            ].map((row, i, arr) => (
+              { label: 'User ID', value: user.id, mono: true, icon: <User size={14} /> },
+              { label: 'Auth provider', value: 'Google', mono: false, icon: <Shield size={14} /> },
+              { label: 'Role', value: role, mono: false, icon: <Shield size={14} /> },
+              { label: 'Email verified', value: user.email_confirmed_at ? 'Yes' : 'No', mono: false, icon: <Mail size={14} /> },
+            ].map((row) => (
               <div
                 key={row.label}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '14px 20px',
-                  borderBottom: i < arr.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-                  gap: 16,
-                }}
+                className="flex items-center justify-between px-5 py-3.5 gap-4"
               >
-                <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{row.label}</span>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-text-4 shrink-0">{row.icon}</span>
+                  <span className="text-[13px] text-text-3">{row.label}</span>
+                </div>
                 <span
+                  className="text-[13px] text-text-2 truncate max-w-[220px]"
                   style={{
-                    fontSize: 13,
-                    color: 'var(--text-2)',
                     fontVariantNumeric: row.mono ? 'tabular-nums' : undefined,
-                    fontFamily: row.mono ? 'monospace' : undefined,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: 220,
+                    fontFamily: row.mono ? 'var(--font-mono)' : undefined,
                   }}
                 >
                   {row.value}
@@ -307,14 +130,14 @@ export default async function DashboardPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       </main>
 
-      <footer style={{ paddingBottom: 32, textAlign: 'center' }}>
-        <span style={{ fontSize: 13, color: 'var(--text-4)' }}>
-          Built by <span style={{ color: 'var(--text-3)' }}>AdvaitAI</span> · One challenge a day
+      <footer className="mt-auto pt-12 pb-8 text-center">
+        <span className="text-[13px] text-text-4">
+          Built by <span className="text-text-3">AdvaitAI</span> · One challenge a day
         </span>
       </footer>
-    </div>
+    </Container>
   );
 }

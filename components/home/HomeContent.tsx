@@ -8,15 +8,15 @@ import ProgressCalendar from '@/components/ProgressCalendar';
 import { Difficulty } from '@/types';
 import { getOfficialDailyDate, OFFICIAL_DAILY_TZ } from '@/lib/timezone';
 import { motion } from 'framer-motion';
-import { fadeUp, staggerContainer, staggerContainerHero, spring, heroReveal, slideUp, viewReveal } from '@/lib/motion';
-import { Container } from '@/components/ui/Layout';
+import { fadeUp, staggerContainer, spring, heroReveal } from '@/lib/motion';
+import { Container, Divider } from '@/components/ui/Layout';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Tabs } from '@/components/ui/Tabs';
 import { GlowOrb } from '@/components/ui/GlowOrb';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { useChallengeSession } from '@/components/providers/ChallengeSessionProvider';
-import { Trophy, ArrowRight, Zap, Calendar } from 'lucide-react';
+import { Trophy, ArrowRight, Calendar } from 'lucide-react';
 
 export default function HomeContent() {
   const router = useRouter();
@@ -38,13 +38,11 @@ export default function HomeContent() {
 
   return (
     <Container wide className="pt-16 pb-24 lg:pt-24 lg:pb-32 relative overflow-hidden">
-      {/* Multi-color animated orbs */}
-      <GlowOrb color="rgba(108, 123, 255, 1)" size={800} position="top-center" intensity={0.12} />
-      <GlowOrb color="rgba(167, 139, 250, 1)" size={500} position="top-right" intensity={0.06} />
+      <GlowOrb color="rgba(108, 123, 255, 1)" size={800} position="top-center" intensity={0.1} />
       <div className="surface-grain" />
 
       <motion.main
-        variants={staggerContainerHero}
+        variants={staggerContainer}
         initial="hidden"
         animate="visible"
         className="relative z-10 grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)] lg:gap-16 lg:items-start"
@@ -65,8 +63,8 @@ export default function HomeContent() {
               </Badge>
             </div>
 
-            <h1 className="max-w-2xl font-display text-[clamp(3rem,7vw,5.5rem)] leading-[0.98] tracking-tight">
-              <span className="gradient-text-hero anim-gradient">Today&apos;s</span>
+            <h1 className="max-w-2xl text-[clamp(2.75rem,6vw,4.5rem)] font-semibold leading-[0.98] tracking-tight">
+              <span className="gradient-text-hero">Today&apos;s</span>
               <br />
               <span className="text-text-1">challenge</span>
             </h1>
@@ -77,7 +75,7 @@ export default function HomeContent() {
           </motion.div>
 
           {/* Challenge Panel */}
-          <motion.div variants={fadeUp} transition={{ type: 'spring', damping: 28, stiffness: 260 }}>
+          <motion.div variants={fadeUp}>
             <div className="content-panel relative px-8 py-10 sm:px-10 sm:py-12">
               <div className="relative">
                 {loading ? (
@@ -101,12 +99,11 @@ export default function HomeContent() {
                       </motion.div>
                       <div>
                         <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-text-3">Solved for today</p>
-                        <h3 className="mt-2 font-display text-2xl text-text-1 sm:text-[1.65rem]">
+                        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-text-1 sm:text-[1.65rem]">
                           You&apos;re done for this daily.
                         </h3>
                         <p className="mt-2 max-w-md text-sm leading-relaxed text-text-2">
                           Come back after the next reset, or open today&apos;s puzzle to review the explanation.
-                          Extra generated puzzles do not change your daily completion.
                         </p>
                       </div>
                     </div>
@@ -139,28 +136,28 @@ export default function HomeContent() {
                         ]}
                         activeTab={difficulty}
                         onChange={(id) => setDifficulty(id as Difficulty)}
-                        variant="contained"
+                        variant="segmented"
                       />
                     </div>
 
-                    <div className="flex flex-col gap-4 border-t border-white/[0.06] pt-8 sm:flex-row sm:items-center sm:justify-between">
+                    <Divider />
+
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <p className="text-sm font-semibold text-text-1">Today&apos;s puzzle</p>
                         <p className="mt-1 font-mono text-[11px] text-text-3">
                           One completion per daily calendar
                         </p>
                       </div>
-                      <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} transition={spring}>
-                        <Button
-                          size="lg"
-                          variant="primary"
-                          onClick={() => router.push(`/riddle/${today}?difficulty=${difficulty}`)}
-                          className="gap-2.5 px-8"
-                        >
-                          Begin challenge
-                          <ArrowRight size={16} />
-                        </Button>
-                      </motion.div>
+                      <Button
+                        size="lg"
+                        variant="primary"
+                        onClick={() => router.push(`/riddle/${today}?difficulty=${difficulty}`)}
+                        className="gap-2.5 px-8"
+                      >
+                        Begin challenge
+                        <ArrowRight size={16} />
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -181,7 +178,7 @@ export default function HomeContent() {
                   Streak
                 </span>
                 <div className="flex items-baseline gap-1">
-                  <AnimatedNumber value={currentStreak} className="font-display text-5xl tabular-nums gradient-text-accent" />
+                  <AnimatedNumber value={currentStreak} className="text-[clamp(2rem,4vw,2.75rem)] font-semibold tabular-nums gradient-text-accent" />
                   <span className="text-sm font-medium text-text-3">d</span>
                 </div>
               </div>
@@ -190,7 +187,7 @@ export default function HomeContent() {
                   Total XP
                 </span>
                 <div className="flex items-baseline gap-1">
-                  <AnimatedNumber value={totalXp} className="font-display text-5xl tabular-nums gradient-text-accent" />
+                  <AnimatedNumber value={totalXp} className="text-[clamp(2rem,4vw,2.75rem)] font-semibold tabular-nums gradient-text-accent" />
                 </div>
               </div>
             </div>
@@ -206,42 +203,41 @@ export default function HomeContent() {
           </div>
 
           {/* Leaderboard Link */}
-          <motion.div whileHover={{ y: -2 }} transition={spring}>
-            <Link
-              href="/leaderboard"
-              className="group flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4 transition-all hover:border-primary/25 hover:bg-white/[0.05] hover:shadow-[0_8px_32px_rgba(108,123,255,0.08)]"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Trophy size={16} />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-text-1">Global rankings</p>
-                  <p className="mt-0.5 text-xs text-text-3">All-time XP ranking</p>
-                </div>
+          <Link
+            href="/leaderboard"
+            className="group flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4 transition-standard hover:border-primary/25 hover:bg-white/[0.05]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Trophy size={16} />
               </div>
-              <span className="text-lg text-text-4 transition-all group-hover:translate-x-1 group-hover:text-primary">
-                →
-              </span>
-            </Link>
-          </motion.div>
+              <div>
+                <p className="text-sm font-semibold text-text-1">Global rankings</p>
+                <p className="mt-0.5 text-xs text-text-3">All-time XP ranking</p>
+              </div>
+            </div>
+            <span className="text-lg text-text-4 transition-all group-hover:translate-x-1 group-hover:text-primary">
+              →
+            </span>
+          </Link>
         </motion.aside>
       </motion.main>
 
       {/* Footer */}
       <motion.footer
-        {...viewReveal}
-        variants={slideUp}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
         className="mt-24 relative"
       >
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-8" />
+        <Divider className="mb-8" />
         <div className="flex flex-col gap-4 text-sm text-text-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-mono text-[11px] tracking-wide">© 2026 AdvaitAI</p>
           <div className="flex flex-wrap gap-6 font-medium">
-            <a href="#" className="transition-colors hover:text-text-1">
+            <a href="#" className="transition-color hover:text-text-1 text-text-3">
               Docs
             </a>
-            <a href="#" className="transition-colors hover:text-text-1">
+            <a href="#" className="transition-color hover:text-text-1 text-text-3">
               Privacy
             </a>
           </div>
